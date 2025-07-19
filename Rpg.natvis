@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+	<!-- RpgArray -->
+	<Type Name="RpgArray&lt;*&gt;">
+		<DisplayString>Alignment={$T2}, Capacity={Capacity}, Count={Count}</DisplayString>
+		<Expand>
+			<Item Name="Capacity">Capacity</Item>
+			<Item Name="Count">Count</Item>
+			<Item Name="Data">Data</Item>
+			<ArrayItems Condition="Count > 0">
+				<Size>Count</Size>
+				<ValuePointer>Data</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+
+	<!-- RpgArrayInline -->
+	<Type Name="RpgArrayInline&lt;*&gt;">
+		<DisplayString>Data={Data}</DisplayString>
+		<Expand>
+			<Item Name="Capacity">$T2</Item>
+			<Item Name="Count">Count</Item>
+			<ArrayItems Condition="Count > 0">
+				<Size>Count</Size>
+				<ValuePointer>Data</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+
+	<!-- RpgFreeList -->
+	<Type Name="RpgFreeList&lt;*&gt;">
+		<DisplayString>Alignment={$T2}, Capacity={Capacity}, Count={Count}</DisplayString>
+		<Expand>
+			<Item Name="Capacity">Capacity</Item>
+			<Item Name="Count">Count</Item>
+			<Item Name="NextFreeIndex">NextFreeIndex</Item>
+			<Synthetic Name="ValidIndexArray">
+				<Expand>
+					<ArrayItems Condition="Capacity > 0">
+						<Size>Capacity</Size>
+						<ValuePointer>ValidIndexArray</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+			<Synthetic Name="Items">
+				<Expand>
+					<ArrayItems Condition="Capacity > 0">
+						<Size>Capacity</Size>
+						<ValuePointer>DataArray</ValuePointer>
+					</ArrayItems>
+				</Expand>
+			</Synthetic>
+		</Expand>
+	</Type>
+
+
+	<!-- RpgStringView -->
+	<Type Name="RpgStringView">
+		<DisplayString>{Data, [Length]s}</DisplayString>
+	</Type>
+
+
+	<!-- RpgString -->
+	<Type Name="RpgString">
+		<DisplayString>{CharArray.Data, s}</DisplayString>
+	</Type>
+
+
+	<!-- RpgName -->
+	<Type Name="RpgName">
+		<DisplayString>{CharArray, s}</DisplayString>
+	</Type>
+
+</AutoVisualizer>

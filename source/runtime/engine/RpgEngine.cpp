@@ -1,0 +1,352 @@
+#include "RpgEngine.h"
+#include "core/RpgCommandLine.h"
+#include "input/RpgInputManager.h"
+#include "physics/world/RpgPhysicsComponent.h"
+#include "physics/world/RpgPhysicsWorldSubsystem.h"
+#include "render/world/RpgRenderComponent.h"
+#include "render/world/RpgRenderWorldSubsystem.h"
+#include "animation/world/RpgAnimationComponent.h"
+#include "animation/world/RpgAnimationWorldSubsystem.h"
+
+#include "../../test/gui/RpgTestGui.h"
+
+
+
+RPG_LOG_DEFINE_CATEGORY(RpgLogEngine, VERBOSITY_DEBUG)
+
+
+RpgEngine* g_Engine = nullptr;
+
+
+RpgEngine::RpgEngine() noexcept
+{
+	WindowState = RpgPlatformWindowSizeState::DEFAULT;
+
+	// fps info
+	FpsLimit = 60;
+	FpsSampleTimer = 0.0f;
+	FpsSampleFrameCount = 0;
+	FpsTimeMs = 0.0f;
+	FpsCountMs = 0.0f;
+}
+
+
+RpgEngine::~RpgEngine() noexcept
+{
+
+}
+
+
+void RpgEngine::Initialize() noexcept
+{
+	// input manager
+	g_InputManager = new RpgInputManager();
+
+
+	// main world
+	{
+		MainWorld = CreateWorld("world_main");
+
+		// Subsystems
+		MainWorld->Subsystem_Add<RpgPhysicsWorldSubsystem>(0);
+		MainWorld->Subsystem_Add<RpgAnimationWorldSubsystem>(1);
+		MainWorld->Subsystem_Add<RpgRenderWorldSubsystem>(2);
+
+		// Components
+		MainWorld->Component_Register<RpgPhysicsComponent_Filter>();
+		MainWorld->Component_Register<RpgPhysicsComponent_Collision>();
+		MainWorld->Component_Register<RpgRenderComponent_Mesh>();
+		MainWorld->Component_Register<RpgRenderComponent_Light>();
+		MainWorld->Component_Register<RpgRenderComponent_Camera>();
+		MainWorld->Component_Register<RpgAnimationComponent_AnimSkeletonPose>();
+	}
+
+
+	// main renderer
+	MainRenderer = RpgPointer::MakeUnique<RpgRenderer>(RpgPlatformProcess::GetMainWindowHandle(), !RpgCommandLine::HasCommand("novsync"));
+
+	// gui canvas
+	GuiCanvas = RpgPointer::MakeUnique<RpgGuiCanvas>();
+	GuiCanvas->Name = "EngineCanvas";
+
+
+	CreateTestLevel();
+	
+	RpgTest::Gui::Create(GuiCanvas.Get());
+
+	SetMainCamera(MainWorld->GameObject_Create("camera_main"));
+	MainWorld->GameObject_AttachScript(MainCameraObject, &ScriptDebugCamera);
+}
+
+
+void RpgEngine::WindowSizeChanged(const RpgPlatformWindowEvent& e) noexcept
+{
+	WindowDimension = e.Size;
+	WindowState = e.State;
+}
+
+
+void RpgEngine::MouseMove(const RpgPlatformMouseMoveEvent& e) noexcept
+{
+	GuiContext.MouseMove(e);
+	g_InputManager->MouseMove(e);
+}
+
+
+void RpgEngine::MouseWheel(const RpgPlatformMouseWheelEvent& e) noexcept
+{
+	GuiContext.MouseWheel(e);
+	g_InputManager->MouseWheel(e);
+}
+
+
+void RpgEngine::MouseButton(const RpgPlatformMouseButtonEvent& e) noexcept
+{
+	GuiContext.MouseButton(e);
+	g_InputManager->MouseButton(e);
+}
+
+
+void RpgEngine::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
+{
+	GuiContext.KeyboardButton(e);
+	g_InputManager->KeyboardButton(e);
+
+	if (e.bIsDown)
+	{
+		if (e.Button == RpgInputKey::KEYBOARD_PLUS)
+		{
+			MainRenderer->Gamma += 0.01f;
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_MINUS)
+		{
+			MainRenderer->Gamma -= 0.01f;
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_0)
+		{
+			RpgRenderComponent_Camera* cameraComp = MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(MainCameraObject);
+			cameraComp->bFrustumCulling = !cameraComp->bFrustumCulling;
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_9)
+		{
+			RpgAnimationWorldSubsystem* subsystem = MainWorld->Subsystem_Get<RpgAnimationWorldSubsystem>();
+			subsystem->bDebugDrawSkeletonBones = !subsystem->bDebugDrawSkeletonBones;
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_8)
+		{
+			RpgRenderWorldSubsystem* subsystem = MainWorld->Subsystem_Get<RpgRenderWorldSubsystem>();
+			subsystem->bDebugDrawMeshBound = !subsystem->bDebugDrawMeshBound;
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_F9)
+		{
+			if (MainWorld->HasStartedPlay())
+			{
+				MainWorld->DispatchStopPlay();
+			}
+			else
+			{
+				MainWorld->DispatchStartPlay();
+			}
+		}
+	}
+}
+
+
+void RpgEngine::CharInput(char c) noexcept
+{
+	GuiContext.CharInput(c);
+}
+
+
+void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
+{
+	const int frameIndex = frameCounter % RPG_FRAME_BUFFERING;
+
+	// Calculate average FPS
+	{
+		const int FPS_SAMPLE_COUNT = 3;
+
+		if (FpsSampleFrameCount == FPS_SAMPLE_COUNT)
+		{
+			FpsTimeMs = (FpsSampleTimer * 1000.0f) / FPS_SAMPLE_COUNT;
+			FpsCountMs = static_cast<float>(FPS_SAMPLE_COUNT) / FpsSampleTimer;
+			FpsSampleTimer = 0.0f;
+			FpsSampleFrameCount = 0;
+			FpsString = RpgString::Format("%.2f ms (%.0f FPS)", FpsTimeMs, FpsCountMs);
+		}
+
+		FpsSampleTimer += deltaTime;
+		++FpsSampleFrameCount;
+	}
+
+
+	RpgRenderComponent_Camera* mainCameraComp = MainCameraObject.IsValid() ? MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(MainCameraObject) : nullptr;
+	if (mainCameraComp)
+	{
+		mainCameraComp->RenderTargetDimension = WindowDimension;
+	}
+
+
+	// Begin frame
+	{
+		MainWorld->BeginFrame(frameIndex);
+	}
+
+
+	// GUI
+	{
+		GuiContext.Begin();
+		GuiCanvas->Update(GuiContext, RpgRectFloat(0.0f, 0.0f, static_cast<float>(WindowDimension.X), static_cast<float>(WindowDimension.Y)));
+		GuiContext.End();
+	}
+
+
+	// Tick update
+	{
+		MainWorld->DispatchTickUpdate(deltaTime);
+	}
+	
+
+	// Post tick update
+	{
+		MainWorld->DispatchPostTickUpdate();
+	}
+
+
+	// Render
+	RpgD3D12::BeginFrame(frameIndex);
+
+	MainRenderer->BeginRender(frameIndex, deltaTime);
+	{
+		MainRenderer->RegisterWorld(MainWorld);
+
+		// Setup renderer default final texture
+		MainRenderer->FinalTexture = SceneViewport.GetTextureRenderTarget(frameIndex);
+
+		// Dispatch render
+		MainWorld->DispatchRender(frameIndex, MainRenderer.Get());
+
+		// Render 2D
+		RpgRenderer2D& renderer2d = MainRenderer->GetRenderer2D();
+
+		// GUI
+		GuiCanvas->Render(GuiContext, renderer2d);
+
+
+	#ifndef RPG_BUILD_SHIPPING
+		// Debug info
+		{
+			static RpgString debugInfoText;
+
+			RpgTransform mainCameraTransform = MainCameraObject.IsValid() ? MainWorld->GameObject_GetWorldTransform(MainCameraObject) : RpgTransform();
+			float pitch, yaw;
+			ScriptDebugCamera.GetRotationPitchYaw(pitch, yaw);
+			
+			debugInfoText = RpgString::Format(
+				"WindowSize: %i, %i\n"
+				"CameraPosition: %.2f, %.2f, %.2f\n"
+				"CameraPitchYaw: %.2f, %.2f\n"
+				"CameraFrustumCulling: %d\n"
+				"Gamma: %.2f\n"
+				"VSync: %d\n"
+				"\n"
+				"GameObject: %i\n"
+				, WindowDimension.X, WindowDimension.Y
+				, mainCameraTransform.Position.X, mainCameraTransform.Position.Y, mainCameraTransform.Position.Z
+				, pitch, yaw
+				, mainCameraComp ? mainCameraComp->bFrustumCulling : false
+				, MainRenderer->Gamma
+				, MainRenderer->GetVsync()
+				, MainWorld->GameObject_GetCount()
+			);
+
+			renderer2d.AddText(*debugInfoText, debugInfoText.GetLength(), RpgPointFloat(8.0f, 8.0f), RpgColorRGBA(255, 255, 255));
+		}
+	#endif // !RPG_BUILD_SHIPPING
+
+
+		// Fps info
+		{
+			RpgColorRGBA fpsTextColor;
+
+			if (FpsCountMs < 30)
+			{
+				fpsTextColor = RpgColorRGBA::RED;
+			}
+			else if (FpsCountMs < 50)
+			{
+				fpsTextColor = RpgColorRGBA::YELLOW;
+			}
+			else
+			{
+				fpsTextColor = RpgColorRGBA::GREEN;
+			}
+
+			const RpgPointFloat fpsTextPos(static_cast<float>(renderer2d.GetViewportDimension().X) - 110.0f, 8.0f);
+			renderer2d.AddText(*FpsString, FpsString.GetLength(), fpsTextPos, fpsTextColor);
+		}
+	}
+	MainRenderer->EndRender(frameIndex, deltaTime);
+
+
+	// End frame
+	MainWorld->EndFrame(frameIndex);
+
+	g_InputManager->Flush();
+}
+
+
+void RpgEngine::RequestExit(bool bAskConfirmation) noexcept
+{
+	if (!bAskConfirmation)
+	{
+		PostQuitMessage(0);
+		return;
+	}
+
+	if (MessageBoxA(RpgPlatformProcess::GetMainWindowHandle(), "Are you sure you want to exit?", "Confirmation", MB_APPLMODAL | MB_ICONQUESTION | MB_YESNO) == IDYES)
+	{
+		PostQuitMessage(0);
+	}
+}
+
+
+RpgWorld* RpgEngine::CreateWorld(const RpgName& name) noexcept
+{
+	const int index = Worlds.GetCount();
+	Worlds.AddValue(RpgPointer::MakeUnique<RpgWorld>(name));
+
+	return Worlds[index].Get();
+}
+
+
+void RpgEngine::DestroyWorld(RpgWorld*& world) noexcept
+{
+	RPG_Check(world);
+
+	const int index = Worlds.FindIndexByCompare(world);
+	if (index != RPG_INDEX_INVALID)
+	{
+		Worlds.RemoveAt(index);
+		world = nullptr;
+
+		return;
+	}
+
+	RPG_LogWarn(RpgLogEngine, "Fail to destroy world. World (%s) not found!", *world->GetName());
+}
+
+
+void RpgEngine::SetMainCamera(RpgGameObjectID cameraObject) noexcept
+{
+	if (MainCameraObject == cameraObject)
+	{
+		return;
+	}
+
+	MainCameraObject = cameraObject;
+
+	RpgRenderComponent_Camera* cameraComp = MainWorld->GameObject_AddComponent<RpgRenderComponent_Camera>(MainCameraObject);
+	cameraComp->Viewport = &SceneViewport;
+	cameraComp->bActivated = true;
+}

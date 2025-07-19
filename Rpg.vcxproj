@@ -1,0 +1,388 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\Microsoft.Direct3D.DXC.1.8.2505.28\build\native\Microsoft.Direct3D.DXC.props" Condition="Exists('packages\Microsoft.Direct3D.DXC.1.8.2505.28\build\native\Microsoft.Direct3D.DXC.props')" />
+  <Import Project="packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.props" Condition="Exists('packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.props')" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="development|x64">
+      <Configuration>development</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="shipping|x64">
+      <Configuration>shipping</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{5262851f-2b56-47aa-a098-150b6aa6e775}</ProjectGuid>
+    <RootNamespace>Rpg</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='development|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='shipping|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='development|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='shipping|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <OutDir>$(SolutionDir)__build\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)__intermediate\$(Configuration)\</IntDir>
+    <TargetName>RpgGame_$(Configuration)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='development|x64'">
+    <OutDir>$(SolutionDir)__build\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)__intermediate\$(Configuration)\</IntDir>
+    <TargetName>RpgGame_$(Configuration)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='shipping|x64'">
+    <OutDir>$(SolutionDir)__build\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)__intermediate\$(Configuration)\</IntDir>
+    <TargetName>RpgGame_$(Configuration)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;RPG_BUILD_DEBUG</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <AdditionalIncludeDirectories>$(SolutionDir)source\runtime\;$(SolutionDir)externals\mimalloc\include\;$(SolutionDir)externals\compressonator\include\;$(SolutionDir)externals\assimp\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>6011;6387;26110;26819;26495;28020;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)externals\mimalloc\lib\Debug\;$(SolutionDir)externals\SDL3\lib\;$(SolutionDir)externals\compressonator\lib\;$(SolutionDir)externals\assimp\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mimalloc-static.lib;mimalloc-override.lib;d3d12.lib;dxgi.lib;dxguid.lib;Compressonator_MD_DLL.lib;assimp-vc143-mt.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /y "$(SolutionDir)externals\mimalloc\lib\Debug\mimalloc-override.dll" "$(OutDir)mimalloc-override.dll"
+copy /y "$(SolutionDir)externals\mimalloc\lib\Debug\mimalloc-redirect.dll" "$(OutDir)mimalloc-redirect.dll"
+copy /y "$(SolutionDir)externals\compressonator\lib\Compressonator_MD_DLL.dll" "$(OutDir)Compressonator_MD_DLL.dll"
+copy /y "$(SolutionDir)externals\assimp\lib\assimp-vc143-mt.dll" "$(OutDir)assimp-vc143-mt.dll"
+
+
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='development|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;RPG_BUILD_DEVELOPMENT</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <AdditionalIncludeDirectories>$(SolutionDir)source\runtime\;$(SolutionDir)externals\mimalloc\include\;$(SolutionDir)externals\compressonator\include\;$(SolutionDir)externals\assimp\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>6011;6387;26110;26819;26495;28020;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)externals\mimalloc\lib\Release\;$(SolutionDir)externals\SDL3\lib\;$(SolutionDir)externals\compressonator\lib\;$(SolutionDir)externals\assimp\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mimalloc-static.lib;mimalloc-override.lib;d3d12.lib;dxgi.lib;dxguid.lib;Compressonator_MD_DLL.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-override.dll" "$(OutDir)mimalloc-override.dll"
+copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(OutDir)mimalloc-redirect.dll"
+copy /y "$(SolutionDir)externals\compressonator\lib\Compressonator_MD_DLL.dll" "$(OutDir)Compressonator_MD_DLL.dll"
+copy /y "$(SolutionDir)externals\assimp\lib\assimp-vc143-mt.dll" "$(OutDir)assimp-vc143-mt.dll"
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='shipping|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;RPG_BUILD_SHIPPING</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <AdditionalIncludeDirectories>$(SolutionDir)source\runtime\;$(SolutionDir)externals\mimalloc\include\;$(SolutionDir)externals\compressonator\include\;$(SolutionDir)externals\assimp\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>6011;6387;26110;26819;26495;28020;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)externals\mimalloc\lib\Release\;$(SolutionDir)externals\SDL3\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mimalloc-static.lib;mimalloc-override.lib;d3d12.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-override.dll" "$(OutDir)mimalloc-override.dll"
+copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(OutDir)mimalloc-redirect.dll"
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="Rpg.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\editor\__editor__build.cpp" />
+    <ClCompile Include="source\runtime\animation\task\RpgAnimationTask_TickPose.cpp" />
+    <ClCompile Include="source\runtime\animation\RpgAnimationPose.cpp" />
+    <ClCompile Include="source\runtime\animation\world\RpgAnimationWorldSubsystem.cpp" />
+    <ClCompile Include="source\runtime\engine\script\RpgScript_Gameplay.cpp" />
+    <ClCompile Include="source\runtime\gui\RpgGuiConsole.cpp" />
+    <ClCompile Include="source\runtime\gui\RpgGuiContext.cpp" />
+    <ClCompile Include="source\runtime\gui\RpgGuiTypes.cpp" />
+    <ClCompile Include="source\test\core\RpgTestCore_DSA_Algorithm.cpp" />
+    <ClCompile Include="source\test\core\RpgTestCore_DSA_Array.cpp" />
+    <ClCompile Include="source\test\core\RpgTestCore_DSA_FreeList.cpp" />
+    <ClCompile Include="source\test\core\RpgTestCore_DSA_Map.cpp" />
+    <ClCompile Include="source\test\core\RpgTestCore_FilePath.cpp" />
+    <ClCompile Include="source\test\core\RpgTestCore_Pointer.cpp" />
+    <ClCompile Include="source\test\core\RpgTestCore_String.cpp" />
+    <ClCompile Include="source\test\gui\RpgTestGui.cpp" />
+    <ClCompile Include="source\runtime\gui\widget\RpgGuiButton.cpp" />
+    <ClCompile Include="source\runtime\gui\widget\RpgGuiInputText.cpp" />
+    <ClCompile Include="source\runtime\gui\widget\RpgGuiLayout.cpp" />
+    <ClCompile Include="source\runtime\physics\task\RpgPhysicsTask_UpdateBound.cpp" />
+    <ClCompile Include="source\runtime\physics\RpgPhysicsCollision.cpp" />
+    <ClCompile Include="source\runtime\physics\RpgPhysicsTrace.cpp" />
+    <ClCompile Include="source\runtime\physics\task\RpgPhysicsTask_UpdateShape.cpp" />
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_CaptureLight.cpp" />
+    <ClCompile Include="source\runtime\physics\world\RpgPhysicsWorldSubsystem.cpp" />
+    <ClCompile Include="source\runtime\animation\RpgAnimationClip.cpp" />
+    <ClCompile Include="source\runtime\animation\RpgAnimationSkeleton.cpp" />
+    <ClCompile Include="source\runtime\asset\RpgAssetImporter.cpp" />
+    <ClCompile Include="source\runtime\asset\RpgAssetManager.cpp" />
+    <ClCompile Include="source\runtime\asset\task\RpgAssetTask_ImportModel.cpp" />
+    <ClCompile Include="source\runtime\asset\task\RpgAssetTask_ImportTexture.cpp" />
+    <ClCompile Include="source\runtime\core\RpgAssetFile.cpp" />
+    <ClCompile Include="source\runtime\core\RpgCommandLine.cpp" />
+    <ClCompile Include="source\runtime\core\RpgConsoleSystem.cpp" />
+    <ClCompile Include="source\runtime\core\RpgFilePath.cpp" />
+    <ClCompile Include="source\runtime\engine\script\RpgScript_DebugCamera.cpp" />
+    <ClCompile Include="source\runtime\input\RpgInputManager.cpp" />
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_CaptureMesh.cpp" />
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_RenderPassShadow.cpp" />
+    <ClCompile Include="source\runtime\render\RpgMaterial.cpp" />
+    <ClCompile Include="source\runtime\core\RpgMath.cpp" />
+    <ClCompile Include="source\runtime\render\RpgModel.cpp" />
+    <ClCompile Include="source\runtime\render\RpgMesh.cpp" />
+    <ClCompile Include="source\runtime\core\RpgPlatform.cpp" />
+    <ClCompile Include="source\runtime\render\RpgRenderResource_MeshSkinned.cpp" />
+    <ClCompile Include="source\runtime\render\RpgShadowViewport_Cascade.cpp" />
+    <ClCompile Include="source\runtime\render\RpgShadowViewport_SpotLight.cpp" />
+    <ClCompile Include="source\runtime\render\RpgTexture.cpp" />
+    <ClCompile Include="source\runtime\core\RpgThreadPool.cpp" />
+    <ClCompile Include="source\runtime\core\RpgTypes.cpp" />
+    <ClCompile Include="source\runtime\core\RpgVertex.cpp" />
+    <ClCompile Include="source\runtime\engine\RpgEngine.cpp" />
+    <ClCompile Include="source\runtime\engine\RpgEngine_TestLevel.cpp" />
+    <ClCompile Include="source\runtime\render\RpgFont.cpp" />
+    <ClCompile Include="source\runtime\navigation\world\RpgNavigationWorldSubsystem.cpp" />
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_Compute.cpp" />
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_Copy.cpp" />
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_RenderPass.cpp" />
+    <ClCompile Include="source\runtime\render\RpgRenderer.cpp" />
+    <ClCompile Include="source\runtime\core\RpgD3D12.cpp" />
+    <ClCompile Include="source\runtime\render\RpgRenderer2D.cpp" />
+    <ClCompile Include="source\runtime\render\RpgRenderPipeline.cpp" />
+    <ClCompile Include="source\runtime\render\RpgRenderResource_Material.cpp" />
+    <ClCompile Include="source\runtime\render\RpgRenderResource_Mesh.cpp" />
+    <ClCompile Include="source\runtime\render\RpgRenderResource_World.cpp" />
+    <ClCompile Include="source\runtime\render\world\RpgRenderWorldSubsystem.cpp" />
+    <ClCompile Include="source\runtime\shader\RpgShaderManager.cpp" />
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_RenderPassDepth.cpp" />
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_RenderPassForward.cpp" />
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_RenderPassTransparency.cpp" />
+    <ClCompile Include="source\runtime\render\RpgSceneViewport.cpp" />
+    <ClCompile Include="source\runtime\render\RpgShadowViewport_PointLight.cpp" />
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_CompilePSO.cpp" />
+    <ClCompile Include="source\runtime\RpgMain.cpp" />
+    <ClCompile Include="source\runtime\core\world\RpgWorld.cpp" />
+    <ClCompile Include="source\runtime\thirdparty\D3D12MA\__D3D12MA__build.cpp" />
+    <ClCompile Include="source\runtime\thirdparty\libccd\__libccd__build.cpp" />
+    <ClCompile Include="source\runtime\thirdparty\simdjson\__simdjson__build.cpp" />
+    <ClCompile Include="source\runtime\thirdparty\stb\__stb__build.cpp" />
+    <ClCompile Include="source\runtime\thirdparty\xxhash\xxhash.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\editor\RpgEditor.h" />
+    <ClInclude Include="source\editor\RpgEditorGizmo.h" />
+    <ClInclude Include="source\editor\RpgEditorObjectInspector.h" />
+    <ClInclude Include="source\editor\RpgEditorTypes.h" />
+    <ClInclude Include="source\editor\RpgEditorWorldOutliner.h" />
+    <ClInclude Include="source\runtime\animation\task\RpgAnimationTask_TickPose.h" />
+    <ClInclude Include="source\runtime\animation\world\RpgAnimationComponent.h" />
+    <ClInclude Include="source\runtime\animation\world\RpgAnimationWorldSubsystem.h" />
+    <ClInclude Include="source\runtime\animation\RpgAnimationTypes.h" />
+    <ClInclude Include="source\runtime\asset\task\RpgAssimpTypes.h" />
+    <ClInclude Include="source\runtime\engine\script\RpgScript_Gameplay.h" />
+    <ClInclude Include="source\runtime\gui\RpgGuiConsole.h" />
+    <ClInclude Include="source\runtime\gui\RpgGuiTypes.h" />
+    <ClInclude Include="source\test\core\RpgTestCore.h" />
+    <ClInclude Include="source\test\gui\RpgTestGui.h" />
+    <ClInclude Include="source\runtime\gui\widget\RpgGuiButton.h" />
+    <ClInclude Include="source\runtime\gui\widget\RpgGuiInputText.h" />
+    <ClInclude Include="source\runtime\gui\widget\RpgGuiLayout.h" />
+    <ClInclude Include="source\runtime\input\RpgInputWindows.h" />
+    <ClInclude Include="source\runtime\navigation\world\RpgNavigationComponent.h" />
+    <ClInclude Include="source\runtime\physics\task\RpgPhysicsTask_UpdateBound.h" />
+    <ClInclude Include="source\runtime\physics\task\RpgPhysicsTask_UpdateShape.h" />
+    <ClInclude Include="source\runtime\physics\world\RpgPhysicsComponent.h" />
+    <ClInclude Include="source\runtime\physics\world\RpgPhysicsWorldSubsystem.h" />
+    <ClInclude Include="source\runtime\physics\RpgPhysicsTypes.h" />
+    <ClInclude Include="source\runtime\asset\RpgAssetManager.h" />
+    <ClInclude Include="source\runtime\asset\task\RpgAssetTask_ImportModel.h" />
+    <ClInclude Include="source\runtime\asset\task\RpgAssetTask_ImportTexture.h" />
+    <ClInclude Include="source\runtime\core\dsa\RpgAlgorithm.h" />
+    <ClInclude Include="source\runtime\core\dsa\RpgArray.h" />
+    <ClInclude Include="source\runtime\core\dsa\RpgFreeList.h" />
+    <ClInclude Include="source\runtime\core\dsa\RpgMap.h" />
+    <ClInclude Include="source\runtime\core\RpgAssetFile.h" />
+    <ClInclude Include="source\runtime\core\RpgCommandLine.h" />
+    <ClInclude Include="source\runtime\core\RpgConsoleSystem.h" />
+    <ClInclude Include="source\runtime\core\RpgDelegate.h" />
+    <ClInclude Include="source\runtime\core\RpgFilePath.h" />
+    <ClInclude Include="source\runtime\asset\RpgAssetImporter.h" />
+    <ClInclude Include="source\runtime\core\RpgStream.h" />
+    <ClInclude Include="source\runtime\core\world\RpgGameObject.h" />
+    <ClInclude Include="source\editor\RpgEditorAssetImporter.h" />
+    <ClInclude Include="source\runtime\engine\script\RpgScript_DebugCamera.h" />
+    <ClInclude Include="source\game\world\RpgAttributeComponent.h" />
+    <ClInclude Include="source\game\world\RpgAttributeWorldSubsystem.h" />
+    <ClInclude Include="source\runtime\input\RpgInputManager.h" />
+    <ClInclude Include="source\runtime\input\RpgInputTypes.h" />
+    <ClInclude Include="source\runtime\render\task\RpgRenderTask_Capture.h" />
+    <ClInclude Include="source\runtime\render\RpgMaterial.h" />
+    <ClInclude Include="source\runtime\core\RpgMath.h" />
+    <ClInclude Include="source\runtime\render\RpgMesh.h" />
+    <ClInclude Include="source\runtime\render\RpgModel.h" />
+    <ClInclude Include="source\runtime\core\RpgPlatform.h" />
+    <ClInclude Include="source\runtime\core\RpgPointer.h" />
+    <ClInclude Include="source\runtime\render\RpgTexture.h" />
+    <ClInclude Include="source\runtime\core\RpgStateMachine.h" />
+    <ClInclude Include="source\runtime\core\RpgString.h" />
+    <ClInclude Include="source\runtime\core\RpgThreadPool.h" />
+    <ClInclude Include="source\runtime\core\RpgTimer.h" />
+    <ClInclude Include="source\runtime\core\RpgTypes.h" />
+    <ClInclude Include="source\runtime\core\world\RpgComponent.h" />
+    <ClInclude Include="source\runtime\core\RpgVertex.h" />
+    <ClInclude Include="source\runtime\core\world\RpgWorld.h" />
+    <ClInclude Include="source\runtime\engine\RpgEngine.h" />
+    <ClInclude Include="source\runtime\render\RpgFont.h" />
+    <ClInclude Include="source\runtime\navigation\world\RpgNavigationWorldSubsystem.h" />
+    <ClInclude Include="source\runtime\navigation\RpgNavigationTypes.h" />
+    <ClInclude Include="source\runtime\render\task\RpgRenderTask_Compute.h" />
+    <ClInclude Include="source\runtime\render\task\RpgRenderTask_RenderPass.h" />
+    <ClInclude Include="source\runtime\render\task\RpgRenderTask_Copy.h" />
+    <ClInclude Include="source\runtime\render\world\RpgRenderComponent.h" />
+    <ClInclude Include="source\runtime\render\RpgRenderer.h" />
+    <ClInclude Include="source\runtime\core\RpgD3D12.h" />
+    <ClInclude Include="source\runtime\render\RpgRenderer2D.h" />
+    <ClInclude Include="source\runtime\render\RpgRenderPipeline.h" />
+    <ClInclude Include="source\runtime\render\RpgRenderResource.h" />
+    <ClInclude Include="source\runtime\render\RpgRenderTypes.h" />
+    <ClInclude Include="source\runtime\render\world\RpgRenderWorldSubsystem.h" />
+    <ClInclude Include="source\runtime\shader\RpgShaderManager.h" />
+    <ClInclude Include="source\runtime\render\RpgSceneViewport.h" />
+    <ClInclude Include="source\runtime\render\RpgShadowViewport.h" />
+    <ClInclude Include="source\runtime\render\task\RpgRenderTask_CompilePSO.h" />
+    <ClInclude Include="source\runtime\shader\RpgShaderTypes.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets" Condition="Exists('packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets')" />
+    <Import Project="packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.targets" Condition="Exists('packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.targets')" />
+    <Import Project="packages\Microsoft.Direct3D.DXC.1.8.2505.28\build\native\Microsoft.Direct3D.DXC.targets" Condition="Exists('packages\Microsoft.Direct3D.DXC.1.8.2505.28\build\native\Microsoft.Direct3D.DXC.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets'))" />
+    <Error Condition="!Exists('packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.targets'))" />
+    <Error Condition="!Exists('packages\Microsoft.Direct3D.DXC.1.8.2505.28\build\native\Microsoft.Direct3D.DXC.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Direct3D.DXC.1.8.2505.28\build\native\Microsoft.Direct3D.DXC.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.Direct3D.DXC.1.8.2505.28\build\native\Microsoft.Direct3D.DXC.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Direct3D.DXC.1.8.2505.28\build\native\Microsoft.Direct3D.DXC.targets'))" />
+  </Target>
+</Project>

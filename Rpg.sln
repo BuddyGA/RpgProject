@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34622.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Rpg", "Rpg.vcxproj", "{5262851F-2B56-47AA-A098-150B6AA6E775}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		debug|Windows = debug|Windows
+		development|Windows = development|Windows
+		shipping|Windows = shipping|Windows
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5262851F-2B56-47AA-A098-150B6AA6E775}.debug|Windows.ActiveCfg = debug|x64
+		{5262851F-2B56-47AA-A098-150B6AA6E775}.debug|Windows.Build.0 = debug|x64
+		{5262851F-2B56-47AA-A098-150B6AA6E775}.development|Windows.ActiveCfg = development|x64
+		{5262851F-2B56-47AA-A098-150B6AA6E775}.development|Windows.Build.0 = development|x64
+		{5262851F-2B56-47AA-A098-150B6AA6E775}.shipping|Windows.ActiveCfg = shipping|x64
+		{5262851F-2B56-47AA-A098-150B6AA6E775}.shipping|Windows.Build.0 = shipping|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D3F552A3-0ACC-4206-BF97-3C944CBFF951}
+	EndGlobalSection
+EndGlobal
