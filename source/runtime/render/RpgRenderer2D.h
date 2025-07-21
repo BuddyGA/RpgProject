@@ -30,16 +30,19 @@ public:
 	inline void PushClipRect(RpgRectInt rect) noexcept
 	{
 		const int parentClipIndex = CurrentClipIndex;
-		CurrentClipIndex = Clips.GetCount();
 
-		FClip& clip = Clips.Add();
+		FFrameData& frame = FrameDatas[FrameIndex];
+		CurrentClipIndex = frame.Clips.GetCount();
+
+		FClip& clip = frame.Clips.Add();
 		clip.Rect = rect;
 		clip.ParentClipIndex = parentClipIndex;
 	}
 
 	inline void PopClipRect() noexcept
 	{
-		CurrentClipIndex = Clips[CurrentClipIndex].ParentClipIndex;
+		FFrameData& frame = FrameDatas[FrameIndex];
+		CurrentClipIndex = frame.Clips[CurrentClipIndex].ParentClipIndex;
 	}
 
 
@@ -86,12 +89,8 @@ private:
 		RpgArrayInline<FMesh, 64> Shapes;
 		RpgArrayInline<FMesh, 32> Texts;
 	};
-	RpgArray<FClip, 16> Clips;
 
 	int CurrentClipIndex;
-
-	RpgVertexMesh2DArray MeshVertices;
-	RpgVertexIndexArray MeshIndices;
 
 
 	struct FDrawBatch
@@ -145,6 +144,10 @@ private:
 
 	struct FFrameData
 	{
+		RpgArray<FClip, 16> Clips;
+		RpgVertexMesh2DArray MeshVertices;
+		RpgVertexIndexArray MeshIndices;
+
 		RpgVertexMesh2DArray BatchMeshVertices;
 		RpgVertexIndexArray BatchMeshIndices;
 		RpgArray<FDrawBatchClip, 8> BatchDrawClipMeshes;

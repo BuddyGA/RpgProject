@@ -3,6 +3,7 @@
 #include "input/RpgInputManager.h"
 #include "physics/world/RpgPhysicsComponent.h"
 #include "physics/world/RpgPhysicsWorldSubsystem.h"
+#include "render/RpgRenderThread.h"
 #include "render/world/RpgRenderComponent.h"
 #include "render/world/RpgRenderWorldSubsystem.h"
 #include "animation/world/RpgAnimationComponent.h"
@@ -28,12 +29,14 @@ RpgEngine::RpgEngine() noexcept
 	FpsSampleFrameCount = 0;
 	FpsTimeMs = 0.0f;
 	FpsCountMs = 0.0f;
+
+	RpgRenderThread::Initialize();
 }
 
 
 RpgEngine::~RpgEngine() noexcept
 {
-
+	RpgRenderThread::Shutdown();
 }
 
 
@@ -181,7 +184,8 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 
 
 	RpgRenderComponent_Camera* mainCameraComp = MainCameraObject.IsValid() ? MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(MainCameraObject) : nullptr;
-	if (mainCameraComp)
+
+	if (mainCameraComp && WindowState != RpgPlatformWindowSizeState::MINIMIZED)
 	{
 		mainCameraComp->RenderTargetDimension = WindowDimension;
 	}
@@ -196,7 +200,12 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 	// GUI
 	{
 		GuiContext.Begin();
-		GuiCanvas->Update(GuiContext, RpgRectFloat(0.0f, 0.0f, static_cast<float>(WindowDimension.X), static_cast<float>(WindowDimension.Y)));
+
+		if (WindowState != RpgPlatformWindowSizeState::MINIMIZED)
+		{
+			GuiCanvas->Update(GuiContext, RpgRectFloat(0.0f, 0.0f, static_cast<float>(WindowDimension.X), static_cast<float>(WindowDimension.Y)));
+		}
+
 		GuiContext.End();
 	}
 
@@ -214,79 +223,83 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 
 
 	// Render
-	RpgD3D12::BeginFrame(frameIndex);
-
-	MainRenderer->BeginRender(frameIndex, deltaTime);
+	RpgRenderThread::WaitFrame(frameIndex);
 	{
-		MainRenderer->RegisterWorld(MainWorld);
+		RpgD3D12::BeginFrame(frameIndex);
 
-		// Setup renderer default final texture
-		MainRenderer->FinalTexture = SceneViewport.GetTextureRenderTarget(frameIndex);
-
-		// Dispatch render
-		MainWorld->DispatchRender(frameIndex, MainRenderer.Get());
-
-		// Render 2D
-		RpgRenderer2D& renderer2d = MainRenderer->GetRenderer2D();
-
-		// GUI
-		GuiCanvas->Render(GuiContext, renderer2d);
-
-
-	#ifndef RPG_BUILD_SHIPPING
-		// Debug info
+		MainRenderer->BeginRender(frameIndex, deltaTime);
 		{
-			static RpgString debugInfoText;
+			MainRenderer->RegisterWorld(MainWorld);
 
-			RpgTransform mainCameraTransform = MainCameraObject.IsValid() ? MainWorld->GameObject_GetWorldTransform(MainCameraObject) : RpgTransform();
-			float pitch, yaw;
-			ScriptDebugCamera.GetRotationPitchYaw(pitch, yaw);
-			
-			debugInfoText = RpgString::Format(
-				"WindowSize: %i, %i\n"
-				"CameraPosition: %.2f, %.2f, %.2f\n"
-				"CameraPitchYaw: %.2f, %.2f\n"
-				"CameraFrustumCulling: %d\n"
-				"Gamma: %.2f\n"
-				"VSync: %d\n"
-				"\n"
-				"GameObject: %i\n"
-				, WindowDimension.X, WindowDimension.Y
-				, mainCameraTransform.Position.X, mainCameraTransform.Position.Y, mainCameraTransform.Position.Z
-				, pitch, yaw
-				, mainCameraComp ? mainCameraComp->bFrustumCulling : false
-				, MainRenderer->Gamma
-				, MainRenderer->GetVsync()
-				, MainWorld->GameObject_GetCount()
-			);
+			// Setup renderer default final texture
+			MainRenderer->SetFinalTexture(frameIndex, SceneViewport.GetTextureRenderTarget(frameIndex));
 
-			renderer2d.AddText(*debugInfoText, debugInfoText.GetLength(), RpgPointFloat(8.0f, 8.0f), RpgColorRGBA(255, 255, 255));
+			// Dispatch render
+			MainWorld->DispatchRender(frameIndex, MainRenderer.Get());
+
+			// Render 2D
+			RpgRenderer2D& renderer2d = MainRenderer->GetRenderer2D();
+
+			// GUI
+			GuiCanvas->Render(GuiContext, renderer2d);
+
+
+		#ifndef RPG_BUILD_SHIPPING
+			// Debug info
+			{
+				static RpgString debugInfoText;
+
+				RpgTransform mainCameraTransform = MainCameraObject.IsValid() ? MainWorld->GameObject_GetWorldTransform(MainCameraObject) : RpgTransform();
+				float pitch, yaw;
+				ScriptDebugCamera.GetRotationPitchYaw(pitch, yaw);
+
+				debugInfoText = RpgString::Format(
+					"WindowSize: %i, %i\n"
+					"CameraPosition: %.2f, %.2f, %.2f\n"
+					"CameraPitchYaw: %.2f, %.2f\n"
+					"CameraFrustumCulling: %d\n"
+					"Gamma: %.2f\n"
+					"VSync: %d\n"
+					"\n"
+					"GameObject: %i\n"
+					, WindowDimension.X, WindowDimension.Y
+					, mainCameraTransform.Position.X, mainCameraTransform.Position.Y, mainCameraTransform.Position.Z
+					, pitch, yaw
+					, mainCameraComp ? mainCameraComp->bFrustumCulling : false
+					, MainRenderer->Gamma
+					, MainRenderer->GetVsync()
+					, MainWorld->GameObject_GetCount()
+				);
+
+				renderer2d.AddText(*debugInfoText, debugInfoText.GetLength(), RpgPointFloat(8.0f, 8.0f), RpgColorRGBA(255, 255, 255));
+			}
+		#endif // !RPG_BUILD_SHIPPING
+
+
+			// Fps info
+			{
+				RpgColorRGBA fpsTextColor;
+
+				if (FpsCountMs < 30)
+				{
+					fpsTextColor = RpgColorRGBA::RED;
+				}
+				else if (FpsCountMs < 50)
+				{
+					fpsTextColor = RpgColorRGBA::YELLOW;
+				}
+				else
+				{
+					fpsTextColor = RpgColorRGBA::GREEN;
+				}
+
+				const RpgPointFloat fpsTextPos(static_cast<float>(renderer2d.GetViewportDimension().X) - 110.0f, 8.0f);
+				renderer2d.AddText(*FpsString, FpsString.GetLength(), fpsTextPos, fpsTextColor);
+			}
 		}
-	#endif // !RPG_BUILD_SHIPPING
-
-
-		// Fps info
-		{
-			RpgColorRGBA fpsTextColor;
-
-			if (FpsCountMs < 30)
-			{
-				fpsTextColor = RpgColorRGBA::RED;
-			}
-			else if (FpsCountMs < 50)
-			{
-				fpsTextColor = RpgColorRGBA::YELLOW;
-			}
-			else
-			{
-				fpsTextColor = RpgColorRGBA::GREEN;
-			}
-
-			const RpgPointFloat fpsTextPos(static_cast<float>(renderer2d.GetViewportDimension().X) - 110.0f, 8.0f);
-			renderer2d.AddText(*FpsString, FpsString.GetLength(), fpsTextPos, fpsTextColor);
-		}
+		MainRenderer->EndRender(frameIndex, deltaTime);
 	}
-	MainRenderer->EndRender(frameIndex, deltaTime);
+	RpgRenderThread::ExecuteFrame(frameIndex, deltaTime, MainRenderer.Get());
 
 
 	// End frame

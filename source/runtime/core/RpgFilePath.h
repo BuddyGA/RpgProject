@@ -182,7 +182,7 @@ namespace RpgFileSystem
 {
 	extern void Initialize() noexcept;
 
-	extern const RpgString& GetExecutableDirPath() noexcept;
+	extern RpgString GetExecutableDirPath() noexcept;
 	extern const RpgString& GetUserAppDataLocalDirPath() noexcept;
 	extern const RpgString& GetUserTempDirPath() noexcept;
 	extern const RpgString& GetProjectDirPath() noexcept;

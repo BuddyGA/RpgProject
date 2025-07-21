@@ -261,6 +261,12 @@
     <ClCompile Include="source\test\core\RpgTestCore_Pointer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\runtime\physics\task\RpgPhysicsTask_TestOverlapPair.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\render\RpgRenderThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\runtime\core\dsa\RpgAlgorithm.h">
@@ -507,6 +513,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\test\core\RpgTestCore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\physics\task\RpgPhysicsTask_TestOverlapPair.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\RpgRenderThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

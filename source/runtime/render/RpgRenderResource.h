@@ -18,7 +18,7 @@ public:
 
 public:
 	RpgMaterialResource() noexcept;
-	void UpdateResources() noexcept;
+	void UpdateResources(int frameIndex) noexcept;
 	void CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept;
 	void CommandBindShaderResources(ID3D12GraphicsCommandList* cmdList) const noexcept;
 	void CommandBindMaterial(ID3D12GraphicsCommandList* cmdList, FMaterialID materialId) const noexcept;

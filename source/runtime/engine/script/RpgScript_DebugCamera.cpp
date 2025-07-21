@@ -2,7 +2,6 @@
 #include "core/world/RpgWorld.h"
 #include "input/RpgInputManager.h"
 #include "render/world/RpgRenderComponent.h"
-#include "../RpgEngine.h"
 
 
 
@@ -51,14 +50,16 @@ void RpgScript_DebugCamera::TickUpdate(float deltaTime) noexcept
 	if (g_InputManager->IsKeyButtonPressed(RpgInputKey::MOUSE_RIGHT))
 	{
 		RPG_Log(RpgLogTemp, "Camera FreeFly update movement BEGIN");
-		g_Engine->SetMouseRelativeMode(true);
-		SavedMousePos = g_InputManager->GetMouseCursorPosition();
+		RpgPlatformMouse::Capture(NULL, true);
+		RpgPlatformMouse::SetCursorHidden(true);
+		SavedMousePos = RpgPointFloat(RpgPlatformMouse::GetCursorPosition(NULL));
 	}
 	else if (g_InputManager->IsKeyButtonReleased(RpgInputKey::MOUSE_RIGHT))
 	{
 		RPG_Log(RpgLogTemp, "Camera FreeFly update movement END");
-		g_Engine->SetMouseCursorPosition(static_cast<int>(SavedMousePos.X), static_cast<int>(SavedMousePos.Y));
-		g_Engine->SetMouseRelativeMode(false);
+		RpgPlatformMouse::SetCursorPosition(NULL, RpgPointInt(SavedMousePos));
+		RpgPlatformMouse::Capture(NULL, false);
+		RpgPlatformMouse::SetCursorHidden(false);
 	}
 
 	if (g_InputManager->IsKeyButtonDown(RpgInputKey::MOUSE_RIGHT))
@@ -100,7 +101,7 @@ void RpgScript_DebugCamera::TickUpdate(float deltaTime) noexcept
 		moveDirection *= MoveSpeed * deltaTime;
 		transform.Position += moveDirection;
 
-		g_Engine->SetMouseCursorPosition(static_cast<int>(SavedMousePos.X), static_cast<int>(SavedMousePos.Y));
+		RpgPlatformMouse::SetCursorPosition(NULL, RpgPointInt(SavedMousePos));
 	}
 
 	World->GameObject_SetWorldTransform(GameObject, transform);

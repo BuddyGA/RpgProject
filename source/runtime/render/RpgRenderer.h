@@ -17,6 +17,7 @@ public:
 
 	void BeginRender(int frameIndex, float deltaTime) noexcept;
 	void EndRender(int frameIndex, float deltaTime) noexcept;
+	void Execute(int frameIndex, float deltaTime) noexcept;
 	void RegisterWorld(const RpgWorld* world) noexcept;
 	void UnregisterWorld(const RpgWorld* world) noexcept;
 
@@ -44,6 +45,11 @@ public:
 		return RpgPointInt(static_cast<int>(desc.Width), static_cast<int>(desc.Height));
 	}
 
+	inline void SetFinalTexture(int frameIndex, const RpgSharedTexture2D& texture) noexcept
+	{
+		FrameDatas[frameIndex].FinalTexture = texture;
+	}
+
 	inline void AddWorldShadowViewport(int frameIndex, const RpgWorld* world, RpgShadowViewport* viewport) noexcept
 	{
 		GetWorldContext(frameIndex, world).ShadowViewports.AddUnique(viewport);
@@ -69,7 +75,6 @@ public:
 	float Gamma;
 	RpgRenderLight::EShadowQuality ShadowQuality;
 	RpgRenderAntiAliasing::EMode AntiAliasingMode;
-	RpgSharedTexture2D FinalTexture;
 
 
 private:
@@ -133,14 +138,15 @@ private:
 		RpgUniquePtr<RpgMaterialResource> MaterialResource;
 		RpgUniquePtr<RpgMeshResource> MeshResource;
 		RpgUniquePtr<RpgMeshSkinnedResource> MeshSkinnedResource;
-
 		FWorldContextArray WorldContexts;
+		RpgSharedTexture2D FinalTexture;
 
 		RpgUniquePtr<RpgRenderTask_Copy> TaskCopy;
 		RpgUniquePtr<RpgRenderTask_Compute> TaskCompute;
 
 		ComPtr<ID3D12CommandAllocator> SwapChainCmdAlloc;
 		ComPtr<ID3D12GraphicsCommandList> SwapChainCmdList;
+
 		HANDLE PresentCompletedEvent;
 	};
 	FFrameData FrameDatas[RPG_FRAME_BUFFERING];

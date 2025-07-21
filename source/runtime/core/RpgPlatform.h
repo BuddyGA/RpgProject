@@ -340,10 +340,16 @@ namespace RpgPlatformMouse
 	extern void SetEnableClipCursor(HWND windowHandle, RpgRectInt rect) noexcept;
 	extern void SetDisableClipCursor() noexcept;
 	extern void SetCursorHidden(bool bHidden) noexcept;
-	extern void SetEnableRelativeMode(HWND windowHandle, bool bEnable) noexcept;
 
 };
 
+
+
+enum class RpgPlatformWindowDisplayMode : uint8_t
+{
+	WINDOWED = 0,
+	FULLSCREEN
+};
 
 
 

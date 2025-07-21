@@ -10,7 +10,6 @@ class RpgTexture2D;
 
 class RpgRenderTask_RenderPass : public RpgThreadTask
 {
-
 public:
 	RpgRenderFrameContext FrameContext;
 	const RpgWorldResource* WorldResource;

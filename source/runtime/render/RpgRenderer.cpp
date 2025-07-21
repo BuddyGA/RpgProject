@@ -1,6 +1,7 @@
 #include "RpgRenderer.h"
 #include "RpgShadowViewport.h"
 #include "RpgSceneViewport.h"
+#include "RpgRenderPipeline.h"
 #include "task/RpgRenderTask_RenderPass.h"
 
 
@@ -79,18 +80,22 @@ void RpgRenderer::BeginRender(int frameIndex, float deltaTime) noexcept
 		context.SceneViewports.Clear();
 	}
 
+	frame.FinalTexture.Release();
+
 	SwapchainResize();
 
 	Renderer2d.Begin(frameIndex, GetSwapChainDimension());
-
-	FinalTexture.Release();
 }
 
 
 void RpgRenderer::EndRender(int frameIndex, float deltaTime) noexcept
 {
 	Renderer2d.End(frameIndex);
+}
 
+
+void RpgRenderer::Execute(int frameIndex, float deltaTime) noexcept
+{
 	FFrameData& frame = FrameDatas[frameIndex];
 
 	RpgRenderFrameContext frameContext;
@@ -124,9 +129,9 @@ void RpgRenderer::EndRender(int frameIndex, float deltaTime) noexcept
 	RpgMaterialResource::FMaterialID fullscreenMaterialResourceId;
 	{
 		RpgSharedMaterial defMatFullscreen = RpgMaterial::s_GetDefault(RpgMaterialDefault::FULLSCREEN);
-		if (FinalTexture)
+		if (frame.FinalTexture)
 		{
-			defMatFullscreen->SetParameterTextureValue(RpgMaterialParameterTexture::BASE_COLOR, FinalTexture);
+			defMatFullscreen->SetParameterTextureValue(RpgMaterialParameterTexture::BASE_COLOR, frame.FinalTexture);
 		}
 
 		defMatFullscreen->SetParameterScalarValue("gamma", Gamma);
@@ -136,7 +141,7 @@ void RpgRenderer::EndRender(int frameIndex, float deltaTime) noexcept
 
 	// update resource
 	{
-		frameContext.MaterialResource->UpdateResources();
+		frameContext.MaterialResource->UpdateResources(frameIndex);
 		frameContext.MeshResource->UpdateResources();
 		frameContext.MeshSkinnedResource->UpdateResources();
 
@@ -199,11 +204,11 @@ void RpgRenderer::EndRender(int frameIndex, float deltaTime) noexcept
 		RpgThreadPool::SubmitOrExecuteTasks<RPG_RENDER_ASYNC_TASK>(reinterpret_cast<RpgThreadTask**>(taskForwardPasses.GetData()), taskForwardPasses.GetCount());
 	}
 
-	
+
 	// Begin swapchain rendering
 	const RpgPointInt swapchainDimension = GetSwapChainDimension();
 	ID3D12Resource* swapchainBackbuffer = BackbufferResources[BackbufferIndex].Get();
-	RpgD3D12::FResourceDescriptor backbufferDescriptor = RpgD3D12::AllocateDescriptor_RTV(swapchainBackbuffer);
+	RpgD3D12::FResourceDescriptor backbufferDescriptor = RpgD3D12::AllocateDescriptor_RTV(frameIndex, swapchainBackbuffer);
 
 	ID3D12GraphicsCommandList* cmdList = frame.SwapChainCmdList.Get();
 	RPG_D3D12_COMMAND_Begin(frame.SwapChainCmdAlloc, cmdList);
@@ -220,6 +225,14 @@ void RpgRenderer::EndRender(int frameIndex, float deltaTime) noexcept
 		// Set and clear render target
 		RpgD3D12Command::SetAndClearRenderTargets(cmdList, &backbufferDescriptor, 1, RpgColorLinear(0.1f, 0.15f, 0.2f), nullptr, 1.0f, 0);
 
+		// Set root signature and global texture descriptor table (dynamic indexing)
+		cmdList->SetGraphicsRootSignature(RpgRenderPipeline::GetRootSignatureGraphics());
+
+		// Set descriptor table (texture dynamic indexing)
+		ID3D12DescriptorHeap* textureDescriptorHeap = RpgD3D12::GetDescriptorHeap_TDI(frameIndex);
+		cmdList->SetDescriptorHeaps(1, &textureDescriptorHeap);
+		cmdList->SetGraphicsRootDescriptorTable(RpgRenderPipeline::GRPI_TEXTURES, textureDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+
 		// Bind shader resource material
 		frameContext.MaterialResource->CommandBindShaderResources(cmdList);
 
@@ -227,14 +240,14 @@ void RpgRenderer::EndRender(int frameIndex, float deltaTime) noexcept
 		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// Draw fullscreen final texture
-		if (FinalTexture)
+		if (frame.FinalTexture)
 		{
-			if (FinalTexture->IsRenderTarget() || FinalTexture->IsDepthStencil())
+			if (frame.FinalTexture->IsRenderTarget() || frame.FinalTexture->IsDepthStencil())
 			{
-				ID3D12Resource* textureResource = FinalTexture->GPU_GetResource();
+				ID3D12Resource* textureResource = frame.FinalTexture->GPU_GetResource();
 
 				RpgD3D12Command::TransitionAllSubresources(cmdList, textureResource,
-					FinalTexture->IsRenderTarget() ? D3D12_RESOURCE_STATE_RENDER_TARGET : D3D12_RESOURCE_STATE_DEPTH_WRITE,
+					frame.FinalTexture->IsRenderTarget() ? D3D12_RESOURCE_STATE_RENDER_TARGET : D3D12_RESOURCE_STATE_DEPTH_WRITE,
 					D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
 				);
 			}
@@ -318,9 +331,9 @@ void RpgRenderer::EndRender(int frameIndex, float deltaTime) noexcept
 	}
 
 
-	if (FinalTexture && (FinalTexture->IsRenderTarget() || FinalTexture->IsDepthStencil()))
+	if (frame.FinalTexture && (frame.FinalTexture->IsRenderTarget() || frame.FinalTexture->IsDepthStencil()))
 	{
-		FinalTexture->GPU_SetState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		frame.FinalTexture->GPU_SetState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	}
 
 
@@ -491,7 +504,6 @@ void RpgRenderer::SwapchainResize() noexcept
 
 	BackbufferIndex = SwapChain->GetCurrentBackBufferIndex();
 }
-
 
 
 #ifndef RPG_BUILD_SHIPPING

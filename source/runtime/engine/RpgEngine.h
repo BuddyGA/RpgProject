@@ -44,36 +44,6 @@ public:
 	}
 
 
-	inline void SetMouseRelativeMode(bool bEnable) noexcept
-	{
-		RpgPlatformMouse::SetEnableRelativeMode(RpgPlatformProcess::GetMainWindowHandle(), bEnable);
-	}
-
-	inline void SetMouseCursorPosition(int x, int y) noexcept
-	{
-		RpgPlatformMouse::SetCursorPosition(RpgPlatformProcess::GetMainWindowHandle(), RpgPointInt(x, y));
-	}
-
-
-	inline void ClipMouseCursor(bool bClip) noexcept
-	{
-		if (bClip)
-		{
-			RpgRectInt rect;
-			rect.Left = 0;
-			rect.Top = 0;
-			rect.Right = WindowDimension.X - 2;
-			rect.Bottom = WindowDimension.Y - 2;
-
-			RpgPlatformMouse::SetEnableClipCursor(RpgPlatformProcess::GetMainWindowHandle(), rect);
-		}
-		else
-		{
-			RpgPlatformMouse::SetDisableClipCursor();
-		}
-	}
-
-
 	inline RpgWorld* GetMainWorld() noexcept
 	{
 		return MainWorld;

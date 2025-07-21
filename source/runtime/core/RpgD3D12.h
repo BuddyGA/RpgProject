@@ -173,11 +173,11 @@ namespace RpgD3D12
 	}
 
 
-	[[nodiscard]] extern FResourceDescriptor AllocateDescriptor_RTV(ID3D12Resource* renderTargetResource) noexcept;
-	[[nodiscard]] extern FResourceDescriptor AllocateDescriptor_DSV(ID3D12Resource* depthStencilResource) noexcept;
-	[[nodiscard]] extern FResourceDescriptor AllocateDescriptor_TDI(ID3D12Resource* textureResource, DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN) noexcept;
-	[[nodiscard]] extern FResourceDescriptor AllocateDescriptor_TDI_Cube(ID3D12Resource* textureResource, DXGI_FORMAT format) noexcept;
-	[[nodiscard]] extern ID3D12DescriptorHeap* GetDescriptorHeap_TDI() noexcept;
+	[[nodiscard]] extern FResourceDescriptor AllocateDescriptor_RTV(int frameIndex, ID3D12Resource* renderTargetResource) noexcept;
+	[[nodiscard]] extern FResourceDescriptor AllocateDescriptor_DSV(int frameIndex, ID3D12Resource* depthStencilResource) noexcept;
+	[[nodiscard]] extern FResourceDescriptor AllocateDescriptor_TDI(int frameIndex, ID3D12Resource* textureResource, DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN) noexcept;
+	[[nodiscard]] extern FResourceDescriptor AllocateDescriptor_TDI_Cube(int frameIndex, ID3D12Resource* textureResource, DXGI_FORMAT format) noexcept;
+	[[nodiscard]] extern ID3D12DescriptorHeap* GetDescriptorHeap_TDI(int frameIndex) noexcept;
 
 
 	static inline D3D12_RESOURCE_DESC CreateResourceDesc_Texture(DXGI_FORMAT format, uint16_t width, uint16_t height, uint8_t mipLevel, uint16_t arraySize = 1) noexcept

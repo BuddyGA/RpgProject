@@ -81,7 +81,7 @@ void RpgShadowViewport_PointLight::PreRender(RpgRenderFrameContext& frameContext
 		view.ViewId = worldResource->AddView(view.ViewMatrix, projMatrix, transform.Position, nearClipZ, farClipZ);
 	}
 
-	const RpgD3D12::FResourceDescriptor shadowDepthDescriptor = RpgD3D12::AllocateDescriptor_TDI_Cube(depthTexture->GPU_GetResource(), DXGI_FORMAT_R16_UNORM);
+	const RpgD3D12::FResourceDescriptor shadowDepthDescriptor = RpgD3D12::AllocateDescriptor_TDI_Cube(frameContext.Index, depthTexture->GPU_GetResource(), DXGI_FORMAT_R16_UNORM);
 	worldResource->SetLightShadow(lightId, FaceViews[0].ViewId, shadowDepthDescriptor.Index);
 
 

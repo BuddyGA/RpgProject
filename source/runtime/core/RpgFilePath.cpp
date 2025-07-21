@@ -3,8 +3,6 @@
 
 
 
-
-
 RpgFilePath RpgFilePath::GetParentDirectoryPath() const noexcept
 {
 	if (!IsPathValid())
@@ -265,7 +263,7 @@ void RpgFileSystem::Initialize() noexcept
 	}
 
 #ifdef RPG_BUILD_SHIPPING
-	ProjectDirPath = ExecutableDirPath;
+	ProjectDirPath = ExecutablePath.GetDirectoryPath();
 #else
 	ProjectDirPath = ExecutablePath.GetParentDirectoryPath().GetParentDirectoryPath().ToString();
 #endif // RPG_BUILD_SHIPPING
@@ -276,7 +274,7 @@ void RpgFileSystem::Initialize() noexcept
 }
 
 
-const RpgString& RpgFileSystem::GetExecutableDirPath() noexcept
+RpgString RpgFileSystem::GetExecutableDirPath() noexcept
 {
 	return ExecutablePath.GetDirectoryPath();
 }

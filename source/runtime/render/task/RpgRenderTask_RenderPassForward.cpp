@@ -55,14 +55,14 @@ void RpgRenderTask_RenderPassForward::CommandDraw(ID3D12GraphicsCommandList* cmd
 	RpgD3D12Command::SetScissor(cmdList, 0, 0, renderTargetDimension.X, renderTargetDimension.Y);
 
 	ID3D12Resource* renderTargetResource = TextureRenderTarget->GPU_GetResource();
-	const RpgD3D12::FResourceDescriptor renderTargetDescriptor = RpgD3D12::AllocateDescriptor_RTV(renderTargetResource);
+	const RpgD3D12::FResourceDescriptor renderTargetDescriptor = RpgD3D12::AllocateDescriptor_RTV(FrameContext.Index, renderTargetResource);
 
 	// Transition resource to render target
 	RpgD3D12Command::TransitionAllSubresources(cmdList, renderTargetResource, TextureRenderTarget->GPU_GetState(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 	TextureRenderTarget->GPU_SetState(D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 	ID3D12Resource* depthStencilResource = TextureDepthStencil->GPU_GetResource();
-	const RpgD3D12::FResourceDescriptor depthStencilDescriptor = RpgD3D12::AllocateDescriptor_DSV(depthStencilResource);
+	const RpgD3D12::FResourceDescriptor depthStencilDescriptor = RpgD3D12::AllocateDescriptor_DSV(FrameContext.Index, depthStencilResource);
 
 	// Transition resource to depth-write
 	RpgD3D12Command::TransitionAllSubresources(cmdList, depthStencilResource, TextureDepthStencil->GPU_GetState(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
@@ -70,6 +70,14 @@ void RpgRenderTask_RenderPassForward::CommandDraw(ID3D12GraphicsCommandList* cmd
 
 	// Set and clear render targets
 	RpgD3D12Command::SetAndClearRenderTargets(cmdList, &renderTargetDescriptor, 1, RpgColorLinear(0.0f, 0.0f, 0.0f), &depthStencilDescriptor, 1.0f, 0);
+
+	// Set root signature and global texture descriptor table (dynamic indexing)
+	cmdList->SetGraphicsRootSignature(RpgRenderPipeline::GetRootSignatureGraphics());
+
+	// Set descriptor table (texture dynamic indexing)
+	ID3D12DescriptorHeap* textureDescriptorHeap = RpgD3D12::GetDescriptorHeap_TDI(FrameContext.Index);
+	cmdList->SetDescriptorHeaps(1, &textureDescriptorHeap);
+	cmdList->SetGraphicsRootDescriptorTable(RpgRenderPipeline::GRPI_TEXTURES, textureDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 	// Bind shader resource material
 	FrameContext.MaterialResource->CommandBindShaderResources(cmdList);

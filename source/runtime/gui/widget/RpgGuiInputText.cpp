@@ -95,18 +95,7 @@ void RpgGuiInputText::OnUpdate(RpgGuiContext& context) noexcept
 
 		char c = context.TextInputChar;
 
-		if (IsValidInputChar(c))
-		{
-			if (RemoveSelectedChars() && bSelecting)
-			{
-				SelectedAnchorIndex = CursorIndex;
-			}
-
-			bSelecting = false;
-			TempValue.InsertCharAt(c, CursorIndex++);
-			bCommitted = bCommitOnValueChanged;
-		}
-		else if (context.IsKeyButtonDown(RpgInputKey::KEYBOARD_BACKSPACE))
+		if (c == 8) // BACKSPACE
 		{
 			if (RemoveSelectedChars())
 			{
@@ -123,7 +112,7 @@ void RpgGuiInputText::OnUpdate(RpgGuiContext& context) noexcept
 				bCommitted = bCommitOnValueChanged;
 			}
 		}
-		else if (context.IsKeyButtonDown(RpgInputKey::KEYBOARD_ENTER))
+		else if (c == 13) // ENTER
 		{
 			RPG_LogDebug(RpgLogGui, "%s: End edit, committed (ENTER)", *Name);
 
@@ -136,11 +125,22 @@ void RpgGuiInputText::OnUpdate(RpgGuiContext& context) noexcept
 			bCommitted = true;
 			bShouldClearFocus = bExitFocusOnEnter;
 		}
-		else if (context.IsKeyButtonDown(RpgInputKey::KEYBOARD_ESCAPE))
+		else if (c == 27) // ESCAPE
 		{
 			RPG_LogDebug(RpgLogGui, "%s: End edit, cancelled (ESCAPE)", *Name);
 			bShouldClearFocus = true;
 			bWasCancelled = true;
+		}
+		else if (IsValidInputChar(c))
+		{
+			if (RemoveSelectedChars() && bSelecting)
+			{
+				SelectedAnchorIndex = CursorIndex;
+			}
+
+			bSelecting = false;
+			TempValue.InsertCharAt(c, CursorIndex++);
+			bCommitted = bCommitOnValueChanged;
 		}
 		else if (context.IsKeyButtonDown(RpgInputKey::KEYBOARD_ARROW_LEFT))
 		{
@@ -274,7 +274,7 @@ void RpgGuiInputText::OnRender(const RpgGuiContext& context, RpgRenderer2D& rend
 		textPos.Y = AbsoluteRect.Top + (AbsoluteRect.GetDimension().Y * 0.5f) - (pixelHeight * 0.5f);
 	}
 
-	if ((GetTickCount() / 500) % 2 == 0 && (State == STATE_EDIT))
+	if ((GetTickCount64() / 500) % 2 == 0 && (State == STATE_EDIT))
 	{
 		const RpgPointFloat cursorPos = font->CalculateTextCursorPosition(textString.GetData(), textString.GetLength(), textPos, CursorIndex);
 		renderer.AddMeshRect(RpgRectFloat(cursorPos.X, cursorPos.Y, cursorPos.X + 1.0f, cursorPos.Y + pixelHeight), RpgColorRGBA(200, 0, 0));

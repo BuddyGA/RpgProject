@@ -47,7 +47,6 @@ namespace RpgD3D12
     static bool bValidationLayer;
 	static bool bInitialized;
 
-    static int FrameIndex;
 
     struct FFrameData
     {
@@ -338,9 +337,7 @@ void RpgD3D12::Shutdown() noexcept
 
 void RpgD3D12::BeginFrame(int frameIndex) noexcept
 {
-    FrameIndex = frameIndex;
-
-    FFrameData& frame = FrameDatas[FrameIndex];
+    FFrameData& frame = FrameDatas[frameIndex];
     frame.DescriptorPool_RTV->Reset();
     frame.DescriptorPool_DSV->Reset();
     frame.DescriptorPool_CBV_SRV_UAV->Reset();
@@ -446,18 +443,8 @@ ComPtr<D3D12MA::Allocation> RpgD3D12::CreateRenderTarget(DXGI_FORMAT format, D3D
 {
     RPG_Assert(width > 0 && height > 0);
 
-    D3D12_RESOURCE_DESC renderTargetDesc{};
+    D3D12_RESOURCE_DESC renderTargetDesc = CreateResourceDesc_Texture(format, width, height, 1);
     renderTargetDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-    renderTargetDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    renderTargetDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    renderTargetDesc.Format = format;
-    renderTargetDesc.Alignment = 0;
-    renderTargetDesc.Width = width;
-    renderTargetDesc.Height = height;
-    renderTargetDesc.DepthOrArraySize = 1;
-    renderTargetDesc.MipLevels = 1;
-    renderTargetDesc.SampleDesc.Count = 1;
-    renderTargetDesc.SampleDesc.Quality = 0;
 
     D3D12MA::ALLOCATION_DESC allocDesc{};
     allocDesc.CustomPool = MemoryPoolRenderTargetGPU.Get();
@@ -477,18 +464,8 @@ ComPtr<D3D12MA::Allocation> RpgD3D12::CreateDepthStencil(DXGI_FORMAT format, D3D
 {
     RPG_Assert(width > 0 && height > 0);
 
-    D3D12_RESOURCE_DESC depthStencilDesc{};
+    D3D12_RESOURCE_DESC depthStencilDesc = CreateResourceDesc_Texture(format, width, height, 1);
     depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-    depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    depthStencilDesc.Format = format;
-    depthStencilDesc.Alignment = 0;
-    depthStencilDesc.Width = width;
-    depthStencilDesc.Height = height;
-    depthStencilDesc.DepthOrArraySize = 1;
-    depthStencilDesc.MipLevels = 1;
-    depthStencilDesc.SampleDesc.Count = 1;
-    depthStencilDesc.SampleDesc.Quality = 0;
 
     D3D12MA::ALLOCATION_DESC allocDesc{};
     allocDesc.CustomPool = MemoryPoolRenderTargetGPU.Get();
@@ -525,27 +502,27 @@ ComPtr<D3D12MA::Allocation> RpgD3D12::CreateDepthCube(DXGI_FORMAT format, D3D12_
 }
 
 
-RpgD3D12::FResourceDescriptor RpgD3D12::AllocateDescriptor_RTV(ID3D12Resource* renderTargetResource) noexcept
+RpgD3D12::FResourceDescriptor RpgD3D12::AllocateDescriptor_RTV(int frameIndex, ID3D12Resource* renderTargetResource) noexcept
 {
-    const FResourceDescriptor descriptor = FrameDatas[FrameIndex].DescriptorPool_RTV->AllocateDescriptor();
+    const FResourceDescriptor descriptor = FrameDatas[frameIndex].DescriptorPool_RTV->AllocateDescriptor();
     RpgD3D12::GetDevice()->CreateRenderTargetView(renderTargetResource, nullptr, descriptor.CpuHandle);
 
     return descriptor;
 }
 
 
-RpgD3D12::FResourceDescriptor RpgD3D12::AllocateDescriptor_DSV(ID3D12Resource* depthStencilResource) noexcept
+RpgD3D12::FResourceDescriptor RpgD3D12::AllocateDescriptor_DSV(int frameIndex, ID3D12Resource* depthStencilResource) noexcept
 {
-    const FResourceDescriptor descriptor = FrameDatas[FrameIndex].DescriptorPool_DSV->AllocateDescriptor();
+    const FResourceDescriptor descriptor = FrameDatas[frameIndex].DescriptorPool_DSV->AllocateDescriptor();
     RpgD3D12::GetDevice()->CreateDepthStencilView(depthStencilResource, nullptr, descriptor.CpuHandle);
 
     return descriptor;
 }
 
 
-RpgD3D12::FResourceDescriptor RpgD3D12::AllocateDescriptor_TDI(ID3D12Resource* textureResource, DXGI_FORMAT format) noexcept
+RpgD3D12::FResourceDescriptor RpgD3D12::AllocateDescriptor_TDI(int frameIndex, ID3D12Resource* textureResource, DXGI_FORMAT format) noexcept
 {
-    const FResourceDescriptor descriptor = FrameDatas[FrameIndex].DescriptorPool_TDI->AllocateDescriptor();
+    const FResourceDescriptor descriptor = FrameDatas[frameIndex].DescriptorPool_TDI->AllocateDescriptor();
 
     const D3D12_RESOURCE_DESC resDesc = textureResource->GetDesc();
 
@@ -562,9 +539,9 @@ RpgD3D12::FResourceDescriptor RpgD3D12::AllocateDescriptor_TDI(ID3D12Resource* t
 }
 
 
-RpgD3D12::FResourceDescriptor RpgD3D12::AllocateDescriptor_TDI_Cube(ID3D12Resource* textureResource, DXGI_FORMAT format) noexcept
+RpgD3D12::FResourceDescriptor RpgD3D12::AllocateDescriptor_TDI_Cube(int frameIndex, ID3D12Resource* textureResource, DXGI_FORMAT format) noexcept
 {
-    const FResourceDescriptor descriptor = FrameDatas[FrameIndex].DescriptorPool_TDI->AllocateDescriptor();
+    const FResourceDescriptor descriptor = FrameDatas[frameIndex].DescriptorPool_TDI->AllocateDescriptor();
 
     const D3D12_RESOURCE_DESC resDesc = textureResource->GetDesc();
 
@@ -580,7 +557,7 @@ RpgD3D12::FResourceDescriptor RpgD3D12::AllocateDescriptor_TDI_Cube(ID3D12Resour
 }
 
 
-ID3D12DescriptorHeap* RpgD3D12::GetDescriptorHeap_TDI() noexcept
+ID3D12DescriptorHeap* RpgD3D12::GetDescriptorHeap_TDI(int frameIndex) noexcept
 {
-    return FrameDatas[FrameIndex].DescriptorPool_TDI->GetHeap();
+    return FrameDatas[frameIndex].DescriptorPool_TDI->GetHeap();
 }

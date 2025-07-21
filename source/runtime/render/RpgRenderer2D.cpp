@@ -69,15 +69,14 @@ void RpgRenderer2D::Begin(int frameIndex, RpgPointInt viewportDimension) noexcep
 
 	ViewportDimension = viewportDimension;
 
-	Clips.Clear();
 	CurrentClipIndex = RPG_INDEX_INVALID;
-
-	MeshVertices.Clear();
-	MeshIndices.Clear();
 
 	FrameIndex = frameIndex;
 
 	FFrameData& frame = FrameDatas[FrameIndex];
+	frame.Clips.Clear();
+	frame.MeshVertices.Clear();
+	frame.MeshIndices.Clear();
 	frame.BatchMeshVertices.Clear();
 	frame.BatchMeshIndices.Clear();
 	frame.BatchDrawClipMeshes.Clear();
@@ -106,7 +105,9 @@ void RpgRenderer2D::AddMeshRect(RpgRectFloat rect, RpgColorRGBA color, const Rpg
 		return;
 	}
 
-	FClip& clip = Clips[CurrentClipIndex];
+	FFrameData& frame = FrameDatas[FrameIndex];
+
+	FClip& clip = frame.Clips[CurrentClipIndex];
 
 	FMesh& mesh = clip.Shapes.Add();
 	
@@ -116,9 +117,9 @@ void RpgRenderer2D::AddMeshRect(RpgRectFloat rect, RpgColorRGBA color, const Rpg
 		false
 	);
 
-	mesh.DataVertexStart = MeshVertices.GetCount();
+	mesh.DataVertexStart = frame.MeshVertices.GetCount();
 	mesh.DataVertexCount = 4;
-	mesh.DataIndexStart = MeshIndices.GetCount();
+	mesh.DataIndexStart = frame.MeshIndices.GetCount();
 	mesh.DataIndexCount = 6;
 
 	const RpgVertex::FMesh2D vertices[4] =
@@ -129,7 +130,7 @@ void RpgRenderer2D::AddMeshRect(RpgRectFloat rect, RpgColorRGBA color, const Rpg
 		{ DirectX::XMFLOAT2(rect.Left, rect.Bottom), DirectX::XMFLOAT2(0.0f, 1.0f), color },
 	};
 
-	MeshVertices.InsertAtRange(vertices, 4, RPG_INDEX_LAST);
+	frame.MeshVertices.InsertAtRange(vertices, 4, RPG_INDEX_LAST);
 
 	const RpgVertex::FIndex indices[6] =
 	{
@@ -137,7 +138,7 @@ void RpgRenderer2D::AddMeshRect(RpgRectFloat rect, RpgColorRGBA color, const Rpg
 		2, 3, 0
 	};
 
-	MeshIndices.InsertAtRange(indices, 6, RPG_INDEX_LAST);
+	frame.MeshIndices.InsertAtRange(indices, 6, RPG_INDEX_LAST);
 }
 
 
@@ -150,7 +151,9 @@ void RpgRenderer2D::AddText(const char* text, int length, RpgPointFloat position
 
 	const RpgFont* useFont = font ? font.Get() : DefaultFont.Get();
 
-	FClip& clip = Clips[CurrentClipIndex];
+	FFrameData& frame = FrameDatas[FrameIndex];
+
+	FClip& clip = frame.Clips[CurrentClipIndex];
 
 	FMesh& mesh = clip.Texts.Add();
 
@@ -160,9 +163,9 @@ void RpgRenderer2D::AddText(const char* text, int length, RpgPointFloat position
 		true
 	);
 
-	mesh.DataVertexStart = MeshVertices.GetCount();
-	mesh.DataIndexStart = MeshIndices.GetCount();
-	useFont->GenerateTextVertex(text, length, position, color, MeshVertices, MeshIndices, &mesh.DataVertexCount, &mesh.DataIndexCount);
+	mesh.DataVertexStart = frame.MeshVertices.GetCount();
+	mesh.DataIndexStart = frame.MeshIndices.GetCount();
+	useFont->GenerateTextVertex(text, length, position, color, frame.MeshVertices, frame.MeshIndices, &mesh.DataVertexCount, &mesh.DataIndexCount);
 }
 
 
@@ -214,13 +217,13 @@ void RpgRenderer2D::PreRender(RpgRenderFrameContext& frameContext) noexcept
 		const uint32_t vertexOffset = frame.BatchMeshVertices.GetCount();
 		if (vertexOffset > 0)
 		{
-			RpgVertexGeometryFactory::UpdateBatchIndices(MeshIndices, vertexOffset, mesh.DataIndexStart, mesh.DataIndexCount);
+			RpgVertexGeometryFactory::UpdateBatchIndices(frame.MeshIndices, vertexOffset, mesh.DataIndexStart, mesh.DataIndexCount);
 		}
 
 		batchDraw.IndexCount += mesh.DataIndexCount;
 
-		frame.BatchMeshVertices.InsertAtRange(MeshVertices.GetData(mesh.DataVertexStart), mesh.DataVertexCount, RPG_INDEX_LAST);
-		frame.BatchMeshIndices.InsertAtRange(MeshIndices.GetData(mesh.DataIndexStart), mesh.DataIndexCount, RPG_INDEX_LAST);
+		frame.BatchMeshVertices.InsertAtRange(frame.MeshVertices.GetData(mesh.DataVertexStart), mesh.DataVertexCount, RPG_INDEX_LAST);
+		frame.BatchMeshIndices.InsertAtRange(frame.MeshIndices.GetData(mesh.DataIndexStart), mesh.DataIndexCount, RPG_INDEX_LAST);
 	};
 
 
@@ -228,9 +231,9 @@ void RpgRenderer2D::PreRender(RpgRenderFrameContext& frameContext) noexcept
 
 	auto& batchClipDrawMeshes = frame.BatchDrawClipMeshes;
 
-	for (int c = 0; c < Clips.GetCount(); ++c)
+	for (int c = 0; c < frame.Clips.GetCount(); ++c)
 	{
-		const FClip& clip = Clips[c];
+		const FClip& clip = frame.Clips[c];
 		if (clip.Shapes.GetCount() == 0 && clip.Texts.GetCount() == 0)
 		{
 			continue;
@@ -341,6 +344,15 @@ void RpgRenderer2D::CommandCopy(const RpgRenderFrameContext& frameContext, ID3D1
 void RpgRenderer2D::CommandDraw(const RpgRenderFrameContext& frameContext, ID3D12GraphicsCommandList* cmdList) noexcept
 {
 	const FFrameData& frame = FrameDatas[frameContext.Index];
+
+	// Set root signature and global texture descriptor table (dynamic indexing)
+	cmdList->SetGraphicsRootSignature(RpgRenderPipeline::GetRootSignatureGraphics());
+
+	// Set descriptor table (texture dynamic indexing)
+	ID3D12DescriptorHeap* textureDescriptorHeap = RpgD3D12::GetDescriptorHeap_TDI(frameContext.Index);
+	cmdList->SetDescriptorHeaps(1, &textureDescriptorHeap);
+	cmdList->SetGraphicsRootDescriptorTable(RpgRenderPipeline::GRPI_TEXTURES, textureDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+
 
 	if (!frame.BatchDrawClipMeshes.IsEmpty())
 	{

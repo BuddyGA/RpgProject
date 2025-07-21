@@ -26,7 +26,7 @@ constexpr const char* RPG_WINDOW_CLASS_NAME = "RpgWindow";
 static RpgPointInt MousePrevPosition;
 
 
-static LRESULT CALLBACK uqWindowsGameApp_WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
@@ -93,6 +93,8 @@ static LRESULT CALLBACK uqWindowsGameApp_WndProc(HWND hwnd, UINT message, WPARAM
 			RpgPlatformMouseWheelEvent e{};
 			e.Position = RpgPointInt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 			e.ScrollValue.Y = GET_WHEEL_DELTA_WPARAM(wParam) / 120;
+
+			g_Engine->MouseWheel(e);
 
 			return 0;
 		}
@@ -290,7 +292,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	// TODO: Steam init
 
-	RpgThreadPool::Initialize();
+	RpgThreadPool::Initialize(1);
 
 	RpgD3D12::Initialize();
 	RpgShaderManager::Initialize();
@@ -322,8 +324,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 #endif // !RPG_BUILD_SHIPPING
 
 
+	// Initialize engine
 	g_Engine = new RpgEngine();
-
 
 	// main window
 	{
@@ -337,7 +339,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 		windowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 		windowClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-		windowClass.lpfnWndProc = uqWindowsGameApp_WndProc;
+		windowClass.lpfnWndProc = RpgMainWndProc;
 		windowClass.lpszMenuName = NULL;
 		windowClass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
 		RegisterClassExA(&windowClass);
@@ -382,8 +384,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		RpgPlatformProcess::SetMainWindowHandle(mainWindowHandle);
 	}
 
-
-	// Initialize engine
 	g_Engine->Initialize();
 
 
@@ -397,17 +397,17 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	Timer.Start();
 
 
-	float performanceFrequency = 0.0f;
-	{
-		LARGE_INTEGER li;
-		QueryPerformanceFrequency(&li);
-		performanceFrequency = static_cast<float>(li.QuadPart);
-	}
+	LARGE_INTEGER frequency;
+	QueryPerformanceFrequency(&frequency);
+
+	LARGE_INTEGER fpsFrameStart, fpsFrameEnd;
 	
 	MSG msg{};
 
 	while (bRunning)
 	{
+		QueryPerformanceCounter(&fpsFrameStart);
+
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
@@ -419,17 +419,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			}
 		}
 
+
 		if (!bRunning)
 		{
 			break;
-		}
-
-
-		uint64_t fpsTickStart = 0;
-		{
-			LARGE_INTEGER li;
-			QueryPerformanceCounter(&li);
-			fpsTickStart = li.QuadPart;
 		}
 
 
@@ -440,30 +433,26 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 		if (g_Engine->IsWindowMinimized())
 		{
-			Sleep(60);
+			Sleep(30);
 		}
-
-		/*
 		else if (fpsLimit > 0)
 		{
-			const float fpsTargetTimeMs = 1000.0f / fpsLimit;
+			const float targetFrameMs = 1000.0f / fpsLimit;
+			float remainingMs = 0.0f;
 
-			uint64_t fpsTickEnd = 0;
+			do
 			{
-				LARGE_INTEGER li;
-				QueryPerformanceCounter(&li);
-				fpsTickEnd = li.QuadPart;
-			}
+				QueryPerformanceCounter(&fpsFrameEnd);
+				const float durationMs = (fpsFrameEnd.QuadPart - fpsFrameStart.QuadPart) * 1000.0f / frequency.QuadPart;
+				remainingMs = targetFrameMs - durationMs;
 
-			const float fpsDurationMs = static_cast<float>(fpsTickEnd - fpsTickStart) * 1000.0f / performanceFrequency;
-
-			if (fpsDurationMs < fpsTargetTimeMs)
-			{
-				const uint32_t sleepTimeMs = static_cast<uint32_t>(fpsTargetTimeMs - fpsDurationMs);
-				Sleep(sleepTimeMs);
+				if (remainingMs > 10.0f)
+				{
+					Sleep(2);
+				}
 			}
+			while (remainingMs > 0.000333f);
 		}
-		*/
 
 		++FrameCounter;
 	}

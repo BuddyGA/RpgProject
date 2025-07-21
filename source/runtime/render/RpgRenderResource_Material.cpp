@@ -9,7 +9,7 @@ RpgMaterialResource::RpgMaterialResource() noexcept
 }
 
 
-void RpgMaterialResource::UpdateResources() noexcept
+void RpgMaterialResource::UpdateResources(int frameIndex) noexcept
 {
 	if (Materials.IsEmpty())
 	{
@@ -54,7 +54,7 @@ void RpgMaterialResource::UpdateResources() noexcept
 					sharedTexture->GPU_SetLoading();
 				}
 
-				td.Descriptor = RpgD3D12::AllocateDescriptor_TDI(sharedTexture->GPU_GetResource());
+				td.Descriptor = RpgD3D12::AllocateDescriptor_TDI(frameIndex, sharedTexture->GPU_GetResource());
 			}
 
 			RPG_Check(texIndex != RPG_INDEX_INVALID);
@@ -143,14 +143,6 @@ void RpgMaterialResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noexce
 void RpgMaterialResource::CommandBindShaderResources(ID3D12GraphicsCommandList* cmdList) const noexcept
 {
 	RPG_Check(!Materials.IsEmpty());
-
-	// Set root signature and global texture descriptor table (dynamic indexing)
-	cmdList->SetGraphicsRootSignature(RpgRenderPipeline::GetRootSignatureGraphics());
-
-	// Set descriptor table (texture dynamic indexing)
-	ID3D12DescriptorHeap* textureDescriptorHeap = RpgD3D12::GetDescriptorHeap_TDI();
-	cmdList->SetDescriptorHeaps(1, &textureDescriptorHeap);
-	cmdList->SetGraphicsRootDescriptorTable(RpgRenderPipeline::GRPI_TEXTURES, textureDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 	if (VectorScalarData.GetCount() > 0)
 	{

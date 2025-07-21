@@ -44,7 +44,7 @@ void RpgRenderTask_RenderPassShadow::CommandDraw(ID3D12GraphicsCommandList* cmdL
 	WorldResource->CommandBindShaderResources(cmdList);
 
 	ID3D12Resource* depthStencilResource = TextureDepth->GPU_GetResource();
-	const RpgD3D12::FResourceDescriptor depthStencilDescriptor = RpgD3D12::AllocateDescriptor_DSV(depthStencilResource);
+	const RpgD3D12::FResourceDescriptor depthStencilDescriptor = RpgD3D12::AllocateDescriptor_DSV(FrameContext.Index, depthStencilResource);
 
 	// Transition resource to depth-write
 	RpgD3D12Command::TransitionAllSubresources(cmdList, depthStencilResource, TextureDepth->GPU_GetState(), D3D12_RESOURCE_STATE_DEPTH_WRITE);

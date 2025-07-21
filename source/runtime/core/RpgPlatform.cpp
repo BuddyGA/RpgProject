@@ -456,7 +456,7 @@ void RpgPlatformProcess::Initialize() noexcept
 
 
 	MainThreadId = GetCurrentThreadId();
-	SetThreadAffinityMask(GetCurrentThread(), 0);
+	SetThreadAffinityMask(GetCurrentThread(), (DWORD_PTR)(1 << 0));
 
 	bInitialized = true;
 }
@@ -765,8 +765,6 @@ namespace RpgPlatformMouse
 
 
 	static HCURSOR DefaultCursors[CURSOR_MODE_MAX_COUNT];
-	static RpgPointInt RelativeModeCursorPosition;
-	static bool bIsRelativeMode;
 
 };
 
@@ -775,7 +773,7 @@ void RpgPlatformMouse::Capture(HWND windowHandle, bool bCapture) noexcept
 {
 	if (bCapture)
 	{
-		SetCapture(windowHandle);
+		SetCapture(windowHandle ? windowHandle : RpgPlatformProcess::GetMainWindowHandle());
 	}
 	else
 	{
@@ -803,7 +801,7 @@ void RpgPlatformMouse::SetCursorMode(ECursorMode mode) noexcept
 void RpgPlatformMouse::SetCursorPosition(HWND windowHandle, RpgPointInt position) noexcept
 {
 	POINT cursorPos{ position.X, position.Y };
-	ClientToScreen(windowHandle, &cursorPos);
+	ClientToScreen(windowHandle ? windowHandle : RpgPlatformProcess::GetMainWindowHandle(), &cursorPos);
 
 	SetCursorPos(cursorPos.x, cursorPos.y);
 }
@@ -843,26 +841,4 @@ void RpgPlatformMouse::SetDisableClipCursor() noexcept
 void RpgPlatformMouse::SetCursorHidden(bool bHidden) noexcept
 {
 	ShowCursor(!bHidden);
-}
-
-
-void RpgPlatformMouse::SetEnableRelativeMode(HWND windowHandle, bool bEnable) noexcept
-{
-	if (bIsRelativeMode == bEnable)
-	{
-		return;
-	}
-
-	bIsRelativeMode = bEnable;
-
-	if (bIsRelativeMode)
-	{
-		RpgPlatformMouse::Capture(windowHandle, true);
-		RpgPlatformMouse::SetCursorHidden(true);
-	}
-	else
-	{
-		RpgPlatformMouse::SetCursorHidden(false);
-		RpgPlatformMouse::Capture(windowHandle, false);
-	}
 }

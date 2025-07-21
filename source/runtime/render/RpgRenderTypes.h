@@ -6,7 +6,7 @@
 
 
 // Use dedicated render thread
-#define RPG_RENDER_MULTITHREADED		0
+#define RPG_RENDER_MULTITHREADED		1
 
 // All copy, compute, render execute in async task threadpool
 #define RPG_RENDER_ASYNC_TASK			1

@@ -1,4 +1,5 @@
 #include "RpgConsoleSystem.h"
+#include "RpgCommandLine.h"
 
 
 
