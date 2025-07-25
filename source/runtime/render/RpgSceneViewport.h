@@ -9,8 +9,7 @@ class RpgSceneViewport
 {
 public:
 	RpgPointInt RenderTargetDimension;
-	RpgArray<RpgSceneMesh> Meshes;
-	RpgArray<RpgSceneLight> Lights;
+	
 
 
 public:
@@ -81,6 +80,16 @@ public:
 		return FrameDatas[frameIndex].TextureDepthStencil;
 	}
 
+	inline RpgArray<RpgSceneMesh>& GetFrameMeshes(int frameIndex) noexcept
+	{
+		return FrameDatas[frameIndex].Meshes;
+	}
+
+	inline RpgArray<RpgSceneLight>& GetFrameLights(int frameIndex) noexcept
+	{
+		return FrameDatas[frameIndex].Lights;
+	}
+
 
 private:
 	RpgMatrixTransform ViewMatrix;
@@ -99,6 +108,9 @@ private:
 	{
 		RpgSharedTexture2D TextureRenderTarget;
 		RpgSharedTexture2D TextureDepthStencil;
+
+		RpgArray<RpgSceneMesh> Meshes;
+		RpgArray<RpgSceneLight> Lights;
 
 		RpgArray<RpgDrawIndexed> DrawOpaqueMeshes;
 		RpgArray<RpgDrawIndexed> DrawOpaqueSkinnedMeshes;

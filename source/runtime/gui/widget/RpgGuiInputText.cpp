@@ -16,6 +16,11 @@ RpgGuiInputText::RpgGuiInputText() noexcept
 	bCommitOnLostFocus = true;
 	bExitFocusOnEnter = true;
 
+	TextColor = RpgColorRGBA::WHITE;
+	HighlightColor = RpgColorRGBA(50, 100, 150);
+	DefaultBackgroundColor = RpgColorRGBA(10, 20, 30);
+	FocusedBackgroundColor = RpgColorRGBA(20, 40, 60);
+
 	State = STATE_NONE;
 	CursorIndex = RPG_INDEX_INVALID;
 	SelectedAnchorIndex = RPG_INDEX_INVALID;
@@ -242,16 +247,16 @@ void RpgGuiInputText::OnRender(const RpgGuiContext& context, RpgRenderer2D& rend
 	}
 
 
-	const RpgSharedFont& font = RpgFont::s_GetDefault_Roboto();
+	const RpgSharedFont& font = TextFont ? TextFont : RpgFont::s_GetDefault_Roboto();
 	const float pixelHeight = font->GetPixelHeight();
 
 
 	// Draw rect
-	RpgColorRGBA color = RpgColorRGBA(10, 20, 30);
+	RpgColorRGBA color = DefaultBackgroundColor;
 
 	if (IsFocused())
 	{
-		color = RpgColorRGBA(20, 30, 60);
+		color = FocusedBackgroundColor;
 		renderer.AddLineRect(AbsoluteRect, RpgColorRGBA::WHITE);
 	}
 
@@ -266,7 +271,7 @@ void RpgGuiInputText::OnRender(const RpgGuiContext& context, RpgRenderer2D& rend
 	{
 		textPos = RpgGui::CalculateTextAlignmentPosition(AbsoluteRect, textString, font, RpgGuiAlignHorizontal::LEFT, RpgGuiAlignVertical::CENTER);
 		textPos.X += 2.0f;
-		renderer.AddText(textString.GetData(), textString.GetLength(), textPos, RpgColorRGBA::WHITE);
+		renderer.AddText(textString.GetData(), textString.GetLength(), textPos, TextColor, font);
 	}
 	else
 	{
@@ -285,6 +290,6 @@ void RpgGuiInputText::OnRender(const RpgGuiContext& context, RpgRenderer2D& rend
 	if (SelectedCharCount > 0)
 	{
 		const RpgRectFloat selectRect = font->CalculateTextSelectionRect(textString.GetData(), textString.GetLength(), textPos, SelectedCharIndex, SelectedCharCount);
-		renderer.AddMeshRect(selectRect, RpgColorRGBA(100, 150, 250));
+		renderer.AddMeshRect(selectRect, HighlightColor);
 	}
 }

@@ -27,14 +27,37 @@ public:
 	}
 
 
-	inline void PushClipRect(RpgRectInt rect) noexcept
+	inline void PushOrder(uint8_t value) noexcept
 	{
-		const int parentClipIndex = CurrentClipIndex;
+		const int prevOrderIndex = CurrentOrderIndex;
 
 		FFrameData& frame = FrameDatas[FrameIndex];
-		CurrentClipIndex = frame.Clips.GetCount();
+		CurrentOrderIndex = frame.Orders.GetCount();
 
-		FClip& clip = frame.Clips.Add();
+		FOrder& order = frame.Orders.Add();
+		order.PrevOrderIndex = prevOrderIndex;
+	}
+
+	inline void PopOrder() noexcept
+	{
+		FFrameData& frame = FrameDatas[FrameIndex];
+		
+		FOrder& order = frame.Orders[CurrentOrderIndex];
+		RPG_Check(order.CurrentClipIndex == RPG_INDEX_INVALID);
+
+		CurrentOrderIndex = order.PrevOrderIndex;
+	}
+
+
+	inline void PushClipRect(RpgRectInt rect) noexcept
+	{
+		FFrameData& frame = FrameDatas[FrameIndex];
+		FOrder& order = frame.Orders[CurrentOrderIndex];
+
+		const int parentClipIndex = order.CurrentClipIndex;
+		order.CurrentClipIndex = order.Clips.GetCount();
+
+		FClip& clip = order.Clips.Add();
 		clip.Rect = rect;
 		clip.ParentClipIndex = parentClipIndex;
 	}
@@ -42,7 +65,8 @@ public:
 	inline void PopClipRect() noexcept
 	{
 		FFrameData& frame = FrameDatas[FrameIndex];
-		CurrentClipIndex = frame.Clips[CurrentClipIndex].ParentClipIndex;
+		FOrder& order = frame.Orders[CurrentOrderIndex];
+		order.CurrentClipIndex = order.Clips[order.CurrentClipIndex].ParentClipIndex;
 	}
 
 
@@ -85,13 +109,21 @@ private:
 	struct FClip
 	{
 		RpgRectInt Rect;
-		int ParentClipIndex{ RPG_INDEX_INVALID };
 		RpgArrayInline<FMesh, 64> Shapes;
 		RpgArrayInline<FMesh, 32> Texts;
+		int ParentClipIndex{ RPG_INDEX_INVALID };
 	};
 
-	int CurrentClipIndex;
 
+	struct FOrder
+	{
+		RpgArrayInline<FClip, 16> Clips;
+		int CurrentClipIndex{ RPG_INDEX_INVALID };
+		int PrevOrderIndex{ RPG_INDEX_INVALID };
+	};
+
+	int CurrentOrderIndex;
+	
 
 	struct FDrawBatch
 	{
@@ -133,6 +165,12 @@ private:
 	};
 
 
+	struct FDrawBatchOrder
+	{
+		RpgArrayInline<FDrawBatchClip, 8> Clips;
+	};
+
+
 	struct FDrawBatchLine
 	{
 		RpgMaterialResource::FMaterialID MaterialId{ RPG_INDEX_INVALID };
@@ -144,13 +182,13 @@ private:
 
 	struct FFrameData
 	{
-		RpgArray<FClip, 16> Clips;
+		RpgArray<FOrder> Orders;
 		RpgVertexMesh2DArray MeshVertices;
 		RpgVertexIndexArray MeshIndices;
 
 		RpgVertexMesh2DArray BatchMeshVertices;
 		RpgVertexIndexArray BatchMeshIndices;
-		RpgArray<FDrawBatchClip, 8> BatchDrawClipMeshes;
+		RpgArray<FDrawBatchOrder> BatchDrawOrders;
 
 		RpgVertexPrimitive2DArray LineVertices;
 		RpgVertexIndexArray LineIndices;

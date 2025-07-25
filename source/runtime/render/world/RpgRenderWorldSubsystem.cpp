@@ -18,24 +18,24 @@ RpgRenderWorldSubsystem::RpgRenderWorldSubsystem() noexcept
 }
 
 
-void RpgRenderWorldSubsystem::PostTickUpdate() noexcept
+void RpgRenderWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) noexcept
 {
-    RpgWorld* world = GetWorld();
+	RpgWorld* world = GetWorld();
 
-    for (auto it = world->Component_CreateIterator<RpgRenderComponent_Mesh>(); it; ++it)
-    {
-        RpgRenderComponent_Mesh& comp = it.GetValue();
+	for (auto it = world->Component_CreateIterator<RpgRenderComponent_Mesh>(); it; ++it)
+	{
+		RpgRenderComponent_Mesh& comp = it.GetValue();
 
-        if (!world->GameObject_IsTransformUpdated(comp.GameObject))
-        {
-            continue;
-        }
+		if (!world->GameObject_IsTransformUpdated(comp.GameObject))
+		{
+			continue;
+		}
 
-        comp.Bound = comp.Model ? comp.Model->GetBound() : RpgBoundingAABB(RpgVector3(-32.0f), RpgVector3(32.0f));
+		comp.Bound = comp.Model ? comp.Model->GetBound() : RpgBoundingAABB(RpgVector3(-32.0f), RpgVector3(32.0f));
 
-        // transform bound into world space
-        comp.Bound = RpgBoundingBox(comp.Bound, world->GameObject_GetWorldTransformMatrix(comp.GameObject)).ToAABB();
-    }
+		// transform bound into world space
+		comp.Bound = RpgBoundingBox(comp.Bound, world->GameObject_GetWorldTransformMatrix(comp.GameObject)).ToAABB();
+	}
 
 
 	for (auto it = world->Component_CreateIterator<RpgRenderComponent_Light>(); it; ++it)
@@ -115,27 +115,14 @@ void RpgRenderWorldSubsystem::PostTickUpdate() noexcept
 		RpgRenderTask_CaptureMesh taskCaptureMesh;
 		taskCaptureMesh.World = world;
 		taskCaptureMesh.Camera = &comp;
+		taskCaptureMesh.FrameIndex = frameIndex;
 		taskCaptureMesh.Execute();
 
 		RpgRenderTask_CaptureLight taskCaptureLight;
 		taskCaptureLight.World = world;
 		taskCaptureLight.Camera = &comp;
+		taskCaptureLight.FrameIndex = frameIndex;
 		taskCaptureLight.Execute();
-	}
-}
-
-
-void RpgRenderWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) noexcept
-{
-	RpgWorld* world = GetWorld();
-
-	for (auto it = world->Component_CreateIterator<RpgRenderComponent_Camera>(); it; ++it)
-	{
-		RpgRenderComponent_Camera& comp = it.GetValue();
-		if (!comp.bActivated)
-		{
-			continue;
-		}
 
 		renderer->AddWorldSceneViewport(frameIndex, world, comp.GetSceneViewport());
 	}

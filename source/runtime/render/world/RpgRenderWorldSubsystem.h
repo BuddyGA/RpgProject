@@ -10,7 +10,6 @@ public:
 	RpgRenderWorldSubsystem() noexcept;
 
 protected:
-	virtual void PostTickUpdate() noexcept override;
 	virtual void Render(int frameIndex, RpgRenderer* renderer) noexcept override;
 
 

@@ -23,7 +23,7 @@ RpgGuiLayout::RpgGuiLayout(const RpgName& in_Name, RpgPointFloat in_Dimension, E
 }
 
 
-RpgRectFloat RpgGuiLayout::UpdateRect(const RpgGuiContext& context, const RpgPointFloat& offset) noexcept
+RpgRectFloat RpgGuiLayout::UpdateRect(const RpgGuiContext& context, const RpgGuiCanvas& canvas, const RpgPointFloat& offset) noexcept
 {
 	AbsoluteRect = CalculateAbsoluteRect(offset);
 
@@ -40,7 +40,7 @@ RpgRectFloat RpgGuiLayout::UpdateRect(const RpgGuiContext& context, const RpgPoi
 		{
 			for (int c = 0; c < Children.GetCount(); ++c)
 			{
-				const RpgRect childRect = Children[c]->UpdateRect(context, childOffset);
+				const RpgRect childRect = Children[c]->UpdateRect(context, canvas, childOffset);
 				ContentRect.Right = RpgMath::Max(ContentRect.Right, childRect.Right);
 				ContentRect.Bottom = RpgMath::Max(ContentRect.Bottom, childRect.Bottom);
 			}
@@ -49,7 +49,7 @@ RpgRectFloat RpgGuiLayout::UpdateRect(const RpgGuiContext& context, const RpgPoi
 		{
 			for (int c = 0; c < Children.GetCount(); ++c)
 			{
-				const RpgRect childRect = Children[c]->UpdateRect(context, RpgPointFloat(ContentRect.Right, ContentRect.Top));
+				const RpgRect childRect = Children[c]->UpdateRect(context, canvas, RpgPointFloat(ContentRect.Right, ContentRect.Top));
 				ContentRect.Right += childRect.GetDimension().X + ChildSpace.X;
 				ContentRect.Bottom = RpgMath::Max(ContentRect.Bottom, childRect.Bottom);
 			}
@@ -64,7 +64,7 @@ RpgRectFloat RpgGuiLayout::UpdateRect(const RpgGuiContext& context, const RpgPoi
 		{
 			for (int c = 0; c < Children.GetCount(); ++c)
 			{
-				const RpgRect childRect = Children[c]->UpdateRect(context, RpgPointFloat(ContentRect.Left, ContentRect.Bottom));
+				const RpgRect childRect = Children[c]->UpdateRect(context, canvas, RpgPointFloat(ContentRect.Left, ContentRect.Bottom));
 				ContentRect.Right = RpgMath::Max(ContentRect.Right, childRect.Right);
 				ContentRect.Bottom += childRect.GetDimension().Y + ChildSpace.Y;
 			}

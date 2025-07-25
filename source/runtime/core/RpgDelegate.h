@@ -92,7 +92,7 @@ public:
 		}
 
 		RpgFunction<TArgs...>* callback = new RpgObjectFunction<T, TArgs...>(obj, function);
-		ObjectFunctionInvokeList.Add(callback);
+		ObjectFunctionInvokeList.AddValue(callback);
 	}
 
 

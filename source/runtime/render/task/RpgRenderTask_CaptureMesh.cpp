@@ -8,6 +8,7 @@ RpgRenderTask_CaptureMesh::RpgRenderTask_CaptureMesh() noexcept
 {
 	World = nullptr;
 	Camera = nullptr;
+	FrameIndex = 0;
 }
 
 
@@ -17,6 +18,7 @@ void RpgRenderTask_CaptureMesh::Reset() noexcept
 
 	World = nullptr;
 	Camera = nullptr;
+	FrameIndex = 0;
 }
 
 
@@ -28,7 +30,9 @@ void RpgRenderTask_CaptureMesh::Execute() noexcept
 	const bool bFrustumCulling = Camera->bFrustumCulling;
 	RpgSceneViewport* viewport = Camera->GetSceneViewport();
 	const RpgBoundingFrustum frustum = viewport->GetViewFrustum();
-	viewport->Meshes.Clear();
+
+	RpgArray<RpgSceneMesh>& sceneMeshes = viewport->GetFrameMeshes(FrameIndex);
+	sceneMeshes.Clear();
 
 	for (auto it = World->Component_CreateConstIterator<RpgRenderComponent_Mesh>(); it; ++it)
 	{
@@ -46,7 +50,7 @@ void RpgRenderTask_CaptureMesh::Execute() noexcept
 
 		for (int m = 0; m < comp.Model->GetMeshCount(); ++m)
 		{
-			RpgSceneMesh& data = viewport->Meshes.Add();
+			RpgSceneMesh& data = sceneMeshes.Add();
 			data.GameObject = comp.GameObject;
 			data.WorldTransformMatrix = worldTransformMatrix;
 			data.Material = comp.Model->GetMaterial(m);

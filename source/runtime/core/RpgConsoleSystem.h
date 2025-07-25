@@ -36,7 +36,6 @@ public:
 	{
 		char message[RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT];
 		RpgPlatformMemory::MemZero(message, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT);
-
 		snprintf(message, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT, format, std::forward<TVarArgs>(args)...);
 
 		AddLogMessage(message, color);

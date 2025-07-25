@@ -651,7 +651,7 @@ private:
 template<typename T, int CAPACITY = 2>
 class RpgArrayInline
 {
-	static_assert(std::is_trivially_copyable<T>::value, "RpgArrayInline type of <T> must be POD!");
+	//static_assert(std::is_trivially_copyable<T>::value, "RpgArrayInline type of <T> must be POD!");
 	static_assert(CAPACITY >= 2, "RpgArrayInline CAPACITY must be greater than or equals 2!");
 
 public:

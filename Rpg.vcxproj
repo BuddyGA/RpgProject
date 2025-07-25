@@ -208,6 +208,7 @@ copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(
     <ClCompile Include="source\runtime\animation\task\RpgAnimationTask_TickPose.cpp" />
     <ClCompile Include="source\runtime\animation\RpgAnimationPose.cpp" />
     <ClCompile Include="source\runtime\animation\world\RpgAnimationWorldSubsystem.cpp" />
+    <ClCompile Include="source\runtime\gui\RpgGuiCanvas.cpp" />
     <ClCompile Include="source\runtime\render\RpgRenderThread.cpp" />
     <ClCompile Include="source\runtime\engine\script\RpgScript_Gameplay.cpp" />
     <ClCompile Include="source\runtime\gui\RpgGuiConsole.cpp" />

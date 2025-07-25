@@ -71,12 +71,15 @@ public:
 	// Dimension X (width) and Y (height)
 	RpgPointFloat Dimension;
 
+	uint8_t Order;
+
 
 public:
 	RpgGuiWidget() noexcept;
 	virtual ~RpgGuiWidget() noexcept = default;
 
-	virtual RpgRectFloat UpdateRect(const RpgGuiContext& context, const RpgPointFloat& offset) noexcept;
+	virtual void Initialize() noexcept {}
+	virtual RpgRectFloat UpdateRect(const RpgGuiContext& context, const RpgGuiCanvas& canvas, const RpgPointFloat& offset) noexcept;
 	void UpdateState(RpgGuiContext& context) noexcept;
 	void Render(const RpgGuiContext& context, RpgRenderer2D& renderer, const RpgRectFloat& parentClipRect) const noexcept;
 
@@ -95,12 +98,20 @@ public:
 		const int index = Children.GetCount();
 		Children.AddValue(RpgPointer::MakeUnique<TWidget>(std::forward<TConstructorArgs>(args)...));
 		
-		return static_cast<TWidget*>(Children[index].Get());
+		TWidget* child = static_cast<TWidget*>(Children[index].Get());
+		child->Initialize();
+
+		return child;
 	}
 
 	inline void SetVisibility(bool bVisible) noexcept
 	{
 		RpgType::BitSetCondition<uint16_t>(Flags, RpgGui::FLAG_State_Invisible, !bVisible);
+	}
+
+	inline bool IsVisible() const noexcept
+	{
+		return !(Flags & RpgGui::FLAG_State_Invisible);
 	}
 
 	inline bool IsLayout() const noexcept
@@ -162,6 +173,9 @@ protected:
 	RpgArray<RpgUniquePtr<RpgGuiWidget>> Children;
 	uint16_t Flags;
 
+
+	friend RpgGuiContext;
+
 };
 
 
@@ -175,6 +189,7 @@ public:
 
 public:
 	RpgGuiCanvas() noexcept = default;
+	void Update(RpgGuiContext& context, RpgRectFloat rect) noexcept;
 
 
 	template<typename TWidget, typename...TConstructorArgs>
@@ -184,23 +199,14 @@ public:
 	}
 
 
-	inline void Update(RpgGuiContext& context, RpgRectFloat rect) noexcept
-	{
-		if (!Name.IsEmpty())
-		{
-			RootWidget.Name = RpgName::Format("%s_root_widget", *Name);
-		}
-
-		RootWidget.Position = rect.GetPosition();
-		RootWidget.Dimension = rect.GetDimension();
-		RootWidget.UpdateState(context);
-		RootWidget.UpdateRect(context, RpgPointFloat());
-	}
-
-
 	inline void Render(const RpgGuiContext& context, RpgRenderer2D& renderer) noexcept
 	{
 		RootWidget.Render(context, renderer, RootWidget.GetAbsoluteRect());
+	}
+
+	inline RpgRectFloat GetRect() const noexcept
+	{
+		return RootWidget.GetAbsoluteRect();
 	}
 
 
@@ -260,6 +266,30 @@ public:
 	inline bool IsKeyButtonUp(RpgInputKey::EButton button) const noexcept
 	{
 		return KeyButtonUp[button];
+	}
+
+	inline void SetHoveredLayout(RpgGuiWidget* layout) noexcept
+	{
+		RPG_Check(layout);
+
+		if (PrevHoveredLayout == nullptr)
+		{
+			PrevHoveredLayout = layout;
+		}
+		else if (PrevHoveredLayout->Order <= layout->Order)
+		{
+			PrevHoveredLayout = layout;
+		}
+	}
+
+	inline void SetFocusWidget(RpgGuiWidget* widget) noexcept
+	{
+		if (CurrentFocused != widget && widget->HasInputFocus())
+		{
+			widget->Flags |= RpgGui::FLAG_State_Focused;
+			widget->OnFocusedEnter(*this);
+			CurrentFocused = widget;
+		}
 	}
 
 

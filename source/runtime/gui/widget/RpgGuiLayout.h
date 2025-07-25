@@ -27,7 +27,7 @@ public:
 	RpgGuiLayout() noexcept;
 	RpgGuiLayout(const RpgName& in_Name, RpgPointFloat in_Dimension, EDirection in_Direction) noexcept;
 
-	virtual RpgRectFloat UpdateRect(const RpgGuiContext& context, const RpgPointFloat& offset) noexcept override;
+	virtual RpgRectFloat UpdateRect(const RpgGuiContext& context, const RpgGuiCanvas& canvas, const RpgPointFloat& offset) noexcept override;
 
 	inline void SetScrollValue(float x, float y) noexcept;
 

@@ -71,9 +71,9 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 
 	RpgArray<RpgMatrixTransform> tempBoneSkinningTransforms;
 
-	for (int m = 0; m < Meshes.GetCount(); ++m)
+	for (int m = 0; m < frame.Meshes.GetCount(); ++m)
 	{
-		const RpgSceneMesh& data = Meshes[m];
+		const RpgSceneMesh& data = frame.Meshes[m];
 
 		const bool bHasSkin = data.Mesh->HasSkin();
 		bool bIsStaticMesh = true;
@@ -131,9 +131,9 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 	}
 
 
-	for (int l = 0; l < Lights.GetCount(); ++l)
+	for (int l = 0; l < frame.Lights.GetCount(); ++l)
 	{
-		const RpgSceneLight& data = Lights[l];
+		const RpgSceneLight& data = frame.Lights[l];
 		RpgWorldResource::FLightID lightId = RPG_INDEX_INVALID;
 
 		if (data.Type == RpgRenderLight::TYPE_POINT_LIGHT)
@@ -171,11 +171,11 @@ void RpgSceneViewport::SetupRenderPasses(const RpgRenderFrameContext& frameConte
 	FFrameData& frame = FrameDatas[frameContext.Index];
 
 	// shadow pass
-	for (int i = 0; i < Lights.GetCount(); ++i)
+	for (int i = 0; i < frame.Lights.GetCount(); ++i)
 	{
-		if (Lights[i].ShadowViewport)
+		if (frame.Lights[i].ShadowViewport)
 		{
-			Lights[i].ShadowViewport->SetupRenderPasses(frameContext, worldResource, world, out_ShadowPasses);
+			frame.Lights[i].ShadowViewport->SetupRenderPasses(frameContext, worldResource, world, out_ShadowPasses);
 		}
 	}
 

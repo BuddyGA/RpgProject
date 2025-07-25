@@ -267,6 +267,9 @@
     <ClCompile Include="source\runtime\render\RpgRenderThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\runtime\gui\RpgGuiCanvas.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\runtime\core\dsa\RpgAlgorithm.h">

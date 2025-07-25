@@ -64,7 +64,7 @@ namespace RpgThreadPool
 	static bool bInitialized;
 
 
-	static DWORD RpgThreadWorker_Main(_In_ LPVOID lpParameter)
+	static DWORD ThreadWorker_Main(_In_ LPVOID lpParameter)
 	{
 		RpgThreadPool::FThreadWorker* worker = reinterpret_cast<RpgThreadPool::FThreadWorker*>(lpParameter);
 
@@ -133,7 +133,7 @@ void RpgThreadPool::Initialize(int numOtherDedicatedThreads) noexcept
 		FThreadWorker& worker = ThreadWorkers[i];
 		snprintf(worker.Name, 32, "Thread-Worker-%i", i);
 		worker.IsRunning = 1;
-		worker.Handle = CreateThread(NULL, 0, RpgThreadWorker_Main, &worker, CREATE_SUSPENDED, NULL);
+		worker.Handle = CreateThread(NULL, 0, ThreadWorker_Main, &worker, CREATE_SUSPENDED, NULL);
 	}
 
 	for (int i = 0; i < numThreadWorkers; ++i)

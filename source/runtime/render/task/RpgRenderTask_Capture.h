@@ -13,6 +13,7 @@ class RpgRenderTask_CaptureMesh : public RpgThreadTask
 public:
 	RpgWorld* World;
 	RpgRenderComponent_Camera* Camera;
+	int FrameIndex;
 
 
 public:
@@ -35,6 +36,7 @@ class RpgRenderTask_CaptureLight : public RpgThreadTask
 public:
 	RpgWorld* World;
 	RpgRenderComponent_Camera* Camera;
+	int FrameIndex;
 
 
 public:

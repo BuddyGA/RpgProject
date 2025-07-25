@@ -1,6 +1,7 @@
 #include "RpgGuiTypes.h"
 #include "input/RpgInputManager.h"
 #include "render/RpgRenderer2D.h"
+#include <algorithm>
 
 
 RPG_LOG_DEFINE_CATEGORY(RpgLogGui, VERBOSITY_DEBUG)
@@ -38,16 +39,22 @@ RpgPointFloat RpgGui::CalculateTextAlignmentPosition(const RpgRectFloat& rect, c
 RpgGuiWidget::RpgGuiWidget() noexcept
 {
 	Flags = RpgGui::FLAG_None;
+	Order = 0;
 }
 
 
-RpgRectFloat RpgGuiWidget::UpdateRect(const RpgGuiContext& context, const RpgPointFloat& offset) noexcept
+RpgRectFloat RpgGuiWidget::UpdateRect(const RpgGuiContext& context, const RpgGuiCanvas& canvas, const RpgPointFloat& offset) noexcept
 {
+	if (!IsVisible())
+	{
+		return RpgRectFloat();
+	}
+
 	AbsoluteRect = CalculateAbsoluteRect(offset);
 
 	for (int c = 0; c < Children.GetCount(); ++c)
 	{
-		Children[c]->UpdateRect(context, AbsoluteRect.GetPosition());
+		Children[c]->UpdateRect(context, canvas, AbsoluteRect.GetPosition());
 	}
 
 	return AbsoluteRect;
@@ -56,6 +63,11 @@ RpgRectFloat RpgGuiWidget::UpdateRect(const RpgGuiContext& context, const RpgPoi
 
 void RpgGuiWidget::UpdateState(RpgGuiContext& context) noexcept
 {
+	if (!IsVisible())
+	{
+		return;
+	}
+
 	OnUpdate(context);
 
 	const bool bMouseLeftPressed = context.IsKeyButtonDown(RpgInputKey::MOUSE_LEFT);
@@ -90,6 +102,11 @@ void RpgGuiWidget::UpdateState(RpgGuiContext& context) noexcept
 		RPG_LogDebug(RpgLogGui, "%s focused (exit)", *Name);
 		Flags &= ~RpgGui::FLAG_State_Focused;
 		OnFocusedExit(context);
+
+		if (context.CurrentFocused == this)
+		{
+			context.CurrentFocused = nullptr;
+		}
 	}
 
 	// Check if cursor intersect with rect
@@ -114,7 +131,8 @@ void RpgGuiWidget::UpdateState(RpgGuiContext& context) noexcept
 
 	if (bIsLayout)
 	{
-		context.PrevHoveredLayout = this;
+		context.SetHoveredLayout(this);
+		//context.PrevHoveredLayout = this;
 	}
 	else
 	{
@@ -181,9 +199,26 @@ void RpgGuiWidget::UpdateState(RpgGuiContext& context) noexcept
 
 void RpgGuiWidget::Render(const RpgGuiContext& context, RpgRenderer2D& renderer, const RpgRectFloat& parentClipRect) const noexcept
 {
-	OnRender(context, renderer, parentClipRect);
+	if (!IsVisible())
+	{
+		return;
+	}
+
+	if (!parentClipRect.IsRectIntersect(AbsoluteRect))
+	{
+		return;
+	}
 
 	const bool bHasClipRect = IsLayout();
+
+	if (bHasClipRect && Order != 0)
+	{
+		renderer.PushOrder(Order);
+		renderer.PushClipRect(RpgRectInt(parentClipRect));
+	}
+
+	OnRender(context, renderer, parentClipRect);
+
 	RpgRectFloat clipRect = parentClipRect;
 
 	if (bHasClipRect)
@@ -203,5 +238,11 @@ void RpgGuiWidget::Render(const RpgGuiContext& context, RpgRenderer2D& renderer,
 	if (bHasClipRect)
 	{
 		renderer.PopClipRect();
+	}
+
+	if (bHasClipRect && Order != 0)
+	{
+		renderer.PopClipRect();
+		renderer.PopOrder();
 	}
 }

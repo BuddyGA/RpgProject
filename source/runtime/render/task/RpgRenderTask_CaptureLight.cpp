@@ -8,6 +8,7 @@ RpgRenderTask_CaptureLight::RpgRenderTask_CaptureLight() noexcept
 {
 	World = nullptr;
 	Camera = nullptr;
+	FrameIndex = 0;
 }
 
 
@@ -17,6 +18,7 @@ void RpgRenderTask_CaptureLight::Reset() noexcept
 
 	World = nullptr;
 	Camera = nullptr;
+	FrameIndex = 0;
 }
 
 
@@ -28,7 +30,9 @@ void RpgRenderTask_CaptureLight::Execute() noexcept
 	const bool bFrustumCulling = Camera->bFrustumCulling;
 	RpgSceneViewport* viewport = Camera->GetSceneViewport();
 	const RpgBoundingFrustum frustum = viewport->GetViewFrustum();
-	viewport->Lights.Clear();
+	
+	RpgArray<RpgSceneLight>& sceneLights = viewport->GetFrameLights(FrameIndex);
+	sceneLights.Clear();
 
 	for (auto it = World->Component_CreateIterator<RpgRenderComponent_Light>(); it; ++it)
 	{
@@ -38,7 +42,7 @@ void RpgRenderTask_CaptureLight::Execute() noexcept
 			continue;
 		}
 
-		RpgSceneLight& data = viewport->Lights.Add();
+		RpgSceneLight& data = sceneLights.Add();
 		data.GameObject = comp.GameObject;
 		data.WorldTransform = World->GameObject_GetWorldTransform(comp.GameObject);
 		data.Type = comp.Type;

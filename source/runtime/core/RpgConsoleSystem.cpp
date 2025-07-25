@@ -43,7 +43,7 @@ void RpgConsoleSystem::AddLogMessage(const char* message, RpgColorRGBA color) no
 	info.Color = color;
 
 	LogBuffer.InsertAtRange(message, length, RPG_INDEX_LAST);
-	LogBuffer[info.BufferIndex + info.BufferCount] = '\0';
+	LogBuffer.AddValue('\0');
 }
 
 
@@ -160,11 +160,11 @@ void RpgConsoleSystem::ExecuteCommand(const char* commandArgs) noexcept
 
 	if (RegisteredCommands.FindIndexByValue(name) == RPG_INDEX_INVALID)
 	{
-		AddLogMessageFormat(RpgColorRGBA::YELLOW, "Unrecognized command: %s", *name);
+		AddLogMessageFormat(RpgColorRGBA::YELLOW, "Invalid command: %s", *name);
 	}
 	else
 	{
-		AddLogMessageFormat(RpgColorRGBA::WHITE, "Command: %s", *commandArgs);
+		AddLogMessageFormat(RpgColorRGBA::WHITE, "Command: %s", commandArgs);
 		RegisteredListeners.Broadcast(name, params);
 	}
 }

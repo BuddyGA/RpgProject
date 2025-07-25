@@ -23,13 +23,24 @@ public:
 	bool bCommitOnValueChanged;
 	bool bCommitOnLostFocus;
 	bool bExitFocusOnEnter;
-
+	RpgSharedFont TextFont;
+	RpgColorRGBA TextColor;
+	RpgColorRGBA HighlightColor;
+	RpgColorRGBA DefaultBackgroundColor;
+	RpgColorRGBA FocusedBackgroundColor;
 	RpgString Value;
 
 
 public:
 	RpgGuiInputText() noexcept;
 	RpgGuiInputText(const RpgName& in_Name, RpgPointFloat in_Dimension) noexcept;
+
+
+	inline void ClearValue() noexcept
+	{
+		Value.Clear();
+		TempValue.Clear();
+	}
 
 
 protected:

@@ -23,6 +23,8 @@ RpgEngine::RpgEngine() noexcept
 {
 	WindowState = RpgPlatformWindowSizeState::DEFAULT;
 
+	GuiConsole = nullptr;
+
 	// fps info
 	FpsLimit = 60;
 	FpsSampleTimer = 0.0f;
@@ -72,6 +74,8 @@ void RpgEngine::Initialize() noexcept
 	GuiCanvas = RpgPointer::MakeUnique<RpgGuiCanvas>();
 	GuiCanvas->Name = "EngineCanvas";
 
+	GuiConsole = GuiCanvas->AddChild<RpgGuiConsole>();
+	GuiConsole->SetVisibility(false);
 
 	CreateTestLevel();
 	
@@ -117,7 +121,11 @@ void RpgEngine::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 
 	if (e.bIsDown)
 	{
-		if (e.Button == RpgInputKey::KEYBOARD_PLUS)
+		if (e.Button == RpgInputKey::KEYBOARD_TILDE)
+		{
+			GuiConsole->Toggle();
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_PLUS)
 		{
 			MainRenderer->Gamma += 0.01f;
 		}
@@ -157,6 +165,12 @@ void RpgEngine::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 
 void RpgEngine::CharInput(char c) noexcept
 {
+	// Ignore toggle console
+	if (c == '`')
+	{
+		return;
+	}
+
 	GuiContext.CharInput(c);
 }
 

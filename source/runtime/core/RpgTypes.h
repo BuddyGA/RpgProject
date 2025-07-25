@@ -401,6 +401,17 @@ public:
 	}
 
 
+	inline RpgRectFloat GetInnerRect() const noexcept
+	{
+		return RpgRectFloat(
+			BorderRects[RpgRectBorders::LEFT].Right,
+			BorderRects[RpgRectBorders::TOP].Bottom,
+			BorderRects[RpgRectBorders::RIGHT].Left,
+			BorderRects[RpgRectBorders::BOTTOM].Top
+		);
+	}
+
+
 	inline EBorder TestIntersectBorder(const RpgPointFloat& p) const noexcept
 	{
 		for (int i = 1; i < MAX_COUNT; ++i)
