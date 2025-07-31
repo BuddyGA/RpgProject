@@ -113,7 +113,7 @@ private:
 // --------------------------------------------------------------------------------------------------------------------------------------------- //
 public:
 	template<typename TWorldSubsystem>
-	inline void Subsystem_Add(uint8_t updatePriority = 0) noexcept
+	inline void Subsystem_Register(uint8_t updatePriority = 0) noexcept
 	{
 		static_assert(std::is_base_of<RpgWorldSubsystem, TWorldSubsystem>::value, "RpgWorld: Add subsystem type of <TWorldSubsystem> must be derived from type <RpgWorldSubsystem>!");
 		

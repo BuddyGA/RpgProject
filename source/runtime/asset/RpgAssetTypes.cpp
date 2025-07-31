@@ -1,4 +1,7 @@
-#include "RpgAssetFile.h"
+#include "RpgAssetTypes.h"
+
+
+RPG_LOG_DEFINE_CATEGORY(RpgLogAsset, VERBOSITY_DEBUG)
 
 
 

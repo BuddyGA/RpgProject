@@ -164,7 +164,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 		{
 			RpgPlatformMouseButtonEvent e{};
 			e.Position = RpgPointInt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-			e.Button = static_cast<uint8_t>(RpgInputKey::MOUSE_MIDDLE);
+			e.Button = RpgInputKey::MOUSE_MIDDLE;
 			e.bIsDoubleClick = true;
 
 			g_Engine->MouseButton(e);
@@ -201,7 +201,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 		{
 			RpgPlatformMouseButtonEvent e{};
 			e.Position = RpgPointInt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-			e.Button = static_cast<uint8_t>(RpgInputKey::MOUSE_RIGHT);
+			e.Button = RpgInputKey::MOUSE_RIGHT;
 			e.bIsDoubleClick = true;
 
 			g_Engine->MouseButton(e);
@@ -214,7 +214,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 		case WM_SYSKEYDOWN:
 		{
 			RpgPlatformKeyboardEvent e{};
-			e.Button = RpgInputWindows::MapWindowsInputToKeyButton(wParam, lParam);
+			e.Button = RpgInputWindows::MapToKeyButton(wParam, lParam);
 			e.bIsDown = true;
 
 			g_Engine->KeyboardButton(e);
@@ -227,7 +227,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 		case WM_SYSKEYUP:
 		{
 			RpgPlatformKeyboardEvent e{};
-			e.Button = RpgInputWindows::MapWindowsInputToKeyButton(wParam, lParam);
+			e.Button = RpgInputWindows::MapToKeyButton(wParam, lParam);
 			e.bIsDown = false;
 
 			g_Engine->KeyboardButton(e);

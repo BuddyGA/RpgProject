@@ -59,11 +59,6 @@ public:
 		return MeshCount;
 	}
 
-	inline bool HasSkin() const noexcept
-	{
-		return Meshes[0][0]->HasSkin();
-	}
-
 	inline RpgBoundingAABB GetBound() const noexcept
 	{
 		return Bound;

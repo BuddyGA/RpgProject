@@ -134,6 +134,7 @@ static void TestLevel_OBJ(RpgWorld* world, const RpgFilePath& sourceFilePath, fl
 		meshComp->Model = model;
 		meshComp->bIsVisible = true;
 
+		/*
 		if (model->HasSkin())
 		{
 			RPG_Check(importedSkeleton);
@@ -143,6 +144,7 @@ static void TestLevel_OBJ(RpgWorld* world, const RpgFilePath& sourceFilePath, fl
 			animComp->PlayRate = 1.0f;
 			animComp->bLoopAnim = true;
 		}
+		*/
 	}
 
 	g_AssetImporter->Reset();

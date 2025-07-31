@@ -11,4 +11,4 @@ namespace RpgRenderThread
 	extern void WaitFrame(int frameIndex) noexcept;
 	extern void ExecuteFrame(int frameIndex, float deltaTime, RpgRenderer* renderer) noexcept;
 
-};
+}; // RpgRenderThread

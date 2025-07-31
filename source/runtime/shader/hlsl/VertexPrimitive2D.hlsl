@@ -1,9 +1,7 @@
 #include "Common.hlsli"
 
 
-// =============================================================================================== //
-// VERTEX SHADER
-// =============================================================================================== //
+
 struct VertexShaderInput
 {
     float2 Position : POSITION;
@@ -27,17 +25,4 @@ VertexShaderOutput VS_Main(VertexShaderInput input)
     output.Color = input.Color;
     
     return output;
-}
-
-
-
-// =============================================================================================== //
-// PIXEL SHADER
-// =============================================================================================== //
-typedef VertexShaderOutput PixelShaderInput;
-
-
-float4 PS_Main(PixelShaderInput input) : SV_TARGET
-{
-    return input.Color;
 }

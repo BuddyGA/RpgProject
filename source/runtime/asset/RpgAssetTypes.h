@@ -1,7 +1,11 @@
 #pragma once
 
-#include "RpgFilePath.h"
+#include "core/RpgStream.h"
+#include "core/RpgFilePath.h"
 
+
+// Asset file extension
+#define RPG_ASSET_FILE_EXT						".rpga"
 
 // Magic number for asset file header
 #define RPG_ASSET_FILE_MAGIX					0x41475052 // (RPGA)
@@ -28,6 +32,8 @@
 #define RPG_ASSET_FILE_VERSION_AUDIO			1
 
 
+RPG_LOG_DECLARE_CATEGORY_EXTERN(RpgLogAsset)
+
 
 
 enum class RpgAssetFileType : uint16_t
@@ -38,11 +44,26 @@ enum class RpgAssetFileType : uint16_t
 	TEXTURE,
 	FONT,
 	MATERIAL,
-	SKELETON,
+	ANIM_SKELETON,
 	ANIM_CLIP,
 	AUDIO,
+	ACTOR_PREFAB,
 
 	MAX_COUNT
+};
+
+
+constexpr const char* RPG_ASSET_FILE_TYPE_NAMES[static_cast<uint16_t>(RpgAssetFileType::MAX_COUNT)] =
+{
+	"None",
+	"Model",
+	"Texture",
+	"Font",
+	"Material",
+	"Anim Skeleton",
+	"Anim Clip",
+	"Audio",
+	"Actor Prefab"
 };
 
 
@@ -54,7 +75,15 @@ struct RpgAssetFileHeader
 	uint16_t Type{ 0 };
 	uint16_t Version{ 0 };
 };
+static_assert(std::is_trivially_copyable<RpgAssetFileHeader>::value, "RpgAssetFileHeader must be POD!");
 
+
+
+struct RpgAssetInfo
+{
+	RpgFilePath FilePath;
+	RpgAssetFileType Type;
+};
 
 
 

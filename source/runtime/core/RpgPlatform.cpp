@@ -517,6 +517,9 @@ bool RpgPlatformProcess::IsMainThread() noexcept
 // ========================================================================================================================= //
 // PLATFORM - FILE
 // ========================================================================================================================= //
+#include <ShlObj.h>
+
+
 bool RpgPlatformFile::FolderExists(const char* folderPath) noexcept
 {
 	const int len = RpgPlatformString::CStringLength(folderPath);
@@ -532,19 +535,9 @@ bool RpgPlatformFile::FolderExists(const char* folderPath) noexcept
 
 bool RpgPlatformFile::FolderCreate(const char* folderPath) noexcept
 {
-	const int len = RpgPlatformString::CStringLength(folderPath);
-	if (len == 0)
-	{
-		return false;
-	}
-
-	if (FolderExists(folderPath))
-	{
-		return true;
-	}
-
-	const int error = CreateDirectory(folderPath, NULL);
-	return error != 0 || GetLastError() == ERROR_ALREADY_EXISTS;
+	const int ret = SHCreateDirectoryExA(NULL, folderPath, NULL);
+	
+	return (ret == ERROR_SUCCESS || ret == ERROR_FILE_EXISTS || ret == ERROR_ALREADY_EXISTS);
 }
 
 

@@ -314,3 +314,108 @@ const RpgString& RpgFileSystem::GetAssetRawDirPath() noexcept
 {
 	return AssetRawDirPath;
 }
+
+
+void RpgFileSystem::IterateFolders(RpgArray<RpgFilePath>& out_FolderPaths, const RpgString& folderPath, bool bIncludeSubfolder) noexcept
+{
+	const RpgString searchPath = RpgString::Format("%s*", *folderPath);
+
+	WIN32_FIND_DATA fileData{};
+	HANDLE fileHandle = FindFirstFileA(*searchPath, &fileData);
+
+	do
+	{
+		// Ignore '.' and '..'
+		if (fileData.cFileName[0] == '.' || (fileData.cFileName[0] == '.' && fileData.cFileName[1] == '.'))
+		{
+			continue;
+		}
+
+		if (fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			const RpgString subfolderPath = RpgString::Format("%s%s/", *folderPath, fileData.cFileName);
+			//RPG_Log(RpgLogSystem, "%s", *subfolderPath);
+			out_FolderPaths.AddValue(subfolderPath);
+
+			IterateFolders(out_FolderPaths, subfolderPath, bIncludeSubfolder);
+		}
+	}
+	while (FindNextFileA(fileHandle, &fileData));
+
+	FindClose(fileHandle);
+}
+
+
+void RpgFileSystem::IterateFiles(RpgArray<RpgFilePath>& out_FilePaths, const RpgString& folderPath, bool bIncludeSubfolder, const char* filterExt) noexcept
+{
+	const RpgString searchPath = RpgString::Format("%s*", *folderPath);
+
+	WIN32_FIND_DATA fileData{};
+	HANDLE fileHandle = FindFirstFileA(*searchPath, &fileData);
+
+	do
+	{
+		// Ignore '.' and '..'
+		if (fileData.cFileName[0] == '.' || (fileData.cFileName[0] == '.' && fileData.cFileName[1] == '.'))
+		{
+			continue;
+		}
+
+		if (bIncludeSubfolder && (fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+		{
+			const RpgString subfolderPath = RpgString::Format("%s%s/", *folderPath, fileData.cFileName);
+			//RPG_Log(RpgLogSystem, "%s", *subfolderPath);
+
+			IterateFiles(out_FilePaths, subfolderPath, bIncludeSubfolder, filterExt);
+		}
+		else
+		{
+			const RpgFilePath filePath = RpgString::Format("%s%s", *folderPath, fileData.cFileName);
+			
+			if (filterExt == nullptr || filterExt == "" || filePath.GetFileExtension() == filterExt)
+			{
+				//RPG_Log(RpgLogSystem, "%s", *filePath);
+				out_FilePaths.AddValue(filePath);
+			}
+		}
+	}
+	while (FindNextFileA(fileHandle, &fileData));
+
+	FindClose(fileHandle);
+}
+
+
+bool RpgFileSystem::ReadFromFile(const RpgString& filePath, RpgArray<uint8_t>& out_Data) noexcept
+{
+	out_Data.Clear();
+
+	HANDLE fileHandle = RpgPlatformFile::FileOpen(*filePath, RpgPlatformFile::OPEN_MODE_READ);
+	if (fileHandle == NULL || fileHandle == INVALID_HANDLE_VALUE)
+	{
+		return false;
+	}
+
+	const size_t fileSizeBytes = RpgPlatformFile::FileGetSize(fileHandle);
+	RPG_Check(fileSizeBytes < RPG_MAX_COUNT);
+	out_Data.Resize(static_cast<int>(fileSizeBytes));
+
+	const bool bReadSuccess = RpgPlatformFile::FileRead(fileHandle, out_Data.GetData(), fileSizeBytes);
+	RpgPlatformFile::FileClose(fileHandle);
+
+	return bReadSuccess;
+}
+
+
+bool RpgFileSystem::WriteToFile(const RpgString& filePath, const void* data, size_t sizeBytes) noexcept
+{
+	HANDLE fileHandle = RpgPlatformFile::FileOpen(*filePath, RpgPlatformFile::OPEN_MODE_WRITE_OVERWRITE);
+	if (fileHandle == NULL || fileHandle == INVALID_HANDLE_VALUE)
+	{
+		return false;
+	}
+
+	const bool bWriteSuccess = RpgPlatformFile::FileWrite(fileHandle, data, sizeBytes);
+	RpgPlatformFile::FileClose(fileHandle);
+
+	return bWriteSuccess;
+}

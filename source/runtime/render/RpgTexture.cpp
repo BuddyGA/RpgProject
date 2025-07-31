@@ -225,9 +225,9 @@ void RpgTexture2D::s_CreateDefaults() noexcept
 	{
 		RpgSharedTexture2D defWhite = s_CreateShared2D("TEX2D_DEF_White", RpgTextureFormat::TEX_2D_RGBA, RPG_TEXTURE_MIN_DIM, RPG_TEXTURE_MIN_DIM, 1);
 		
-		FMipData mip;
-		uint8_t* pixelData = defWhite->MipWriteLock(0, mip);
-		RpgPlatformMemory::MemSet(pixelData, 255, mip.SizeBytes);
+		FMipData mipData;
+		uint8_t* pixelData = defWhite->MipWriteLock(0, mipData);
+		RpgPlatformMemory::MemSet(pixelData, 255, mipData.SizeBytes);
 		defWhite->MipWriteUnlock(0);
 
 		DefaultTextures.AddValue(defWhite);

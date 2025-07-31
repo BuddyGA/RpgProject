@@ -122,7 +122,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 	// Debug primitive2d line
 	{
 		RpgRenderPipelineState renderState{};
-		renderState.PixelShaderName = RPG_SHADER_NAME_Primitive2D_PS;
+		renderState.PixelShaderName = RPG_SHADER_NAME_PixelColor;
 		renderState.VertexMode = RpgRenderVertexMode::PRIMITIVE_2D;
 		renderState.BlendMode = RpgRenderColorBlendMode::NONE;
 		renderState.RasterMode = RpgRenderRasterMode::LINE;
@@ -133,7 +133,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 	// Debug primitive2d mesh
 	{
 		RpgRenderPipelineState renderState{};
-		renderState.PixelShaderName = RPG_SHADER_NAME_Primitive2D_PS;
+		renderState.PixelShaderName = RPG_SHADER_NAME_PixelColor;
 		renderState.VertexMode = RpgRenderVertexMode::PRIMITIVE_2D;
 		renderState.BlendMode = RpgRenderColorBlendMode::NONE;
 		renderState.RasterMode = RpgRenderRasterMode::SOLID;
@@ -144,7 +144,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 	// Debug primitive line
 	{
 		RpgRenderPipelineState renderState{};
-		renderState.PixelShaderName = RPG_SHADER_NAME_Primitive_PS;
+		renderState.PixelShaderName = RPG_SHADER_NAME_PixelColor;
 		renderState.VertexMode = RpgRenderVertexMode::PRIMITIVE;
 		renderState.BlendMode = RpgRenderColorBlendMode::NONE;
 		renderState.RasterMode = RpgRenderRasterMode::LINE;
@@ -163,7 +163,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 	// Debug primitive mesh
 	{
 		RpgRenderPipelineState renderState{};
-		renderState.PixelShaderName = RPG_SHADER_NAME_Primitive_PS;
+		renderState.PixelShaderName = RPG_SHADER_NAME_PixelColor;
 		renderState.VertexMode = RpgRenderVertexMode::PRIMITIVE;
 		renderState.BlendMode = RpgRenderColorBlendMode::NONE;
 		renderState.RasterMode = RpgRenderRasterMode::SOLID;

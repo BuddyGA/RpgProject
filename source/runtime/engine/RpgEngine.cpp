@@ -8,8 +8,14 @@
 #include "render/world/RpgRenderWorldSubsystem.h"
 #include "animation/world/RpgAnimationComponent.h"
 #include "animation/world/RpgAnimationWorldSubsystem.h"
+#include "asset/RpgAssetManager.h"
 
 #include "../../test/gui/RpgTestGui.h"
+
+
+#ifndef RPG_BUILD_SHIPPING
+#include "RpgEditor.h"
+#endif // !RPG_BUILD_SHIPPING
 
 
 
@@ -44,8 +50,17 @@ RpgEngine::~RpgEngine() noexcept
 
 void RpgEngine::Initialize() noexcept
 {
+
+#ifndef RPG_BUILD_SHIPPING
+	g_Editor = new RpgEditor();
+#endif // !RPG_BUILD_SHIPPING
+
 	// input manager
 	g_InputManager = new RpgInputManager();
+
+	// asset manager
+	g_AssetManager = new RpgAssetManager();
+	g_AssetManager->ScanAssetFiles();
 
 
 	// main world
@@ -53,9 +68,9 @@ void RpgEngine::Initialize() noexcept
 		MainWorld = CreateWorld("world_main");
 
 		// Subsystems
-		MainWorld->Subsystem_Add<RpgPhysicsWorldSubsystem>(0);
-		MainWorld->Subsystem_Add<RpgAnimationWorldSubsystem>(1);
-		MainWorld->Subsystem_Add<RpgRenderWorldSubsystem>(2);
+		MainWorld->Subsystem_Register<RpgPhysicsWorldSubsystem>(0);
+		MainWorld->Subsystem_Register<RpgAnimationWorldSubsystem>(1);
+		MainWorld->Subsystem_Register<RpgRenderWorldSubsystem>(2);
 
 		// Components
 		MainWorld->Component_Register<RpgPhysicsComponent_Filter>();
@@ -197,17 +212,18 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 	}
 
 
+	// Begin frame
+	{
+		MainWorld->BeginFrame(frameIndex);
+		g_AssetManager->Update();
+	}
+
+
 	RpgRenderComponent_Camera* mainCameraComp = MainCameraObject.IsValid() ? MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(MainCameraObject) : nullptr;
 
 	if (mainCameraComp && WindowState != RpgPlatformWindowSizeState::MINIMIZED)
 	{
 		mainCameraComp->RenderTargetDimension = WindowDimension;
-	}
-
-
-	// Begin frame
-	{
-		MainWorld->BeginFrame(frameIndex);
 	}
 
 
@@ -228,7 +244,7 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 	{
 		MainWorld->DispatchTickUpdate(deltaTime);
 	}
-	
+
 
 	// Post tick update
 	{

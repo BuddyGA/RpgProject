@@ -10,6 +10,7 @@
 #define RPG_PHYSICS_TRACE_MAX_HIT_RESULT			10
 
 
+class RpgPhysicsComponent_Filter;
 class RpgPhysicsComponent_Collision;
 class RpgPhysicsWorldSubsystem;
 class RpgPhysicsTask_UpdateBound;

@@ -4,6 +4,11 @@
 
 
 
+class RpgAttributeComponent;
+class RpgAttributeWorldSubsystem;
+
+
+
 namespace RpgAttribute
 {
 	enum EType : uint8_t

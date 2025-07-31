@@ -272,11 +272,7 @@ public:
 	{
 		RPG_Check(layout);
 
-		if (PrevHoveredLayout == nullptr)
-		{
-			PrevHoveredLayout = layout;
-		}
-		else if (PrevHoveredLayout->Order <= layout->Order)
+		if (PrevHoveredLayout == nullptr || PrevHoveredLayout->Order <= layout->Order)
 		{
 			PrevHoveredLayout = layout;
 		}

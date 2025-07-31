@@ -38,7 +38,7 @@ void RpgRenderTask_CompilePSO::Execute() noexcept
 		{
 			case RpgRenderVertexMode::PRIMITIVE_2D:
 			{
-				vertexShaderName = RPG_SHADER_NAME_Primitive2D_VS;
+				vertexShaderName = RPG_SHADER_NAME_VertexPrimitive2D;
 
 				vertexInputElements.AddValue({ "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 });
 				vertexInputElements.AddValue({ "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 8, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 });
@@ -59,7 +59,7 @@ void RpgRenderTask_CompilePSO::Execute() noexcept
 
 			case RpgRenderVertexMode::PRIMITIVE:
 			{
-				vertexShaderName = RPG_SHADER_NAME_Primitive_VS;
+				vertexShaderName = RPG_SHADER_NAME_VertexPrimitive;
 
 				vertexInputElements.AddValue({ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 });
 				vertexInputElements.AddValue({ "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 });

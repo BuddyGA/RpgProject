@@ -204,6 +204,14 @@ struct RpgShaderSkinnedObjectParameter
 #define RPG_SHADER_SHADOW_MAP_CUBE_FACE_B   0x20
 
 
+#define RPG_SHADER_NAME_VertexPrimitive             "VertexPrimitive"
+#define RPG_SHADER_NAME_VertexPrimitive2D           "VertexPrimitive2D"
+#define RPG_SHADER_NAME_VertexMesh                  "VertexMesh"
+
+#define RPG_SHADER_NAME_PixelColor                  "PixelColor"
+#define RPG_SHADER_NAME_PixelForwardPhong           "PixelForwardPhong"
+#define RPG_SHADER_NAME_PixelForwardPhong_Mask      "PixelForwardPhong_Mask"
+
 #define RPG_SHADER_NAME_ComputeFrustum              "ComputeFrustum"
 #define RPG_SHADER_NAME_ComputeSkinning				"ComputeSkinning"
 
@@ -212,18 +220,8 @@ struct RpgShaderSkinnedObjectParameter
 #define RPG_SHADER_NAME_ShadowMapCube_VS			"ShadowMapCube_VS"
 #define RPG_SHADER_NAME_ShadowMapCube_GS			"ShadowMapCube_GS"
 
-#define RPG_SHADER_NAME_Primitive_VS                "Primitive_VS"
-#define RPG_SHADER_NAME_Primitive_PS                "Primitive_PS"
-
-#define RPG_SHADER_NAME_VertexMesh                  "VertexMesh"
-#define RPG_SHADER_NAME_PixelForwardPhong           "PixelForwardPhong"
-#define RPG_SHADER_NAME_PixelForwardPhong_Mask      "PixelForwardPhong_Mask"
-
 #define RPG_SHADER_NAME_PostProcessFullscreen_VS    "PostProcessFullScreen_VS"
 #define RPG_SHADER_NAME_PostProcessFullscreen_PS    "PostProcessFullScreen_PS"
-
-#define RPG_SHADER_NAME_Primitive2D_VS              "Primitive2D_VS"
-#define RPG_SHADER_NAME_Primitive2D_PS              "Primitive2D_PS"
 
 #define RPG_SHADER_NAME_GUI_VS                      "GUI_VS"
 #define RPG_SHADER_NAME_GUI_PS                      "GUI_PS"

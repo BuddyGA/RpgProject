@@ -12,15 +12,9 @@ RpgFont::RpgFont(const RpgName& in_Name, const RpgString& ttfFilePath, float in_
 
 	Name = in_Name;
 
-	HANDLE fileHandle = RpgPlatformFile::FileOpen(*ttfFilePath, RpgPlatformFile::OPEN_MODE_READ);
-	RPG_Check(fileHandle && fileHandle != INVALID_HANDLE_VALUE);
-
-	size_t fileSizeBytes = RpgPlatformFile::FileGetSize(fileHandle);
-	RPG_Check(fileSizeBytes > 0);
-
-	RpgArray<uint8_t> fileData(static_cast<int>(fileSizeBytes));
-	RpgPlatformFile::FileRead(fileHandle, fileData.GetData(), fileSizeBytes);
-	RpgPlatformFile::FileClose(fileHandle);
+	RpgArray<uint8_t> fileData;
+	const bool bReadFileSuccess = RpgFileSystem::ReadFromFile(ttfFilePath, fileData);
+	RPG_Check(bReadFileSuccess);
 
 	stbtt_fontinfo stbFontInfo{};
 	const int stbError = stbtt_InitFont(&stbFontInfo, fileData.GetData(), 0);
@@ -327,8 +321,8 @@ void RpgFont::s_CreateDefaults() noexcept
 
 	const RpgString fontAssetDirPath = RpgFileSystem::GetAssetRawDirPath() + "font/";
 
-	DefaultFonts.AddValue(s_CreateShared("FNT_DEF_Roboto", fontAssetDirPath + "Roboto-Regular.ttf", 15, 32, 96));
-	DefaultFonts.AddValue(s_CreateShared("FNT_DEF_ShareTechMono", fontAssetDirPath + "ShareTechMono-Regular.ttf", 15, 32, 96));
+	DefaultFonts.AddValue(s_CreateShared("FNT_DEF_Roboto", fontAssetDirPath + "Roboto-Regular.ttf", RPG_FONT_SIZE_MEDIUM, 32, 96));
+	DefaultFonts.AddValue(s_CreateShared("FNT_DEF_ShareTechMono", fontAssetDirPath + "ShareTechMono-Regular.ttf", RPG_FONT_SIZE_MEDIUM, 32, 96));
 }
 
 

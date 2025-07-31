@@ -87,7 +87,7 @@ RpgRectFloat RpgGuiLayout::UpdateRect(const RpgGuiContext& context, const RpgGui
 }
 
 
-inline void RpgGuiLayout::SetScrollValue(float x, float y) noexcept
+void RpgGuiLayout::SetScrollValue(float x, float y) noexcept
 {
 	const RpgPointFloat layoutDimension = AbsoluteRect.GetDimension();
 	const RpgPointFloat scrollDimension = ContentRect.GetDimension();

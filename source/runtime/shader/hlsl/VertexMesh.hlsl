@@ -18,9 +18,9 @@ struct VertexShaderInput
 struct VertexShaderOutput
 {
     float4 SvPosition : SV_Position;
-    float4 WsFragPosition : WORLD_POSITION;
-    float4 WsFragNormal : WORLD_NORMAL;
-    float4 WsFragTangent : WORLD_TANGENT;
+    float4 WsVertexPosition : WORLD_POSITION;
+    float4 WsVertexNormal : WORLD_NORMAL;
+    float4 WsVertexTangent : WORLD_TANGENT;
     float4 WsCameraPosition : CAMERA_WORLD_POSITION;
     float2 TexCoord : TEXCOORD;
 };
@@ -32,10 +32,10 @@ VertexShaderOutput VS_Main(VertexShaderInput input)
     const float4x4 wsMatrix = ObjectTransforms[ObjectParameter.TransformIndex];
     
     VertexShaderOutput output;
-    output.WsFragPosition = mul(input.Position, wsMatrix);
-    output.WsFragNormal = normalize(mul(input.Normal, wsMatrix));
-    output.WsFragTangent = normalize(mul(input.Tangent, wsMatrix));
-    output.SvPosition = mul(output.WsFragPosition, camera.ViewProjectionMatrix);
+    output.WsVertexPosition = mul(input.Position, wsMatrix);
+    output.WsVertexNormal = normalize(mul(input.Normal, wsMatrix));
+    output.WsVertexTangent = normalize(mul(input.Tangent, wsMatrix));
+    output.SvPosition = mul(output.WsVertexPosition, camera.ViewProjectionMatrix);
     output.WsCameraPosition = camera.WorldPosition;
     output.TexCoord = input.TexCoord;
     

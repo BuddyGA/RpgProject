@@ -394,6 +394,6 @@ struct RpgPlatformMouseButtonEvent
 
 struct RpgPlatformKeyboardEvent
 {
-	uint16_t Button{ 0 };
+	uint8_t Button{ 0 };
 	bool bIsDown{ false };
 };

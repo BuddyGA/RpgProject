@@ -156,6 +156,11 @@ public:
 		return !FileExt.IsEmpty();
 	}
 
+	inline int GetLength() const noexcept
+	{
+		return FullPath.GetLength();
+	}
+
 	inline const RpgString& ToString() const noexcept
 	{
 		return FullPath;
@@ -189,5 +194,16 @@ namespace RpgFileSystem
 	extern const RpgString& GetSourceDirPath() noexcept;
 	extern const RpgString& GetAssetDirPath() noexcept;
 	extern const RpgString& GetAssetRawDirPath() noexcept;
+
+	extern void IterateFolders(RpgArray<RpgFilePath>& out_FolderPaths, const RpgString& folderPath, bool bIncludeSubfolder) noexcept;
+	extern void IterateFiles(RpgArray<RpgFilePath>& out_FilePaths, const RpgString& folderPath, bool bIncludeSubfolder, const char* filterExt = "") noexcept;
+	extern bool ReadFromFile(const RpgString& filePath, RpgArray<uint8_t>& out_Data) noexcept;
+	extern bool WriteToFile(const RpgString& filePath, const void* data, size_t sizeBytes) noexcept;
+
+
+	inline bool WriteToFile(const RpgString& filePath, const RpgArray<uint8_t>& data) noexcept
+	{
+		return WriteToFile(filePath, data.GetData(), data.GetMemorySizeBytes_Allocated());
+	}
 
 };

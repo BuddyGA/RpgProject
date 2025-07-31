@@ -119,7 +119,7 @@ namespace RpgInputWindows
 
 
 
-	inline RpgInputKey::EButton MapWindowsInputToKeyButton(WPARAM wParam, LPARAM lParam) noexcept
+	inline RpgInputKey::EButton MapToKeyButton(WPARAM wParam, LPARAM lParam) noexcept
 	{
 		const UINT scanCode = (lParam & 0x00FF0000) >> 16;
 		const bool bExtended = (lParam & 0x01000000) != 0;
@@ -138,7 +138,7 @@ namespace RpgInputWindows
 			virtualKey = bExtended ? VK_RMENU : VK_LMENU;
 		}
 
-		uint8_t keyButtonIndex = -1;
+		int keyButtonIndex = RPG_INDEX_INVALID;
 		for (int i = 0; i < RpgInputKey::MAX_COUNT; ++i)
 		{
 			if (KEY_BUTTON_TO_VK[i] == virtualKey)
@@ -147,6 +147,8 @@ namespace RpgInputWindows
 				break;
 			}
 		}
+
+		RPG_Check(keyButtonIndex >= 0 && keyButtonIndex < RpgInputKey::MAX_COUNT);
 
 		return static_cast<RpgInputKey::EButton>(keyButtonIndex);
 	}

@@ -29,7 +29,7 @@ public:
 
 	virtual RpgRectFloat UpdateRect(const RpgGuiContext& context, const RpgGuiCanvas& canvas, const RpgPointFloat& offset) noexcept override;
 
-	inline void SetScrollValue(float x, float y) noexcept;
+	void SetScrollValue(float x, float y) noexcept;
 
 
 protected:
