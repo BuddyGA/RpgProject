@@ -58,7 +58,13 @@ public:
 	}
 
 
-	inline const RpgSharedPtr<T>& GetShared(int index) const noexcept
+	inline uint64_t GetHashByShared(const RpgSharedPtr<T>& ref) const noexcept
+	{
+		const int index = Shareds.FindIndexByValue(ref);
+		return Hashes[index];
+	}
+
+	inline const RpgSharedPtr<T>& GetSharedAtIndex(int index) const noexcept
 	{
 		return Shareds[index];
 	}
@@ -85,7 +91,7 @@ public:
 
 	// Check if file is a valid asset file
 	// @param filePath - Path to a file
-	// @param optOut_AssetInfo - (Optional) asset info if file is valid
+	// @param optOut_AssetInfo - (Optional) output asset info if file is valid
 	// @return TRUE if file is valid
 	bool IsValidAssetFile(const RpgFilePath& filePath, RpgAssetInfo* optOut_AssetInfo = nullptr) noexcept;
 
@@ -97,14 +103,14 @@ public:
 	// @return TRUE if file is valid asset file and added to registry
 	bool RegisterAssetFile(const RpgFilePath& filePath) noexcept;
 
-	// Save model to asset file
-	// @param model - Shared ptr of a model
-	void SaveModel(const RpgSharedModel& model) noexcept;
+	// Save mesh to asset file
+	// @param mesh - Shared ptr to a mesh asset
+	void SaveMesh(const RpgSharedMesh& mesh) noexcept;
 
-	// Load model from asset file
-	// @param filePath - Path to a model asset file
-	// @return SharedPtr to a model asset, NULL SharedPtr if file is not a valid model asset file
-	RpgSharedModel LoadModel(const RpgFilePath& filePath) noexcept;
+	// Load mesh from asset file
+	// @param filePath - Path to a mesh asset file
+	// @return SharedPtr to a mesh asset, NULL SharedPtr if file is not a valid mesh asset file
+	RpgSharedMesh LoadMesh(const RpgFilePath& filePath) noexcept;
 
 	// Get asset info from registry
 	// @param filePath - Path to a file
@@ -127,8 +133,8 @@ private:
 	RpgArray<uint64_t> RegisteredAssetHashes;
 	RpgArray<RpgAssetInfo> RegisteredAssetInfos;
 	
-	// Loaded model data
-	RpgUniquePtr<RpgAssetLoadedData<RpgModel>> LoadedModelData;
+	// Loaded mesh data
+	RpgUniquePtr<RpgAssetLoadedData<RpgMesh>> LoadedMeshData;
 
 	// Loaded material data
 	RpgUniquePtr<RpgAssetLoadedData<RpgMaterial>> LoadedMaterialData;

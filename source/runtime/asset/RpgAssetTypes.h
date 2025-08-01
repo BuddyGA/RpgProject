@@ -10,8 +10,8 @@
 // Magic number for asset file header
 #define RPG_ASSET_FILE_MAGIX					0x41475052 // (RPGA)
 
-// Model asset version
-#define RPG_ASSET_FILE_VERSION_MODEL			1
+// Mesh asset version
+#define RPG_ASSET_FILE_VERSION_MESH				1
 
 // Texture asset version
 #define RPG_ASSET_FILE_VERSION_TEXTURE			1
@@ -40,14 +40,14 @@ enum class RpgAssetFileType : uint16_t
 {
 	NONE = 0,
 
-	MODEL,
+	MESH,
 	TEXTURE,
 	FONT,
 	MATERIAL,
 	ANIM_SKELETON,
 	ANIM_CLIP,
 	AUDIO,
-	ACTOR_PREFAB,
+	PREFAB,
 
 	MAX_COUNT
 };
@@ -56,14 +56,14 @@ enum class RpgAssetFileType : uint16_t
 constexpr const char* RPG_ASSET_FILE_TYPE_NAMES[static_cast<uint16_t>(RpgAssetFileType::MAX_COUNT)] =
 {
 	"None",
-	"Model",
+	"Mesh",
 	"Texture",
 	"Font",
 	"Material",
 	"Anim Skeleton",
 	"Anim Clip",
 	"Audio",
-	"Actor Prefab"
+	"Prefab"
 };
 
 
@@ -71,9 +71,10 @@ constexpr const char* RPG_ASSET_FILE_TYPE_NAMES[static_cast<uint16_t>(RpgAssetFi
 struct RpgAssetFileHeader
 {
 	uint32_t Magix{ 0 };
-	uint32_t SizeBytes{ 0 };
 	uint16_t Type{ 0 };
 	uint16_t Version{ 0 };
+	uint32_t OffsetBytes{ 0 };
+	uint32_t SizeBytes{ 0 };
 };
 static_assert(std::is_trivially_copyable<RpgAssetFileHeader>::value, "RpgAssetFileHeader must be POD!");
 

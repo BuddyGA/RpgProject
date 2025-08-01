@@ -41,24 +41,21 @@ void RpgRenderTask_CaptureMesh::Execute() noexcept
 		// - check valid model
 		// - check visibility
 		// - if frustum culling enabled, test bound againts frustum
-		if (!comp.Model || !comp.bIsVisible || (bFrustumCulling && !frustum.TestIntersectAABB(comp.Bound)) )
+		if (!comp.Mesh || !comp.bIsVisible || (bFrustumCulling && !frustum.TestIntersectAABB(comp.Bound)) )
 		{
 			continue;
 		}
 
 		const RpgMatrixTransform worldTransformMatrix = World->GameObject_GetWorldTransformMatrix(comp.GameObject);
 
-		for (int m = 0; m < comp.Model->GetMeshCount(); ++m)
-		{
-			RpgSceneMesh& data = sceneMeshes.Add();
-			data.GameObject = comp.GameObject;
-			data.WorldTransformMatrix = worldTransformMatrix;
-			data.Material = comp.Model->GetMaterial(m);
-			data.Mesh = comp.Model->GetMeshLod(m, 0);
+		RpgSceneMesh& data = sceneMeshes.Add();
+		data.GameObject = comp.GameObject;
+		data.WorldTransformMatrix = worldTransformMatrix;
+		data.Material = comp.Material;
+		data.Mesh = comp.Mesh;
 
-			// TODO: Determine LOD level based on distance from the camera
+		// TODO: Determine LOD level based on distance from the camera
 
-			data.Lod = 0;
-		}
+		data.Lod = 0;
 	}
 }

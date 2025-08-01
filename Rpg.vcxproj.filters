@@ -270,6 +270,12 @@
     <ClCompile Include="source\runtime\gui\RpgGuiCanvas.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\runtime\gui\RpgGuiWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\thirdparty\nuklear\__nuklear__build.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\runtime\core\dsa\RpgAlgorithm.h">
@@ -522,6 +528,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\game\RpgGameTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\gui\RpgGuiWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -45,13 +45,15 @@ void RpgShadowViewport_SpotLight::PreRender(RpgRenderFrameContext& frameContext,
 	for (auto it = world->Component_CreateConstIterator<RpgRenderComponent_Mesh>(); it; ++it)
 	{
 		const RpgRenderComponent_Mesh& comp = it.GetValue();
-		if (!(comp.Model && comp.bIsVisible))
+		if (!(comp.Mesh && comp.bIsVisible))
 		{
 			continue;
 		}
 
-		const RpgSharedModel& model = comp.Model;
 		const RpgMatrixTransform worldTransformMatrix = world->GameObject_GetWorldTransformMatrix(comp.GameObject);
+
+		/*
+		const RpgSharedModel& model = comp.Model;
 
 		for (int m = 0; m < model->GetMeshCount(); ++m)
 		{
@@ -71,6 +73,23 @@ void RpgShadowViewport_SpotLight::PreRender(RpgRenderFrameContext& frameContext,
 
 			draw->ObjectParam.TransformIndex = worldResource->AddTransform(comp.GameObject.GetIndex(), worldTransformMatrix);
 		}
+		*/
+
+		const RpgSharedMesh& mesh = comp.Mesh;
+		RpgDrawIndexedDepth* draw = nullptr;
+
+		if (mesh->HasSkin())
+		{
+			draw = &frame.DrawSkinnedMeshes.Add();
+			frameContext.MeshSkinnedResource->AddMesh(mesh, draw->IndexCount, draw->IndexStart, draw->IndexVertexOffset);
+		}
+		else
+		{
+			draw = &frame.DrawMeshes.Add();
+			frameContext.MeshResource->AddMesh(mesh, draw->IndexCount, draw->IndexStart, draw->IndexVertexOffset);
+		}
+
+		draw->ObjectParam.TransformIndex = worldResource->AddTransform(comp.GameObject.GetIndex(), worldTransformMatrix);
 	}
 }
 

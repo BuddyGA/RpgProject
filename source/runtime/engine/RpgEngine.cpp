@@ -10,6 +10,18 @@
 #include "animation/world/RpgAnimationWorldSubsystem.h"
 #include "asset/RpgAssetManager.h"
 
+
+#pragma push_macro("free")
+#undef free
+
+#define NK_ASSERT						RPG_Assert
+#define NK_UINT_DRAW_INDEX
+#define NK_INCLUDE_COMMAND_USERDATA
+#define NK_KEYSTATE_BASED_INPUT
+#include "thirdparty/nuklear/nuklear.h"
+
+#pragma pop_macro("free")
+
 #include "../../test/gui/RpgTestGui.h"
 
 
@@ -22,6 +34,17 @@
 RPG_LOG_DEFINE_CATEGORY(RpgLogEngine, VERBOSITY_DEBUG)
 
 
+
+static float Rpg_NuklearTextWidth(nk_handle handle, float height, const char* text, int len)
+{
+	return reinterpret_cast<RpgFont*>(handle.ptr)->CalculateTextDimension(text, len).X;
+}
+
+
+static nk_context NkContext;
+static nk_user_font NkTestFont;
+
+
 RpgEngine* g_Engine = nullptr;
 
 
@@ -29,7 +52,7 @@ RpgEngine::RpgEngine() noexcept
 {
 	WindowState = RpgPlatformWindowSizeState::DEFAULT;
 
-	GuiConsole = nullptr;
+	//GuiConsole = nullptr;
 
 	// fps info
 	FpsLimit = 60;
@@ -50,11 +73,6 @@ RpgEngine::~RpgEngine() noexcept
 
 void RpgEngine::Initialize() noexcept
 {
-
-#ifndef RPG_BUILD_SHIPPING
-	g_Editor = new RpgEditor();
-#endif // !RPG_BUILD_SHIPPING
-
 	// input manager
 	g_InputManager = new RpgInputManager();
 
@@ -86,15 +104,28 @@ void RpgEngine::Initialize() noexcept
 	MainRenderer = RpgPointer::MakeUnique<RpgRenderer>(RpgPlatformProcess::GetMainWindowHandle(), !RpgCommandLine::HasCommand("novsync"));
 
 	// gui canvas
-	GuiCanvas = RpgPointer::MakeUnique<RpgGuiCanvas>();
-	GuiCanvas->Name = "EngineCanvas";
+	//GuiCanvas = RpgPointer::MakeUnique<RpgGuiCanvas>();
+	//GuiCanvas->Name = "EngineCanvas";
 
-	GuiConsole = GuiCanvas->AddChild<RpgGuiConsole>();
-	GuiConsole->SetVisibility(false);
+	//GuiConsole = GuiCanvas->AddChild<RpgGuiConsole>();
+
+	RpgSharedFont defaultRobotoFont = RpgFont::s_GetDefault_Roboto();
+
+	NkTestFont.userdata.ptr = defaultRobotoFont.Get();
+	NkTestFont.height = defaultRobotoFont->GetPixelHeight();
+	NkTestFont.width = Rpg_NuklearTextWidth;
+
+	nk_init_fixed(&NkContext, calloc(1, RPG_MEMORY_SIZE_MiB(4)), RPG_MEMORY_SIZE_MiB(4), &NkTestFont);
+
+#ifndef RPG_BUILD_SHIPPING
+	g_Editor = new RpgEditor();
+	//g_Editor->SetupGUI(GuiCanvas.Get());
+#endif // !RPG_BUILD_SHIPPING
+
 
 	CreateTestLevel();
 	
-	RpgTest::Gui::Create(GuiCanvas.Get());
+	//RpgTest::Gui::Create(GuiCanvas.Get());
 
 	SetMainCamera(MainWorld->GameObject_Create("camera_main"));
 	MainWorld->GameObject_AttachScript(MainCameraObject, &ScriptDebugCamera);
@@ -110,35 +141,35 @@ void RpgEngine::WindowSizeChanged(const RpgPlatformWindowEvent& e) noexcept
 
 void RpgEngine::MouseMove(const RpgPlatformMouseMoveEvent& e) noexcept
 {
-	GuiContext.MouseMove(e);
+	//GuiContext.MouseMove(e);
 	g_InputManager->MouseMove(e);
 }
 
 
 void RpgEngine::MouseWheel(const RpgPlatformMouseWheelEvent& e) noexcept
 {
-	GuiContext.MouseWheel(e);
+	//GuiContext.MouseWheel(e);
 	g_InputManager->MouseWheel(e);
 }
 
 
 void RpgEngine::MouseButton(const RpgPlatformMouseButtonEvent& e) noexcept
 {
-	GuiContext.MouseButton(e);
+	//GuiContext.MouseButton(e);
 	g_InputManager->MouseButton(e);
 }
 
 
 void RpgEngine::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 {
-	GuiContext.KeyboardButton(e);
+	//GuiContext.KeyboardButton(e);
 	g_InputManager->KeyboardButton(e);
 
 	if (e.bIsDown)
 	{
 		if (e.Button == RpgInputKey::KEYBOARD_TILDE)
 		{
-			GuiConsole->Toggle();
+			//GuiConsole->Toggle();
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_PLUS)
 		{
@@ -175,6 +206,12 @@ void RpgEngine::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 			}
 		}
 	}
+
+
+#ifndef RPG_BUILD_SHIPPING
+	g_Editor->KeyboardButton(e);
+#endif // !RPG_BUILD_SHIPPING
+
 }
 
 
@@ -186,7 +223,7 @@ void RpgEngine::CharInput(char c) noexcept
 		return;
 	}
 
-	GuiContext.CharInput(c);
+	//GuiContext.CharInput(c);
 }
 
 
@@ -229,6 +266,7 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 
 	// GUI
 	{
+		/*
 		GuiContext.Begin();
 
 		if (WindowState != RpgPlatformWindowSizeState::MINIMIZED)
@@ -237,6 +275,50 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 		}
 
 		GuiContext.End();
+		*/
+
+		nk_input_begin(&NkContext);
+		{
+			const RpgPoint mouseCursorPos = RpgPointInt(g_InputManager->GetMouseCursorPosition());
+			nk_input_motion(&NkContext, mouseCursorPos.X, mouseCursorPos.Y);
+
+			const bool bMouseLeftDown = g_InputManager->GetKeyButtonState(RpgInputKey::MOUSE_LEFT) == RpgInputButtonState::DOWN;
+			nk_input_button(&NkContext, nk_buttons::NK_BUTTON_LEFT, mouseCursorPos.X, mouseCursorPos.Y, bMouseLeftDown);
+		}
+		nk_input_end(&NkContext);
+
+		enum { EASY, HARD };
+		static int op = EASY;
+		static float value = 0.6f;
+		static int i = 20;
+
+		if (nk_begin(&NkContext, "Show", nk_rect(50, 50, 220, 220), NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE)) 
+		{
+			// fixed widget pixel width
+			nk_layout_row_static(&NkContext, 30, 80, 1);
+
+			if (nk_button_label(&NkContext, "button")) 
+			{
+				// event handling
+			}
+
+			// fixed widget window ratio width
+			nk_layout_row_dynamic(&NkContext, 30, 2);
+
+			if (nk_option_label(&NkContext, "easy", op == EASY)) op = EASY;
+			if (nk_option_label(&NkContext, "hard", op == HARD)) op = HARD;
+
+			// custom widget pixel width
+			nk_layout_row_begin(&NkContext, NK_STATIC, 30, 2);
+			{
+				nk_layout_row_push(&NkContext, 50);
+				nk_label(&NkContext, "Volume:", NK_TEXT_LEFT);
+				nk_layout_row_push(&NkContext, 110);
+				nk_slider_float(&NkContext, 0, &value, 1.0f, 0.1f);
+			}
+			nk_layout_row_end(&NkContext);
+		}
+		nk_end(&NkContext);
 	}
 
 
@@ -271,8 +353,137 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 			RpgRenderer2D& renderer2d = MainRenderer->GetRenderer2D();
 
 			// GUI
-			GuiCanvas->Render(GuiContext, renderer2d);
+			//GuiCanvas->Render(GuiContext, renderer2d);
 
+			const nk_command* cmd = 0;
+			for (cmd = nk__begin(&NkContext); cmd != 0; cmd = nk__next(&NkContext, cmd))
+			{
+				switch (cmd->type)
+				{
+					case NK_COMMAND_SCISSOR:
+					{
+						const nk_command_scissor* cmdScissor = reinterpret_cast<const nk_command_scissor*>(cmd);
+						//renderer2d.PushClipRect(RpgRectInt(cmdScissor->x, cmdScissor->y, cmdScissor->x + cmdScissor->w, cmdScissor->y + cmdScissor->h));
+
+						break;
+					};
+
+					case NK_COMMAND_LINE:
+					{
+						const nk_command_line* cmdLine = reinterpret_cast<const nk_command_line*>(cmd);
+						
+						renderer2d.AddLine(
+							RpgPointFloat(cmdLine->begin.x, cmdLine->begin.y),
+							RpgPointFloat(cmdLine->end.x, cmdLine->end.y),
+							RpgColorRGBA(cmdLine->color.r, cmdLine->color.g, cmdLine->color.b, cmdLine->color.a)
+						);
+
+						break;
+					};
+
+					case NK_COMMAND_CURVE:
+					{
+						break;
+					};
+
+					case NK_COMMAND_RECT:
+					{
+						const nk_command_rect* cmdRect = reinterpret_cast<const nk_command_rect*>(cmd);
+
+						renderer2d.AddLineRect(
+							RpgRectFloat(cmdRect->x, cmdRect->y, cmdRect->x + cmdRect->w, cmdRect->y + cmdRect->h),
+							RpgColorRGBA(cmdRect->color.r, cmdRect->color.g, cmdRect->color.b, cmdRect->color.a)
+						);
+
+						break;
+					};
+
+					case NK_COMMAND_RECT_FILLED:
+					{
+						const nk_command_rect_filled* cmdRectFilled = reinterpret_cast<const nk_command_rect_filled*>(cmd);
+
+						renderer2d.AddMeshRect(
+							RpgRectFloat(cmdRectFilled->x, cmdRectFilled->y, cmdRectFilled->x + cmdRectFilled->w, cmdRectFilled->y + cmdRectFilled->h),
+							RpgColorRGBA(cmdRectFilled->color.r, cmdRectFilled->color.g, cmdRectFilled->color.b, cmdRectFilled->color.a)
+						);
+
+						break;
+					};
+
+					case NK_COMMAND_RECT_MULTI_COLOR:
+					{
+						break;
+					};
+
+					case NK_COMMAND_CIRCLE:
+					{
+						break;
+					};
+
+					case NK_COMMAND_CIRCLE_FILLED:
+					{
+						break;
+					};
+
+					case NK_COMMAND_ARC:
+					{
+						break;
+					};
+
+					case NK_COMMAND_ARC_FILLED:
+					{
+						break;
+					};
+
+					case NK_COMMAND_TRIANGLE:
+					{
+						break;
+					};
+
+					case NK_COMMAND_TRIANGLE_FILLED:
+					{
+						break;
+					};
+
+					case NK_COMMAND_POLYGON:
+					{
+						break;
+					};
+
+					case NK_COMMAND_POLYGON_FILLED:
+					{
+						break;
+					};
+
+					case NK_COMMAND_POLYLINE:
+					{
+						break;
+					};
+
+					case NK_COMMAND_TEXT:
+					{
+						const nk_command_text* cmdText = reinterpret_cast<const nk_command_text*>(cmd);
+
+						renderer2d.AddText(cmdText->string, cmdText->length, RpgPointFloat(cmdText->x, cmdText->y), RpgColorRGBA::WHITE);
+
+						break;
+					};
+
+					case NK_COMMAND_IMAGE:
+					{
+						break;
+					};
+
+					case NK_COMMAND_CUSTOM:
+					{
+						break;
+					};
+
+					default: break;
+				}
+			};
+
+			nk_clear(&NkContext);
 
 		#ifndef RPG_BUILD_SHIPPING
 			// Debug info

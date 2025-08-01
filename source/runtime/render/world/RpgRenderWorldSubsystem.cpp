@@ -31,7 +31,7 @@ void RpgRenderWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) noex
 			continue;
 		}
 
-		comp.Bound = comp.Model ? comp.Model->GetBound() : RpgBoundingAABB(RpgVector3(-32.0f), RpgVector3(32.0f));
+		comp.Bound = comp.Mesh ? comp.Mesh->GetBound() : RpgBoundingAABB(RpgVector3(-32.0f), RpgVector3(32.0f));
 
 		// transform bound into world space
 		comp.Bound = RpgBoundingBox(comp.Bound, world->GameObject_GetWorldTransformMatrix(comp.GameObject)).ToAABB();

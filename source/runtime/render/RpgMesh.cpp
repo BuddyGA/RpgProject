@@ -55,6 +55,8 @@ void RpgMesh::UpdateVertexData(int vertexCount, const RpgVertex::FMeshPosition* 
 		Flags |= FLAG_Attribute_Index;
 	}
 	WriteUnlockAll();
+
+	UpdateBound();
 }
 
 
@@ -122,34 +124,61 @@ void RpgMesh::AddBatchVertexData(int vertexCount, const RpgVertex::FMeshPosition
 		}
 	}
 	WriteUnlockAll();
+
+	UpdateBound();
 }
 
 
-RpgBoundingAABB RpgMesh::CalculateBound() const noexcept
+void RpgMesh::UpdateBound() noexcept
 {
-	RpgBoundingAABB aabb;
+	RPG_Check(!Positions.IsEmpty());
 
-	if (Positions.IsEmpty())
-	{
-		return aabb;
-	}
-
-	aabb.Min = FLT_MAX;
-	aabb.Max = -FLT_MAX;
+	Bound.Min = FLT_MAX;
+	Bound.Max = -FLT_MAX;
 	const int vertexCount = Positions.GetCount();
 
 	for (int v = 0; v < vertexCount; ++v)
 	{
 		const RpgVector3 vec(Positions[v].ToVector3());
-		aabb.Min = RpgVector3::Min(aabb.Min, vec);
-		aabb.Max = RpgVector3::Max(aabb.Max, vec);
+		Bound.Min = RpgVector3::Min(Bound.Min, vec);
+		Bound.Max = RpgVector3::Max(Bound.Max, vec);
 	}
-
-	return aabb;
 }
 
 
 RpgSharedMesh RpgMesh::s_CreateShared(const RpgName& name) noexcept
 {
 	return RpgSharedMesh(new RpgMesh(name));
+}
+
+
+size_t RpgMesh::s_CalculateAssetSizeBytes(const RpgSharedMesh& mesh) noexcept
+{
+	size_t totalSizeBytes = 0;
+
+	// name
+	totalSizeBytes += sizeof(RpgName);
+
+	// vertex position
+	totalSizeBytes += mesh->Positions.GetMemorySizeBytes_Allocated();
+
+	// vertex normal-tangent
+	totalSizeBytes += mesh->NormalTangents.GetMemorySizeBytes_Allocated();
+
+	// vertex texcoord
+	totalSizeBytes += mesh->TexCoords.GetMemorySizeBytes_Allocated();
+
+	// vertex skin
+	totalSizeBytes += mesh->Skins.GetMemorySizeBytes_Allocated();
+
+	// vertex index
+	totalSizeBytes += mesh->Indices.GetMemorySizeBytes_Allocated();
+
+	// flags
+	totalSizeBytes += sizeof(uint8_t);
+
+	// bound
+	totalSizeBytes += sizeof(RpgBoundingAABB);
+
+	return totalSizeBytes;
 }

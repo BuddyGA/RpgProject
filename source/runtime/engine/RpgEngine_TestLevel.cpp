@@ -31,7 +31,8 @@ static void TestLevel_AddBlocker(RpgWorld* world, RpgVector3 center, RpgVector3 
 	{
 		// Add render component
 		RpgRenderComponent_Mesh* meshComp = world->GameObject_AddComponent<RpgRenderComponent_Mesh>(blocker);
-		meshComp->Model = model;
+		meshComp->Mesh = model->GetMeshLod(0, 0);
+		meshComp->Material = model->GetMaterial(0);
 		meshComp->bIsVisible = true;
 	}
 }
@@ -65,7 +66,8 @@ static void TestLevel_AddBox(RpgWorld* world, const RpgTransform& transform) noe
 	{
 		// Add render component
 		RpgRenderComponent_Mesh* meshComp = world->GameObject_AddComponent<RpgRenderComponent_Mesh>(box);
-		meshComp->Model = BoxModel;
+		meshComp->Mesh = BoxModel->GetMeshLod(0, 0);
+		meshComp->Material = BoxModel->GetMaterial(0);
 		meshComp->bIsVisible = true;
 	}
 }
@@ -105,7 +107,7 @@ static void TestLevel_AddLight_Spot(RpgWorld* world, const RpgTransform& transfo
 }
 
 
-static void TestLevel_OBJ(RpgWorld* world, const RpgFilePath& sourceFilePath, float scale, bool bGenerateTextureMipMaps = false, bool bIgnoreTextureNormals = false) noexcept
+static void TestLevel_Import(RpgWorld* world, const RpgFilePath& sourceFilePath, float scale = 1.0f, bool bGenerateTextureMipMaps = false, bool bIgnoreTextureNormals = false) noexcept
 {
 	RpgAssetImportSetting_Model setting;
 	setting.SourceFilePath = sourceFilePath;
@@ -131,7 +133,8 @@ static void TestLevel_OBJ(RpgWorld* world, const RpgFilePath& sourceFilePath, fl
 
 		RpgGameObjectID gameObject = world->GameObject_Create(model->GetName(), transform);
 		RpgRenderComponent_Mesh* meshComp = world->GameObject_AddComponent<RpgRenderComponent_Mesh>(gameObject);
-		meshComp->Model = model;
+		meshComp->Mesh = model->GetMeshLod(0, 0);
+		meshComp->Material = model->GetMaterial(0);
 		meshComp->bIsVisible = true;
 
 		/*
@@ -153,7 +156,7 @@ static void TestLevel_OBJ(RpgWorld* world, const RpgFilePath& sourceFilePath, fl
 
 static void TestLevel_Sponza(RpgWorld* world) noexcept
 {
-	TestLevel_OBJ(world, RpgFileSystem::GetAssetRawDirPath() + "model/sponza_phong/sponza.obj", 1.0f, false, true);
+	TestLevel_Import(world, RpgFileSystem::GetAssetRawDirPath() + "model/sponza_phong/sponza.obj", 1.0f, false, true);
 
 	RpgTransform transform;
 
@@ -174,7 +177,7 @@ static void TestLevel_Sponza(RpgWorld* world) noexcept
 
 static void TestLevel_PrimitiveShapes(RpgWorld* world) noexcept
 {
-	TestLevel_AddBlocker(world, RpgVector3::ZERO, RpgVector3(2048.0f, 16.0f, 2048.0f), 16.0f);
+	TestLevel_AddBlocker(world, RpgVector3::ZERO, RpgVector3(2048.0f, 16.0f, 2048.0f), 4.0f);
 
 	RpgTransform transform;
 
@@ -186,17 +189,17 @@ static void TestLevel_PrimitiveShapes(RpgWorld* world) noexcept
 		// +X
 		transform.Position = RpgVector3(300.0f, 500.0f, 0.0f);
 		TestLevel_AddBox(world, transform);
-		TestLevel_AddBlocker(world, RpgVector3(500.0f, 500.0f, 0.0f), RpgVector3(16, 200.0f, 200.0f), 4.0f);
+		TestLevel_AddBlocker(world, RpgVector3(500.0f, 500.0f, 0.0f), RpgVector3(16, 200.0f, 200.0f), 1.0f);
 
 		// -X
 		transform.Position = RpgVector3(-300.0f, 500.0f, 0.0f);
 		TestLevel_AddBox(world, transform);
-		TestLevel_AddBlocker(world, RpgVector3(-500.0f, 500.0f, 0.0f), RpgVector3(16, 200.0f, 200.0f), 4.0f);
+		TestLevel_AddBlocker(world, RpgVector3(-500.0f, 500.0f, 0.0f), RpgVector3(16, 200.0f, 200.0f), 1.0f);
 		
 		// +Y
 		transform.Position = RpgVector3(0.0f, 800.0f, 0.0f);
 		TestLevel_AddBox(world, transform);
-		TestLevel_AddBlocker(world, RpgVector3(0.0f, 1000.0f, 0.0f), RpgVector3(200.0f, 16.0f, 200.0f), 4.0f);
+		TestLevel_AddBlocker(world, RpgVector3(0.0f, 1000.0f, 0.0f), RpgVector3(200.0f, 16.0f, 200.0f), 1.0f);
 		
 		// -Y
 		transform.Position = RpgVector3(0.0f, 280.0f, 0.0f);
@@ -205,12 +208,12 @@ static void TestLevel_PrimitiveShapes(RpgWorld* world) noexcept
 		// +Z
 		transform.Position = RpgVector3(0.0f, 500.0f, 300.0f);
 		TestLevel_AddBox(world, transform);
-		TestLevel_AddBlocker(world, RpgVector3(0.0f, 500.0f, 500.0f), RpgVector3(200.0f, 200.0f, 16.0f), 4.0f);
+		TestLevel_AddBlocker(world, RpgVector3(0.0f, 500.0f, 500.0f), RpgVector3(200.0f, 200.0f, 16.0f), 1.0f);
 		
 		// -Z
 		transform.Position = RpgVector3(0.0f, 500.0f, -300.0f);
 		TestLevel_AddBox(world, transform);
-		TestLevel_AddBlocker(world, RpgVector3(0.0f, 500.0f, -500.0f), RpgVector3(200.0f, 200.0f, 16.0f), 4.0f);
+		TestLevel_AddBlocker(world, RpgVector3(0.0f, 500.0f, -500.0f), RpgVector3(200.0f, 200.0f, 16.0f), 1.0f);
 	}
 
 	// test spot light
@@ -288,7 +291,8 @@ static void TestLevel_Animations(RpgWorld* world) noexcept
 			RpgGameObjectID gameObject = world->GameObject_Create(RpgName::Format("test_%i_%i", x, z), transform);
 
 			RpgRenderComponent_Mesh* meshComp = world->GameObject_AddComponent<RpgRenderComponent_Mesh>(gameObject);
-			meshComp->Model = models[modelIndex];
+			meshComp->Mesh = models[modelIndex]->GetMeshLod(0, 0);
+			meshComp->Material = models[modelIndex]->GetMaterial(0);
 			meshComp->bIsVisible = true;
 
 			RpgAnimationComponent_AnimSkeletonPose* animComp = world->GameObject_AddComponent<RpgAnimationComponent_AnimSkeletonPose>(gameObject);
@@ -306,17 +310,20 @@ static void TestLevel_Animations(RpgWorld* world) noexcept
 }
 
 
+
 void RpgEngine::CreateTestLevel() noexcept
 {
 	//TestLevel_Sponza(MainWorld);
 
-	//TestLevel_OBJ(MainWorld, RpgFileSystem::GetAssetRawDirPath() + "model/lost_empire/lost_empire.obj", 100.0f);
-	//TestLevel_OBJ(MainWorld, RpgFileSystem::GetAssetRawDirPath() + "model/bunny/bunny.obj", 100.0f);
-	//TestLevel_OBJ(MainWorld, RpgFileSystem::GetAssetRawDirPath() + "model/RiggedFigure.glb", 100.0f);
-	//TestLevel_OBJ(MainWorld, RpgFileSystem::GetAssetRawDirPath() + "model/CesiumMilkTruck.glb", 100.0f);
+	//TestLevel_Import(MainWorld, RpgFileSystem::GetAssetRawDirPath() + "model/lost_empire/lost_empire.obj", 100.0f);
+	//TestLevel_Import(MainWorld, RpgFileSystem::GetAssetRawDirPath() + "model/bunny/bunny.obj", 100.0f);
+	//TestLevel_Import(MainWorld, RpgFileSystem::GetAssetRawDirPath() + "model/RiggedFigure.glb", 100.0f);
+	//TestLevel_Import(MainWorld, RpgFileSystem::GetAssetRawDirPath() + "model/CesiumMilkTruck.glb", 100.0f);
 
 	//TestLevel_Animations(MainWorld);
 
-	TestLevel_PrimitiveShapes(MainWorld);
+	//TestLevel_PrimitiveShapes(MainWorld);
+
+	TestLevel_Import(MainWorld, RpgFileSystem::GetAssetRawDirPath() + "default_cube.fbx", 1.0f);
 }
 

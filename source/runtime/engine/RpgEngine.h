@@ -78,11 +78,11 @@ private:
 	RpgSceneViewport SceneViewport;
 
 	// GUI context
-	RpgGuiContext GuiContext;
-	RpgUniquePtr<RpgGuiCanvas> GuiCanvas;
+	//RpgGuiContext GuiContext;
+	//RpgUniquePtr<RpgGuiCanvas> GuiCanvas;
 
 	// GUI console
-	RpgGuiConsole* GuiConsole;
+	//RpgGuiConsole* GuiConsole;
 
 	// Main camera object inside main world
 	RpgGameObjectID MainCameraObject;

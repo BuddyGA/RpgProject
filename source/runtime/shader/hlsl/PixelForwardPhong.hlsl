@@ -133,7 +133,7 @@ float4 PS_Main(PixelShaderInput input) : SV_TARGET
     }
     else
     {
-        const float2 scaledUV = input.TexCoord;
+        const float2 scaledUV = input.TexCoord * 8.0f;
         const float2 checker = floor(scaledUV) % 2.0f; //fmod(floor(scaledUV), 2.0f);
         diffuseColor = (checker.x + checker.y) % 2.0f < 1.0f ? 0.5f : 0.25f; // fmod(checker.x + checker.y, 2.0f) < 1.0f ? 0.5f : 0.25f;
     }

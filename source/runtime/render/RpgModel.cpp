@@ -57,7 +57,7 @@ void RpgModel::UpdateBound() noexcept
 
 	for (int m = 0; m < MeshCount; ++m)
 	{
-		const RpgBoundingAABB meshBound = Meshes[m][0]->CalculateBound();
+		const RpgBoundingAABB meshBound = Meshes[m][0]->GetBound();
 		Bound.Min = RpgVector3::Min(Bound.Min, meshBound.Min);
 		Bound.Max = RpgVector3::Max(Bound.Max, meshBound.Max);
 	}

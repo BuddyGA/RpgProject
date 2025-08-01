@@ -125,7 +125,7 @@ void RpgThreadPool::Initialize(int numOtherDedicatedThreads) noexcept
 
 	RPG_Log(RpgLogSystem, "Initialize threadpool with %i worker threads", numThreadWorkers);
 
-	SignalSemaphore = CreateSemaphoreA(NULL, 0, LONG_MAX, NULL);
+	SignalSemaphore = CreateSemaphoreA(NULL, 0, UINT16_MAX, NULL);
 	ThreadWorkers.Resize(numThreadWorkers);
 
 	for (int i = 0; i < numThreadWorkers; ++i)

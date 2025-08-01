@@ -8,7 +8,7 @@ RpgAssetManager* g_AssetManager = nullptr;
 
 RpgAssetManager::RpgAssetManager() noexcept
 {
-	LoadedModelData = RpgPointer::MakeUnique<RpgAssetLoadedData<RpgModel>>();
+	LoadedMeshData = RpgPointer::MakeUnique<RpgAssetLoadedData<RpgMesh>>();
 	LoadedMaterialData = RpgPointer::MakeUnique<RpgAssetLoadedData<RpgMaterial>>();
 	LoadedTextureData = RpgPointer::MakeUnique<RpgAssetLoadedData<RpgTexture2D>>();
 }
@@ -16,7 +16,7 @@ RpgAssetManager::RpgAssetManager() noexcept
 
 void RpgAssetManager::Update() noexcept
 {
-	LoadedModelData->RemoveUnreferenced();
+	LoadedMeshData->RemoveUnreferenced();
 	LoadedMaterialData->RemoveUnreferenced();
 	LoadedTextureData->RemoveUnreferenced();
 }
@@ -104,29 +104,60 @@ bool RpgAssetManager::RegisterAssetFile(const RpgFilePath& filePath) noexcept
 }
 
 
-void RpgAssetManager::SaveModel(const RpgSharedModel& model) noexcept
+void RpgAssetManager::SaveMesh(const RpgSharedMesh& mesh) noexcept
 {
+	if (!mesh.IsValid())
+	{
+		RPG_LogError(RpgLogAsset, "Fail to save mesh to asset file. Invalid mesh asset!");
+		return;
+	}
+
+	RpgAssetFileHeader fileHeader;
+	fileHeader.Magix = RPG_ASSET_FILE_MAGIX;
+	fileHeader.Type = static_cast<uint16_t>(RpgAssetFileType::MESH);
+	fileHeader.Version = RPG_ASSET_FILE_VERSION_MESH;
+	fileHeader.OffsetBytes = 0;
+
+	fileHeader.SizeBytes = sizeof(RpgAssetFileHeader) +						// header
+		static_cast<uint32_t>(RpgMesh::s_CalculateAssetSizeBytes(mesh)) +	// data
+		sizeof(int);														// eof
+
+	RpgBinaryStreamWriter writer;
+	writer.Write(fileHeader);
+	mesh->StreamWrite(writer);
+	writer.Write(RPG_ASSET_FILE_MAGIX);
+
+	const RpgString assetFilePath = RpgString::Format("%smeshes/%s.rpga", *RpgFileSystem::GetAssetDirPath(), *mesh->GetName());
+	
+	if (!RpgFileSystem::WriteToFile(assetFilePath, writer.GetByteData(), writer.GetByteSize()))
+	{
+		RPG_LogError(RpgLogAsset, "Fail to save mesh (%s) to asset file (%s)", *mesh->GetName(), *assetFilePath);
+		return;
+	}
+
+	RPG_Log(RpgLogAsset, "Saved mesh (%s) to asset file (%s)", *mesh->GetName(), *assetFilePath);
+	RegisterAssetFile(assetFilePath);
 }
 
 
-RpgSharedModel RpgAssetManager::LoadModel(const RpgFilePath& filePath) noexcept
+RpgSharedMesh RpgAssetManager::LoadMesh(const RpgFilePath& filePath) noexcept
 {
 	const uint64_t hash = XXH3_64bits(*filePath, filePath.GetLength());
 
 	int index = RPG_INDEX_INVALID;
-	if (LoadedModelData->IsLoaded(hash, &index))
+	if (LoadedMeshData->IsLoaded(hash, &index))
 	{
-		return LoadedModelData->GetShared(index);
+		return LoadedMeshData->GetSharedAtIndex(index);
 	}
 
 	const RpgAssetInfo* info = GetAssetInfoByHash(hash);
 	if (info == nullptr)
 	{
-		RPG_LogError(RpgLogAsset, "Model asset (%s) not found in registry!", *filePath);
-		return RpgSharedModel();
+		RPG_LogError(RpgLogAsset, "Mesh asset (%s) not found in registry!", *filePath);
+		return RpgSharedMesh();
 	}
 
-	RPG_Check(info->Type == RpgAssetFileType::MODEL);
+	RPG_Check(info->Type == RpgAssetFileType::MESH);
 
-	return RpgSharedModel();
+	return RpgSharedMesh();
 }

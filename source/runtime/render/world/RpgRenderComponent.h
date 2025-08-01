@@ -18,7 +18,8 @@ class RpgRenderComponent_Mesh
 
 public:
 	RpgBoundingAABB Bound;
-	RpgSharedModel Model;
+	RpgSharedMesh Mesh;
+	RpgSharedMaterial Material;
 	bool bIsVisible;
 
 

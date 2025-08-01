@@ -22,8 +22,8 @@ public:
 	}
 
 
-	template<typename T>
-	inline void Write(const RpgArray<T>& dataArray) noexcept
+	template<typename T, int N>
+	inline void Write(const RpgArray<T, N>& dataArray) noexcept
 	{
 		int count = dataArray.GetCount();
 		WriteData(&count, sizeof(int));
@@ -81,8 +81,8 @@ public:
 	}
 
 
-	template<typename T>
-	inline void Read(RpgArray<T>& dataArray) noexcept
+	template<typename T, int N>
+	inline void Read(RpgArray<T, N>& dataArray) noexcept
 	{
 		int count = 0;
 		ReadData(&count, sizeof(int));

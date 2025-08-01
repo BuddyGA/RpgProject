@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/RpgString.h"
+#include "core/RpgStream.h"
 #include "core/RpgPointer.h"
 #include "core/RpgVertex.h"
 
@@ -44,10 +44,6 @@ public:
 
 	// Add vertex data to combine/merge in this single batch. Modify the index data internally if there's already vertex data
 	void AddBatchVertexData(int vertexCount, const RpgVertex::FMeshPosition* positionData, const RpgVertex::FMeshNormalTangent* normalTangentData, const RpgVertex::FMeshTexCoord* texCoordData, const RpgVertex::FMeshSkin* skinData, int indexCount, const RpgVertex::FIndex* indexData) noexcept;
-
-	// Calculate bounding volume AABB
-	RpgBoundingAABB CalculateBound() const noexcept;
-
 
 	// Clear vertex data
 	// @param bFreeMemory - Set TRUE to free memory instead of reset the container
@@ -189,8 +185,42 @@ public:
 		return (Flags & FLAG_Attribute_Index);
 	}
 
+	inline const RpgBoundingAABB& GetBound() const noexcept
+	{
+		return Bound;
+	}
+
+
+	inline void StreamWrite(RpgStreamWriter& writer) const noexcept
+	{
+		writer.Write(Name);
+		writer.Write(Positions);
+		writer.Write(NormalTangents);
+		writer.Write(TexCoords);
+		writer.Write(Skins);
+		writer.Write(Indices);
+		writer.Write(Flags);
+		writer.Write(Bound);
+	}
+
+
+	inline void StreamRead(RpgStreamReader& reader) noexcept
+	{
+		reader.Read(Name);
+		reader.Read(Positions);
+		reader.Read(NormalTangents);
+		reader.Read(TexCoords);
+		reader.Read(Skins);
+		reader.Read(Indices);
+		reader.Read(Flags);
+		reader.Read(Bound);
+	}
+
 
 private:
+	void UpdateBound() noexcept;
+
+
 	inline void WriteLockAll() noexcept
 	{
 		AcquireSRWLockExclusive(&LockPosition);
@@ -283,6 +313,10 @@ private:
 	uint8_t Flags;
 
 
+	// Bounding AABB
+	RpgBoundingAABB Bound;
+
+
 	// Reader-writer lock (vertex position)
 	mutable SRWLOCK LockPosition;
 
@@ -304,5 +338,11 @@ public:
 	// @param name - Mesh name
 	// @return Shared pointer of type <RpgMesh>
 	[[nodiscard]] static RpgSharedMesh s_CreateShared(const RpgName& name) noexcept;
+
+
+	// Calculate asset size bytes
+	// @param mesh - Shared pointer of type <RpgMesh>
+	// @return Total data size bytes as asset file
+	static size_t s_CalculateAssetSizeBytes(const RpgSharedMesh& mesh) noexcept;
 
 };

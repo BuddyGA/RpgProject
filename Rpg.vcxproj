@@ -209,12 +209,14 @@ copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(
     <ClCompile Include="source\runtime\animation\RpgAnimationPose.cpp" />
     <ClCompile Include="source\runtime\animation\world\RpgAnimationWorldSubsystem.cpp" />
     <ClCompile Include="source\runtime\gui\RpgGuiCanvas.cpp" />
+    <ClCompile Include="source\runtime\gui\RpgGuiWindow.cpp" />
     <ClCompile Include="source\runtime\render\RpgRenderThread.cpp" />
     <ClCompile Include="source\runtime\engine\script\RpgScript_Gameplay.cpp" />
     <ClCompile Include="source\runtime\gui\RpgGuiConsole.cpp" />
     <ClCompile Include="source\runtime\gui\RpgGuiContext.cpp" />
     <ClCompile Include="source\runtime\gui\RpgGuiTypes.cpp" />
     <ClCompile Include="source\runtime\physics\task\RpgPhysicsTask_TestOverlapPair.cpp" />
+    <ClCompile Include="source\runtime\thirdparty\nuklear\__nuklear__build.cpp" />
     <ClCompile Include="source\test\core\RpgTestCore_DSA_Algorithm.cpp" />
     <ClCompile Include="source\test\core\RpgTestCore_DSA_Array.cpp" />
     <ClCompile Include="source\test\core\RpgTestCore_DSA_FreeList.cpp" />
@@ -299,6 +301,7 @@ copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(
     <ClInclude Include="source\runtime\animation\RpgAnimationTypes.h" />
     <ClInclude Include="source\runtime\asset\task\RpgAssimpTypes.h" />
     <ClInclude Include="source\runtime\game\RpgGameTypes.h" />
+    <ClInclude Include="source\runtime\gui\RpgGuiWindow.h" />
     <ClInclude Include="source\runtime\render\RpgRenderThread.h" />
     <ClInclude Include="source\runtime\engine\script\RpgScript_Gameplay.h" />
     <ClInclude Include="source\runtime\gui\RpgGuiConsole.h" />

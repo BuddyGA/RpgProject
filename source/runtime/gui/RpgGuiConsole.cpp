@@ -6,6 +6,7 @@
 
 RpgGuiConsole::RpgGuiConsole() noexcept
 {
+	Name = "console";
 	Flags = RpgGui::FLAG_Layout;
 	Position = RpgPointFloat(8.0f, 8.0f);
 	Order = 200;
@@ -15,17 +16,18 @@ RpgGuiConsole::RpgGuiConsole() noexcept
 	InputTextCommand = nullptr;
 	bJustOpened = false;
 	bOpened = false;
+	SetVisibility(false);
 }
 
 
 void RpgGuiConsole::Initialize() noexcept
 {
 	LogLayout = AddChild<RpgGuiLayout>();
-	LogLayout->Name = "gui_console_logs";
+	LogLayout->Name = "console/logs";
 	LogLayout->Order = Order;
 
 	InputTextCommand = AddChild<RpgGuiInputText>();
-	InputTextCommand->Name = "gui_console_command";
+	InputTextCommand->Name = "console/command";
 	InputTextCommand->Order = Order;
 	InputTextCommand->bExitFocusOnEnter = false;
 	InputTextCommand->TextFont = RpgFont::s_GetDefault_ShareTechMono();

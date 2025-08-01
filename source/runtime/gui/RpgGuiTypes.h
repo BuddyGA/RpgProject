@@ -221,10 +221,6 @@ private:
 class RpgGuiContext
 {
 public:
-	RpgGuiContext() noexcept;
-
-
-public:
 	RpgPointFloat MouseCursorPosition;
 	RpgPointFloat MouseCursorDeltaPosition;
 	RpgPointFloat MouseScrollValue;
@@ -241,6 +237,8 @@ public:
 
 
 public:
+	RpgGuiContext() noexcept;
+
 	void MouseMove(const RpgPlatformMouseMoveEvent& e) noexcept;
 	void MouseWheel(const RpgPlatformMouseWheelEvent& e) noexcept;
 	void MouseButton(const RpgPlatformMouseButtonEvent& e) noexcept;
