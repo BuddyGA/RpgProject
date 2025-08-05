@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../RpgGuiTypes.h"
+#include "RpgGuiWidget.h"
 
 
 
@@ -24,16 +24,16 @@ public:
 
 
 public:
-	RpgGuiLayout() noexcept;
+	RpgGuiLayout(const RpgName& in_Name) noexcept;
 	RpgGuiLayout(const RpgName& in_Name, RpgPointFloat in_Dimension, EDirection in_Direction) noexcept;
 
-	virtual RpgRectFloat UpdateRect(const RpgGuiContext& context, const RpgGuiCanvas& canvas, const RpgPointFloat& offset) noexcept override;
+	virtual RpgRectFloat UpdateRect(const RpgGuiContext& context, const RpgRectFloat& canvasRect, const RpgPointFloat& offset) noexcept override;
 
 	void SetScrollValue(float x, float y) noexcept;
 
 
 protected:
-	virtual void OnRender(const RpgGuiContext& context, RpgRenderer2D& renderer, const RpgRectFloat& parentClipRect) const noexcept override;
+	virtual void OnRender(RpgRenderer2D& renderer) const noexcept override;
 
 
 private:

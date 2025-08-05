@@ -10,21 +10,21 @@ namespace RpgVertex
 	struct FPrimitive2D
 	{
 		DirectX::XMFLOAT2 Position;
-		RpgColorRGBA Color;
+		RpgColor Color;
 	};
 
 	struct FMesh2D
 	{
 		DirectX::XMFLOAT2 Position;
 		DirectX::XMFLOAT2 TexCoord;
-		RpgColorRGBA Color;
+		RpgColor Color;
 	};
 
 
 	struct FPrimitive
 	{
 		RpgVector4 Position;
-		RpgColorRGBA Color;
+		RpgColor Color;
 	};
 
 
@@ -97,8 +97,8 @@ class RpgVertexPrimitiveBatchLine
 public:
 	RpgVertexPrimitiveBatchLine() noexcept = default;
 
-	void AddLine(const RpgVector3& p0, const RpgVector3& p1, RpgColorRGBA color) noexcept;
-	void AddAABB(const RpgBoundingAABB& aabb, RpgColorRGBA color) noexcept;
+	void AddLine(const RpgVector3& p0, const RpgVector3& p1, RpgColor color) noexcept;
+	void AddAABB(const RpgBoundingAABB& aabb, RpgColor color) noexcept;
 
 
 	inline void Clear(bool bFreeMemory = false) noexcept
@@ -158,7 +158,7 @@ class RpgVertexPrimitiveBatchMesh
 public:
 	RpgVertexPrimitiveBatchMesh() noexcept = default;
 
-	void AddTriangle(const RpgVector3& p0, const RpgVector3& p1, const RpgVector3& p2, RpgColorRGBA color) noexcept;
+	void AddTriangle(const RpgVector3& p0, const RpgVector3& p1, const RpgVector3& p2, RpgColor color) noexcept;
 	
 
 	inline void Clear(bool bFreeMemory = false) noexcept

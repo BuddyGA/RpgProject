@@ -1,14 +1,14 @@
 #include "RpgTypes.h"
 
 
-const RpgColorRGBA RpgColorRGBA::BLACK(0, 0, 0, 255);
-const RpgColorRGBA RpgColorRGBA::BLACK_TRANSPARENT(0, 0, 0, 0);
-const RpgColorRGBA RpgColorRGBA::BLUE(0, 0, 255, 255);
-const RpgColorRGBA RpgColorRGBA::GREEN(0, 255, 0, 255);
-const RpgColorRGBA RpgColorRGBA::RED(255, 0, 0, 255);
-const RpgColorRGBA RpgColorRGBA::WHITE(255, 255, 255, 255);
-const RpgColorRGBA RpgColorRGBA::WHITE_TRANSPARENT(255, 255, 255, 0);
-const RpgColorRGBA RpgColorRGBA::YELLOW(255, 255, 0, 255);
+const RpgColor RpgColor::BLACK(0, 0, 0, 255);
+const RpgColor RpgColor::BLACK_TRANSPARENT(0, 0, 0, 0);
+const RpgColor RpgColor::BLUE(0, 0, 255, 255);
+const RpgColor RpgColor::GREEN(0, 255, 0, 255);
+const RpgColor RpgColor::RED(255, 0, 0, 255);
+const RpgColor RpgColor::WHITE(255, 255, 255, 255);
+const RpgColor RpgColor::WHITE_TRANSPARENT(255, 255, 255, 0);
+const RpgColor RpgColor::YELLOW(255, 255, 0, 255);
 
 
 

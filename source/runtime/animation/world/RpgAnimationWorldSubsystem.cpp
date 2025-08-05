@@ -102,14 +102,14 @@ void RpgAnimationWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) n
 			for (int b = 0; b < boneCount; ++b)
 			{
 				const RpgVector3 bonePosition = bonePoseTransforms[b].GetPosition() * gameObjectWorldMatrix;
-				debugLine->AddAABB(RpgBoundingAABB(bonePosition - 2.0f, bonePosition + 2.0f), RpgColorRGBA::RED);
+				debugLine->AddAABB(RpgBoundingAABB(bonePosition - 2.0f, bonePosition + 2.0f), RpgColor::RED);
 
 				const int boneParentIndex = boneParentIndices[b];
 				
 				if (boneParentIndex != RPG_SKELETON_BONE_INDEX_INVALID)
 				{
 					const RpgVector3 boneParentPosition = bonePoseTransforms[boneParentIndex].GetPosition() * gameObjectWorldMatrix;
-					debugLine->AddLine(boneParentPosition, bonePosition, RpgColorRGBA::WHITE);
+					debugLine->AddLine(boneParentPosition, bonePosition, RpgColor::WHITE);
 				}
 
 				// Bone name

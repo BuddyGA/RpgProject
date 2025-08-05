@@ -64,11 +64,32 @@ namespace RpgType
 	template<> struct IsFloat<double> { static constexpr bool Value = true; };
 
 
+	// A type is arithmetic if type is integral or float
 	template<typename T>
 	struct IsArithmetic
 	{
 		static constexpr bool Value = IsIntegral<T>::Value || IsFloat<T>::Value;
 	};
+
+
+	/*
+	// A type is trivially copyable if:
+	// - It has at least one eligible copy constructor, move constructor, copy assignment operator, or move assignment operator.
+	// - Every eligible copy constructor, move constructor, copy assignment operator, and move assignment operator (if any) is trivial.
+	// - It has a trivial non - deleted destructor.
+	template<typename T>
+	struct IsTriviallyCopyable
+	{
+		static constexpr bool Value = __is_trivially_copyable(T);
+	};
+
+
+	template<typename T>
+	struct IsMoveAssignable
+	{
+		static constexpr bool Value = __is_assignable(T&, T&&);
+	};
+	*/
 
 
 	template<typename T>
@@ -351,56 +372,57 @@ public:
 
 	inline void UpdateRects(const RpgRectFloat& windowRect) noexcept
 	{
-		RpgRectFloat& bdr_LT = BorderRects[LEFT_TOP];
-		bdr_LT.Left = windowRect.Left;
-		bdr_LT.Top = windowRect.Top;
-		bdr_LT.Right = bdr_LT.Left + BorderThickness;
-		bdr_LT.Bottom = bdr_LT.Top + BorderThickness;
+		RpgRectFloat& borderLeftTop = BorderRects[LEFT_TOP];
+		borderLeftTop.Left = windowRect.Left;
+		borderLeftTop.Top = windowRect.Top;
+		borderLeftTop.Right = borderLeftTop.Left + BorderThickness;
+		borderLeftTop.Bottom = borderLeftTop.Top + BorderThickness;
 
-		RpgRectFloat& bdr_RT = BorderRects[RIGHT_TOP];
-		bdr_RT.Right = windowRect.Right;
-		bdr_RT.Top = windowRect.Top;
-		bdr_RT.Left = bdr_RT.Right - BorderThickness;
-		bdr_RT.Bottom = bdr_RT.Top + BorderThickness;
+		RpgRectFloat& borderRightTop = BorderRects[RIGHT_TOP];
+		borderRightTop.Right = windowRect.Right;
+		borderRightTop.Top = windowRect.Top;
+		borderRightTop.Left = borderRightTop.Right - BorderThickness;
+		borderRightTop.Bottom = borderRightTop.Top + BorderThickness;
 
-		RpgRectFloat& bdr_LB = BorderRects[LEFT_BOTTOM];
-		bdr_LB.Left = windowRect.Left;
-		bdr_LB.Bottom = windowRect.Bottom;
-		bdr_LB.Right = bdr_LB.Left + BorderThickness;
-		bdr_LB.Top = bdr_LB.Bottom - BorderThickness;
+		RpgRectFloat& borderLeftBottom = BorderRects[LEFT_BOTTOM];
+		borderLeftBottom.Left = windowRect.Left;
+		borderLeftBottom.Bottom = windowRect.Bottom;
+		borderLeftBottom.Right = borderLeftBottom.Left + BorderThickness;
+		borderLeftBottom.Top = borderLeftBottom.Bottom - BorderThickness;
 
-		RpgRectFloat& bdr_RB = BorderRects[RIGHT_BOTTOM];
-		bdr_RB.Right = windowRect.Right;
-		bdr_RB.Bottom = windowRect.Bottom;
-		bdr_RB.Left = bdr_RB.Right - BorderThickness;
-		bdr_RB.Top = bdr_RB.Bottom - BorderThickness;
+		RpgRectFloat& borderRightBottom = BorderRects[RIGHT_BOTTOM];
+		borderRightBottom.Right = windowRect.Right;
+		borderRightBottom.Bottom = windowRect.Bottom;
+		borderRightBottom.Left = borderRightBottom.Right - BorderThickness;
+		borderRightBottom.Top = borderRightBottom.Bottom - BorderThickness;
 
-		RpgRectFloat& bdr_L = BorderRects[LEFT];
-		bdr_L.Left = bdr_LT.Left;
-		bdr_L.Right = bdr_LT.Right;
-		bdr_L.Top = bdr_LT.Bottom + SpaceBetweenBorder;
-		bdr_L.Bottom = bdr_LB.Top - SpaceBetweenBorder;
+		RpgRectFloat& borderLeft = BorderRects[LEFT];
+		borderLeft.Left = borderLeftTop.Left;
+		borderLeft.Right = borderLeftTop.Right;
+		borderLeft.Top = borderLeftTop.Bottom + SpaceBetweenBorder;
+		borderLeft.Bottom = borderLeftBottom.Top - SpaceBetweenBorder;
 
-		RpgRectFloat& bdr_R = BorderRects[RIGHT];
-		bdr_R.Left = bdr_RT.Left;
-		bdr_R.Right = bdr_RT.Right;
-		bdr_R.Top = bdr_RT.Bottom + SpaceBetweenBorder;
-		bdr_R.Bottom = bdr_RB.Top - SpaceBetweenBorder;
+		RpgRectFloat& borderRight = BorderRects[RIGHT];
+		borderRight.Left = borderRightTop.Left;
+		borderRight.Right = borderRightTop.Right;
+		borderRight.Top = borderRightTop.Bottom + SpaceBetweenBorder;
+		borderRight.Bottom = borderRightBottom.Top - SpaceBetweenBorder;
 
-		RpgRectFloat& bdr_T = BorderRects[TOP];
-		bdr_T.Top = bdr_LT.Top;
-		bdr_T.Bottom = bdr_LT.Bottom;
-		bdr_T.Left = bdr_LT.Right + SpaceBetweenBorder;
-		bdr_T.Right = bdr_RT.Left - SpaceBetweenBorder;
+		RpgRectFloat& borderTop = BorderRects[TOP];
+		borderTop.Top = borderLeftTop.Top;
+		borderTop.Bottom = borderLeftTop.Bottom;
+		borderTop.Left = borderLeftTop.Right + SpaceBetweenBorder;
+		borderTop.Right = borderRightTop.Left - SpaceBetweenBorder;
 
-		RpgRectFloat& bdr_B = BorderRects[BOTTOM];
-		bdr_B.Top = bdr_LB.Top;
-		bdr_B.Bottom = bdr_LB.Bottom;
-		bdr_B.Left = bdr_LB.Right + SpaceBetweenBorder;
-		bdr_B.Right = bdr_RB.Left - SpaceBetweenBorder;
+		RpgRectFloat& borderBottom = BorderRects[BOTTOM];
+		borderBottom.Top = borderLeftBottom.Top;
+		borderBottom.Bottom = borderLeftBottom.Bottom;
+		borderBottom.Left = borderLeftBottom.Right + SpaceBetweenBorder;
+		borderBottom.Right = borderRightBottom.Left - SpaceBetweenBorder;
 	}
 
 
+	// Get rect area inside border
 	inline RpgRectFloat GetInnerRect() const noexcept
 	{
 		return RpgRectFloat(
@@ -429,33 +451,33 @@ public:
 
 
 
-class RpgColorRGBA
+class RpgColor
 {
 public:
 	uint8_t R, G, B, A;
 
-	static const RpgColorRGBA BLACK;
-	static const RpgColorRGBA BLACK_TRANSPARENT;
-	static const RpgColorRGBA BLUE;
-	static const RpgColorRGBA GREEN;
-	static const RpgColorRGBA RED;
-	static const RpgColorRGBA WHITE;
-	static const RpgColorRGBA WHITE_TRANSPARENT;
-	static const RpgColorRGBA YELLOW;
+	static const RpgColor BLACK;
+	static const RpgColor BLACK_TRANSPARENT;
+	static const RpgColor BLUE;
+	static const RpgColor GREEN;
+	static const RpgColor RED;
+	static const RpgColor WHITE;
+	static const RpgColor WHITE_TRANSPARENT;
+	static const RpgColor YELLOW;
 
 
 public:
-	RpgColorRGBA() noexcept
+	RpgColor() noexcept
 		: R(0), G(0), B(0), A(0)
 	{
 	}
 
-	RpgColorRGBA(uint8_t in_R, uint8_t in_G, uint8_t in_B, uint8_t in_A = 255) noexcept
+	RpgColor(uint8_t in_R, uint8_t in_G, uint8_t in_B, uint8_t in_A = 255) noexcept
 		: R(in_R), G(in_G), B(in_B), A(in_A)
 	{
 	}
 
-	RpgColorRGBA(uint32_t rgba) noexcept
+	RpgColor(uint32_t rgba) noexcept
 	{
 		R = (rgba & 0x000000FF);
 		G = (rgba & 0x0000FF00) >> 8;
@@ -493,7 +515,7 @@ public:
 	{
 	}
 
-	explicit RpgColorLinear(const RpgColorRGBA& rgba) noexcept
+	explicit RpgColorLinear(const RpgColor& rgba) noexcept
 	{
 		R = rgba.R / 255.0f;
 		G = rgba.G / 255.0f;

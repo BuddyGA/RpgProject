@@ -1,6 +1,8 @@
 #pragma once
 
-#include "widget/RpgGuiLayout.h"
+#include "../RpgGuiLayout.h"
+#include "RpgGuiButton.h"
+#include "RpgGuiText.h"
 
 
 
@@ -8,16 +10,21 @@ class RpgGuiWindow : public RpgGuiWidget
 {
 public:
 	float BorderThickness;
-	RpgColorRGBA BorderColor;
-	RpgColorRGBA BackgroundColor;
-	RpgName TitleText;
+	RpgColor BorderColor;
+	RpgColor BackgroundColor;
 	float TitleHeight;
 
 
 public:
-	RpgGuiWindow() noexcept;
+	RpgGuiWindow(const RpgName& in_Name) noexcept;
 	virtual void Initialize() noexcept override;
-	virtual RpgRectFloat UpdateRect(const RpgGuiContext& context, const RpgGuiCanvas& canvas, const RpgPointFloat& offset) noexcept override;
+	virtual RpgRectFloat UpdateRect(const RpgGuiContext& context, const RpgRectFloat& canvasRect, const RpgPointFloat& offset) noexcept override;
+
+
+	inline void SetTitleText(const RpgName& in_TitleText) noexcept
+	{
+		TitleText->SetTextValue(RpgString(*in_TitleText));
+	}
 
 
 	inline void Open() noexcept
@@ -52,7 +59,7 @@ public:
 
 
 protected:
-	virtual void OnRender(const RpgGuiContext& context, RpgRenderer2D& renderer, const RpgRectFloat& parentClipRect) const noexcept override;
+	virtual void OnRender(RpgRenderer2D& renderer) const noexcept override;
 	
 
 	template<typename TWidget, typename...TConstructorArgs>
@@ -63,6 +70,8 @@ protected:
 
 
 private:
+	RpgGuiButton* TitleButton;
+	RpgGuiText* TitleText;
 	RpgGuiLayout* LayoutContent;
 	bool bOpened;
 

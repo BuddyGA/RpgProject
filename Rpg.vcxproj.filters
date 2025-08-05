@@ -228,13 +228,13 @@
     <ClCompile Include="source\test\gui\RpgTestGui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\gui\RpgGuiConsole.cpp">
+    <ClCompile Include="source\runtime\gui\widget\RpgGuiConsole.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\gui\widget\RpgGuiInputText.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\gui\widget\RpgGuiLayout.cpp">
+    <ClCompile Include="source\runtime\gui\RpgGuiLayout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\gui\RpgGuiContext.cpp">
@@ -267,13 +267,16 @@
     <ClCompile Include="source\runtime\render\RpgRenderThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\gui\RpgGuiCanvas.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\gui\RpgGuiWindow.cpp">
+    <ClCompile Include="source\runtime\gui\widget\RpgGuiWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\thirdparty\nuklear\__nuklear__build.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\gui\widget\RpgGuiText.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\gui\RpgGuiWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -506,13 +509,13 @@
     <ClInclude Include="source\test\gui\RpgTestGui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\gui\RpgGuiConsole.h">
+    <ClInclude Include="source\runtime\gui\widget\RpgGuiConsole.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\gui\widget\RpgGuiInputText.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\gui\widget\RpgGuiLayout.h">
+    <ClInclude Include="source\runtime\gui\RpgGuiLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\input\RpgInputWindows.h">
@@ -530,7 +533,19 @@
     <ClInclude Include="source\runtime\game\RpgGameTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\gui\RpgGuiWindow.h">
+    <ClInclude Include="source\runtime\gui\widget\RpgGuiWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\gui\widget\RpgGuiText.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\gui\RpgGuiWidget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\gui\RpgGuiCanvas.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\gui\RpgGuiContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

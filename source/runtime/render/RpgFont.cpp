@@ -211,7 +211,7 @@ RpgRectFloat RpgFont::CalculateTextSelectionRect(const char* text, int length, c
 }
 
 
-int RpgFont::GenerateTextVertex(const char* text, int length, RpgPointFloat textPosition, RpgColorRGBA color, RpgVertexMesh2DArray& out_Vertexes, RpgVertexIndexArray& out_Indexes, int* optOut_VertexCount, int* optOut_IndexCount) const noexcept
+int RpgFont::GenerateTextVertex(const char* text, int length, RpgPointFloat textPosition, RpgColor color, RpgVertexMesh2DArray& out_Vertexes, RpgVertexIndexArray& out_Indexes, int* optOut_VertexCount, int* optOut_IndexCount) const noexcept
 {
 	if (optOut_VertexCount)
 	{

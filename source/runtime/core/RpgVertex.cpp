@@ -14,7 +14,7 @@ void RpgVertexGeometryFactory::UpdateBatchIndices(RpgVertexIndexArray& out_Indic
 	for (int i = 0; i < sseCount; i += 4)
 	{
 		const int dstIndex = baseIndex + i;
-		__m128i* vecIndexData = (__m128i*)(out_Indices.GetData() + dstIndex);
+		__m128i* vecIndexData = (__m128i*)(out_Indices.GetData(dstIndex));
 		__m128i vecIndices = _mm_loadu_si128(vecIndexData);
 		__m128i vecIndicesAddedOffsets = _mm_add_epi32(vecIndices, vecVertexOffset);
 		_mm_storeu_si128(vecIndexData, vecIndicesAddedOffsets);
@@ -235,7 +235,7 @@ void RpgVertexGeometryFactory::CreateMeshBox(RpgVertexMeshPositionArray& out_Pos
 // ============================================================================================================================================= //
 // VERTEX PRIMITIVE BATCH LINE
 // ============================================================================================================================================= //
-void RpgVertexPrimitiveBatchLine::AddLine(const RpgVector3& p0, const RpgVector3& p1, RpgColorRGBA color) noexcept
+void RpgVertexPrimitiveBatchLine::AddLine(const RpgVector3& p0, const RpgVector3& p1, RpgColor color) noexcept
 {
 	const uint32_t baseVertex = static_cast<uint32_t>(Vertices.GetCount());
 
@@ -252,7 +252,7 @@ void RpgVertexPrimitiveBatchLine::AddLine(const RpgVector3& p0, const RpgVector3
 }
 
 
-void RpgVertexPrimitiveBatchLine::AddAABB(const RpgBoundingAABB& aabb, RpgColorRGBA color) noexcept
+void RpgVertexPrimitiveBatchLine::AddAABB(const RpgBoundingAABB& aabb, RpgColor color) noexcept
 {
 	const RpgVector3 vertices[8] =
 	{
@@ -288,7 +288,7 @@ void RpgVertexPrimitiveBatchLine::AddAABB(const RpgBoundingAABB& aabb, RpgColorR
 // ============================================================================================================================================= //
 // VERTEX PRIMITIVE BATCH MESH
 // ============================================================================================================================================= //
-void RpgVertexPrimitiveBatchMesh::AddTriangle(const RpgVector3& p0, const RpgVector3& p1, const RpgVector3& p2, RpgColorRGBA color) noexcept
+void RpgVertexPrimitiveBatchMesh::AddTriangle(const RpgVector3& p0, const RpgVector3& p1, const RpgVector3& p2, RpgColor color) noexcept
 {
 	const uint32_t baseVertex = static_cast<uint32_t>(Vertices.GetCount());
 

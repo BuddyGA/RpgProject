@@ -17,7 +17,7 @@ public:
 
 	void BeginRender(int frameIndex, float deltaTime) noexcept;
 	void EndRender(int frameIndex, float deltaTime) noexcept;
-	void Execute(int frameIndex, float deltaTime) noexcept;
+	void Execute(uint64_t frameCounter, int frameIndex, float deltaTime) noexcept;
 	void RegisterWorld(const RpgWorld* world) noexcept;
 	void UnregisterWorld(const RpgWorld* world) noexcept;
 

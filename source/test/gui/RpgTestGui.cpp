@@ -1,13 +1,14 @@
 #include "RpgTestGui.h"
-#include "gui/widget/RpgGuiLayout.h"
+#include "gui/RpgGuiCanvas.h"
+#include "gui/RpgGuiLayout.h"
 #include "gui/widget/RpgGuiButton.h"
 #include "gui/widget/RpgGuiInputText.h"
 
 
 
-void RpgTest::Gui::Create(RpgGuiCanvas* canvas) noexcept
+void RpgTest::Gui::Create(RpgGuiCanvas& canvas) noexcept
 {
-	RpgGuiLayout* layoutA = canvas->AddChild<RpgGuiLayout>("layoutA", RpgPointFloat(256, 512), RpgGuiLayout::DIRECTION_VERTICAL);
+	RpgGuiLayout* layoutA = canvas.AddChild<RpgGuiLayout>("layoutA", RpgPointFloat(256, 512), RpgGuiLayout::DIRECTION_VERTICAL);
 	{
 		layoutA->Position = RpgPointFloat(256, 256);
 		layoutA->bScrollableVertical = true;
@@ -31,7 +32,7 @@ void RpgTest::Gui::Create(RpgGuiCanvas* canvas) noexcept
 	}
 
 
-	RpgGuiLayout* layoutC = canvas->AddChild<RpgGuiLayout>("layoutC", RpgPointFloat(256, 256), RpgGuiLayout::DIRECTION_VERTICAL);
+	RpgGuiLayout* layoutC = canvas.AddChild<RpgGuiLayout>("layoutC", RpgPointFloat(256, 256), RpgGuiLayout::DIRECTION_VERTICAL);
 	{
 		layoutC->Position = RpgPointFloat(512, 512);
 		layoutC->bScrollableVertical = true;

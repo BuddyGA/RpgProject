@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gui/RpgGuiWindow.h"
+#include "gui/widget/RpgGuiWindow.h"
 #include "RpgEditorTypes.h"
 
 

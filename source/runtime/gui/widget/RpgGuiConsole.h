@@ -1,6 +1,6 @@
 #pragma once
 
-#include "widget/RpgGuiInputText.h"
+#include "RpgGuiInputText.h"
 
 
 
@@ -14,7 +14,7 @@ public:
 public:
 	RpgGuiConsole() noexcept;
 	virtual void Initialize() noexcept override;
-	virtual RpgRectFloat UpdateRect(const RpgGuiContext& context, const RpgGuiCanvas& canvas, const RpgPointFloat& offset) noexcept override;
+	virtual RpgRectFloat UpdateRect(const RpgGuiContext& context, const RpgRectFloat& canvasRect, const RpgPointFloat& offset) noexcept override;
 
 
 	inline void Open() noexcept
@@ -51,7 +51,7 @@ public:
 
 protected:
 	virtual void OnUpdate(RpgGuiContext& context) noexcept override;
-	virtual void OnRender(const RpgGuiContext& context, RpgRenderer2D& renderer, const RpgRectFloat& parentClipRect) const noexcept override;
+	virtual void OnRender(RpgRenderer2D& renderer) const noexcept override;
 
 private:
 	void Callback_InputTextCommand_Committed(const RpgString& value) noexcept;

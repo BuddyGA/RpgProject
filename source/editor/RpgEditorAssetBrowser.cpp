@@ -4,7 +4,6 @@
 
 
 RpgEditorAssetBrowser::RpgEditorAssetBrowser() noexcept
+	: RpgGuiWindow("ed_asset_browser")
 {
-	Name = "ed_asset_browser";
-	TitleText = "ASSET BROWSER";
 }

@@ -1,11 +1,13 @@
 #include "RpgGuiInputText.h"
+#include "../RpgGuiContext.h"
 #include "render/RpgRenderer2D.h"
 
 
 
-RpgGuiInputText::RpgGuiInputText() noexcept
+RpgGuiInputText::RpgGuiInputText(const RpgName& in_Name) noexcept
+	: RpgGuiWidget(in_Name)
 {
-	Flags |= RpgGui::FLAG_InputFocus;
+	Flags = RpgGui::FLAG_Layout | RpgGui::FLAG_InputFocus;
 
 	NumberMinValue = 0.0f;
 	NumberMaxValue = 0.0f;
@@ -16,10 +18,10 @@ RpgGuiInputText::RpgGuiInputText() noexcept
 	bCommitOnLostFocus = true;
 	bExitFocusOnEnter = true;
 
-	TextColor = RpgColorRGBA::WHITE;
-	HighlightColor = RpgColorRGBA(50, 100, 150);
-	DefaultBackgroundColor = RpgColorRGBA(10, 20, 30);
-	FocusedBackgroundColor = RpgColorRGBA(20, 40, 60);
+	TextColor = RpgColor::WHITE;
+	HighlightColor = RpgColor(50, 100, 150);
+	DefaultBackgroundColor = RpgColor(10, 20, 30);
+	FocusedBackgroundColor = RpgColor(20, 40, 60);
 
 	State = STATE_NONE;
 	CursorIndex = RPG_INDEX_INVALID;
@@ -32,9 +34,8 @@ RpgGuiInputText::RpgGuiInputText() noexcept
 
 
 RpgGuiInputText::RpgGuiInputText(const RpgName& in_Name, RpgPointFloat in_Dimension) noexcept
-	: RpgGuiInputText()
+	: RpgGuiInputText(in_Name)
 {
-	Name = in_Name;
 	Dimension = in_Dimension;
 }
 
@@ -48,8 +49,6 @@ void RpgGuiInputText::OnFocusedEnter(RpgGuiContext& context) noexcept
 	TempValue = Value;
 	CursorIndex = Value.GetLength();
 	bWasCancelled = false;
-
-	context.BeginTextInput();
 }
 
 
@@ -64,11 +63,6 @@ void RpgGuiInputText::OnFocusedExit(RpgGuiContext& context) noexcept
 	}
 
 	TempValue.Clear();
-
-	if (State == STATE_EDIT)
-	{
-		context.EndTextInput();
-	}
 
 	State = STATE_NONE;
 	bWasCancelled = false;
@@ -236,10 +230,8 @@ void RpgGuiInputText::OnUpdate(RpgGuiContext& context) noexcept
 }
 
 
-void RpgGuiInputText::OnRender(const RpgGuiContext& context, RpgRenderer2D& renderer, const RpgRectFloat& parentClipRect) const noexcept
+void RpgGuiInputText::OnRender(RpgRenderer2D& renderer) const noexcept
 {
-	RpgGuiLayout::OnRender(context, renderer, parentClipRect);
-
 	// Set cursor
 	if (IsHovered())
 	{
@@ -252,12 +244,12 @@ void RpgGuiInputText::OnRender(const RpgGuiContext& context, RpgRenderer2D& rend
 
 
 	// Draw rect
-	RpgColorRGBA color = DefaultBackgroundColor;
+	RpgColor color = DefaultBackgroundColor;
 
 	if (IsFocused())
 	{
 		color = FocusedBackgroundColor;
-		renderer.AddLineRect(AbsoluteRect, RpgColorRGBA::WHITE);
+		renderer.AddLineRect(AbsoluteRect, RpgColor::YELLOW);
 	}
 
 	renderer.AddMeshRect(AbsoluteRect, color);
@@ -282,7 +274,7 @@ void RpgGuiInputText::OnRender(const RpgGuiContext& context, RpgRenderer2D& rend
 	if ((GetTickCount64() / 500) % 2 == 0 && (State == STATE_EDIT))
 	{
 		const RpgPointFloat cursorPos = font->CalculateTextCursorPosition(textString.GetData(), textString.GetLength(), textPos, CursorIndex);
-		renderer.AddMeshRect(RpgRectFloat(cursorPos.X, cursorPos.Y, cursorPos.X + 1.0f, cursorPos.Y + pixelHeight), RpgColorRGBA(200, 0, 0));
+		renderer.AddMeshRect(RpgRectFloat(cursorPos.X, cursorPos.Y, cursorPos.X + 1.0f, cursorPos.Y + pixelHeight), RpgColor(200, 0, 0));
 	}
 
 

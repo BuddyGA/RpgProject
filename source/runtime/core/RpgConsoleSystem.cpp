@@ -24,7 +24,7 @@ RpgConsoleSystem::RpgConsoleSystem() noexcept
 }
 
 
-void RpgConsoleSystem::AddLogMessage(const char* message, RpgColorRGBA color) noexcept
+void RpgConsoleSystem::AddLogMessage(const char* message, RpgColor color) noexcept
 {
 	if (message == nullptr)
 	{
@@ -55,28 +55,28 @@ void RpgConsoleSystem::AddLogCategoryMessage(const RpgPlatformLog::FCategory& ca
 	}
 
 	RpgPlatformConsole::EOutputColor consoleOutputColor = RpgPlatformConsole::OUTPUT_COLOR_DEFAULT;
-	RpgColorRGBA color = RpgColorRGBA::WHITE;
+	RpgColor color = RpgColor::WHITE;
 
 	switch (verbosity)
 	{
 		case RpgPlatformLog::VERBOSITY_DEBUG:
 		{
 			consoleOutputColor = RpgPlatformConsole::OUTPUT_COLOR_GREEN;
-			color = RpgColorRGBA::GREEN;
+			color = RpgColor::GREEN;
 			break;
 		}
 
 		case RpgPlatformLog::VERBOSITY_WARN:
 		{
 			consoleOutputColor = RpgPlatformConsole::OUTPUT_COLOR_YELLOW;
-			color = RpgColorRGBA::YELLOW;
+			color = RpgColor::YELLOW;
 			break;
 		}
 
 		case RpgPlatformLog::VERBOSITY_ERROR:
 		{
 			consoleOutputColor = RpgPlatformConsole::OUTPUT_COLOR_RED;
-			color = RpgColorRGBA::RED;
+			color = RpgColor::RED;
 			break;
 		}
 
@@ -160,11 +160,11 @@ void RpgConsoleSystem::ExecuteCommand(const char* commandArgs) noexcept
 
 	if (RegisteredCommands.FindIndexByValue(name) == RPG_INDEX_INVALID)
 	{
-		AddLogMessageFormat(RpgColorRGBA::YELLOW, "Invalid command: %s", *name);
+		AddLogMessageFormat(RpgColor::YELLOW, "Invalid command: %s", *name);
 	}
 	else
 	{
-		AddLogMessageFormat(RpgColorRGBA::WHITE, "Command: %s", commandArgs);
+		AddLogMessageFormat(RpgColor::WHITE, "Command: %s", commandArgs);
 		RegisteredListeners.Broadcast(name, params);
 	}
 }

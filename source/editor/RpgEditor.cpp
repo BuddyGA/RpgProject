@@ -1,4 +1,5 @@
 #include "RpgEditor.h"
+#include "gui/RpgGuiCanvas.h"
 
 
 
@@ -11,9 +12,10 @@ RpgEditor::RpgEditor() noexcept
 }
 
 
-void RpgEditor::SetupGUI(RpgGuiCanvas* canvas) noexcept
+void RpgEditor::SetupGUI(RpgGuiCanvas& canvas) noexcept
 {
-	AssetBrowser = canvas->AddChild<RpgEditorAssetBrowser>();
+	AssetBrowser = canvas.AddChild<RpgEditorAssetBrowser>();
+	AssetBrowser->SetTitleText("ASSET BROWSER");
 }
 
 

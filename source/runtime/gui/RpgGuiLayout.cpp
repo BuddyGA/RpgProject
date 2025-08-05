@@ -1,29 +1,29 @@
 #include "RpgGuiLayout.h"
+#include "RpgGuiContext.h"
 #include "render/RpgRenderer2D.h"
 
 
 
-RpgGuiLayout::RpgGuiLayout() noexcept
+RpgGuiLayout::RpgGuiLayout(const RpgName& in_Name) noexcept
+	: RpgGuiWidget(in_Name)
 {
-	Flags = RpgGui::FLAG_Layout;
-
-	ChildSpace = RpgPointFloat(4);
-	bScrollableHorizontal = false;
-	bScrollableVertical = false;
-	Direction = DIRECTION_NONE;
 }
 
 
 RpgGuiLayout::RpgGuiLayout(const RpgName& in_Name, RpgPointFloat in_Dimension, EDirection in_Direction) noexcept
-	: RpgGuiLayout()
 {
 	Name = in_Name;
 	Dimension = in_Dimension;
+	Flags = RpgGui::FLAG_Layout;
+
 	Direction = in_Direction;
+	ChildSpace = RpgPointFloat(4);
+	bScrollableHorizontal = false;
+	bScrollableVertical = false;
 }
 
 
-RpgRectFloat RpgGuiLayout::UpdateRect(const RpgGuiContext& context, const RpgGuiCanvas& canvas, const RpgPointFloat& offset) noexcept
+RpgRectFloat RpgGuiLayout::UpdateRect(const RpgGuiContext& context, const RpgRectFloat& canvasRect, const RpgPointFloat& offset) noexcept
 {
 	AbsoluteRect = CalculateAbsoluteRect(offset);
 
@@ -40,7 +40,7 @@ RpgRectFloat RpgGuiLayout::UpdateRect(const RpgGuiContext& context, const RpgGui
 		{
 			for (int c = 0; c < Children.GetCount(); ++c)
 			{
-				const RpgRect childRect = Children[c]->UpdateRect(context, canvas, childOffset);
+				const RpgRect childRect = Children[c]->UpdateRect(context, canvasRect, childOffset);
 				ContentRect.Right = RpgMath::Max(ContentRect.Right, childRect.Right);
 				ContentRect.Bottom = RpgMath::Max(ContentRect.Bottom, childRect.Bottom);
 			}
@@ -49,7 +49,7 @@ RpgRectFloat RpgGuiLayout::UpdateRect(const RpgGuiContext& context, const RpgGui
 		{
 			for (int c = 0; c < Children.GetCount(); ++c)
 			{
-				const RpgRect childRect = Children[c]->UpdateRect(context, canvas, RpgPointFloat(ContentRect.Right, ContentRect.Top));
+				const RpgRect childRect = Children[c]->UpdateRect(context, canvasRect, RpgPointFloat(ContentRect.Right, ContentRect.Top));
 				ContentRect.Right += childRect.GetDimension().X + ChildSpace.X;
 				ContentRect.Bottom = RpgMath::Max(ContentRect.Bottom, childRect.Bottom);
 			}
@@ -64,7 +64,7 @@ RpgRectFloat RpgGuiLayout::UpdateRect(const RpgGuiContext& context, const RpgGui
 		{
 			for (int c = 0; c < Children.GetCount(); ++c)
 			{
-				const RpgRect childRect = Children[c]->UpdateRect(context, canvas, RpgPointFloat(ContentRect.Left, ContentRect.Bottom));
+				const RpgRect childRect = Children[c]->UpdateRect(context, canvasRect, RpgPointFloat(ContentRect.Left, ContentRect.Bottom));
 				ContentRect.Right = RpgMath::Max(ContentRect.Right, childRect.Right);
 				ContentRect.Bottom += childRect.GetDimension().Y + ChildSpace.Y;
 			}
@@ -114,11 +114,11 @@ void RpgGuiLayout::SetScrollValue(float x, float y) noexcept
 }
 
 
-void RpgGuiLayout::OnRender(const RpgGuiContext& context, RpgRenderer2D& renderer, const RpgRectFloat& parentClipRect) const noexcept
+void RpgGuiLayout::OnRender(RpgRenderer2D& renderer) const noexcept
 {
 	if (IsHovered())
 	{
-		renderer.AddLineRect(AbsoluteRect, RpgColorRGBA::WHITE);
-		renderer.AddLineRect(ContentRect, RpgColorRGBA::BLUE);
+		renderer.AddLineRect(AbsoluteRect, RpgColor::WHITE);
+		renderer.AddLineRect(ContentRect, RpgColor::BLUE);
 	}
 }

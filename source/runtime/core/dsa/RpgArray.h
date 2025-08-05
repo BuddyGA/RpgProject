@@ -679,6 +679,9 @@ public:
 	}
 
 
+	~RpgArrayInline() noexcept = default;
+
+
 public:
 	inline RpgArrayInline& operator=(const RpgArrayInline& rhs) noexcept
 	{
@@ -828,6 +831,14 @@ public:
 
 	inline void Clear() noexcept
 	{
+		if constexpr (!std::is_trivially_copyable<T>::value)
+		{
+			for (int i = 0; i < Count; ++i)
+			{
+				(Data + i)->~T();
+			}
+		}
+
 		Count = 0;
 	}
 
@@ -840,6 +851,12 @@ public:
 		}
 
 		RPG_ARRAY_ValidateIndex(index);
+
+		if constexpr (!std::is_trivially_copyable<T>::value)
+		{
+			(Data + index)->~T();
+		}
+
 		RpgAlgorithm::Array_RemoveElements(Data, Count, index, 1, bKeepOrder);
 		--Count;
 	}
@@ -852,7 +869,7 @@ public:
 			return;
 		}
 
-		--Count;
+		RemoveAt(Count - 1);
 	}
 
 

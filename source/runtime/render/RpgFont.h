@@ -50,7 +50,7 @@ public:
 	RpgPointFloat CalculateTextDimension(const char* text, int length) const noexcept;
 	RpgPointFloat CalculateTextCursorPosition(const char* text, int length, const RpgPointFloat& textPosition, int cursorIndex) const noexcept;
 	RpgRectFloat CalculateTextSelectionRect(const char* text, int length, const RpgPointFloat& textPosition, int selectIndex, int selectCount) const noexcept;
-	int GenerateTextVertex(const char* text, int length, RpgPointFloat textPosition, RpgColorRGBA color, RpgVertexMesh2DArray& out_Vertexes, RpgVertexIndexArray& out_Indexes, int* optOut_VertexCount = nullptr, int* optOut_IndexCount = nullptr) const noexcept;
+	int GenerateTextVertex(const char* text, int length, RpgPointFloat textPosition, RpgColor color, RpgVertexMesh2DArray& out_Vertexes, RpgVertexIndexArray& out_Indexes, int* optOut_VertexCount = nullptr, int* optOut_IndexCount = nullptr) const noexcept;
 
 
 	inline const RpgFontUnicodeRange& GetUnicodeRange() const noexcept

@@ -194,6 +194,7 @@ namespace RpgRenderAntiAliasing
 
 struct RpgRenderFrameContext
 {
+	uint64_t Counter{ 0 };
 	int Index{ 0 };
 	float DeltaTime{ 0.0f };
 	RpgMaterialResource* MaterialResource{ nullptr };

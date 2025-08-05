@@ -1,4 +1,4 @@
-#include "RpgGuiTypes.h"
+#include "RpgGuiContext.h"
 
 
 
@@ -7,7 +7,7 @@ RpgGuiContext::RpgGuiContext() noexcept
 	ScrollSpeed = 8.0f;
 	TextInputChar = '\0';
 	PrevHovered = nullptr;
-	PrevHoveredLayout = nullptr;
+	//PrevHoveredLayout = nullptr;
 	PrevPressed = nullptr;
 	CurrentHovered = nullptr;
 	CurrentHoveredLayout = nullptr;
@@ -71,8 +71,23 @@ void RpgGuiContext::CharInput(char c) noexcept
 void RpgGuiContext::Begin() noexcept
 {
 	PrevHovered = nullptr;
-	PrevHoveredLayout = nullptr;
+	//PrevHoveredLayout = nullptr;
 	PrevPressed = nullptr;
+
+	for (int i = 0; i < CandidateHoveredLayouts.GetCount(); ++i)
+	{
+		RpgGuiWidget* layout = CandidateHoveredLayouts[i];
+		RPG_Check(layout->IsLayout());
+
+		if (CurrentHoveredLayout == nullptr || layout->Order <= CurrentHoveredLayout->Order)
+		{
+			CurrentHoveredLayout = layout;
+		}
+	}
+
+	//RPG_Log(RpgLogGui, "CurrentHoveredLayout: %s", CurrentHoveredLayout ? *CurrentHoveredLayout->Name : "NONE");
+
+	CandidateHoveredLayouts.Clear();
 }
 
 
@@ -83,31 +98,10 @@ void RpgGuiContext::End() noexcept
 	TextInputChar = '\0';
 
 	CurrentHovered = PrevHovered;
-	CurrentHoveredLayout = PrevHoveredLayout;
+	CurrentHoveredLayout = nullptr;
+	//CurrentHoveredLayout = PrevHoveredLayout;
 	CurrentPressed = PrevPressed;
 
 	RpgPlatformMemory::MemZero(KeyButtonDown, sizeof(bool) * RpgInputKey::MAX_COUNT);
 	RpgPlatformMemory::MemZero(KeyButtonUp, sizeof(bool) * RpgInputKey::MAX_COUNT);
-}
-
-
-void RpgGuiContext::BeginTextInput()
-{
-	/*
-	RPG_Assert(Window);
-
-	RPG_LogDebug(RpgLogGui, "RpgGuiContext: Begin text input!");
-	SDL_StartTextInput(Window);
-	*/
-}
-
-
-void RpgGuiContext::EndTextInput()
-{
-	/*
-	RPG_Assert(Window);
-
-	RPG_LogDebug(RpgLogGui, "RpgGuiContext: End text input!");
-	SDL_StopTextInput(Window);
-	*/
 }

@@ -70,7 +70,8 @@ void RpgRenderer2D::Begin(int frameIndex, RpgPointInt viewportDimension) noexcep
 	ViewportDimension = viewportDimension;
 
 	FrameIndex = frameIndex;
-
+	CurrentOrderIndex = RPG_INDEX_INVALID;
+	
 	FFrameData& frame = FrameDatas[FrameIndex];
 	frame.Orders.Clear();
 	frame.MeshVertices.Clear();
@@ -82,22 +83,126 @@ void RpgRenderer2D::Begin(int frameIndex, RpgPointInt viewportDimension) noexcep
 	frame.LineIndices.Clear();
 	frame.BatchDrawLine = FDrawBatchLine();
 
-	PushOrder(0);
-	PushClipRect(RpgRect(0, 0, ViewportDimension.X, ViewportDimension.Y));
+	SetOrder(255);
+	SetClipRect(RpgRectInt(0, 0, ViewportDimension.X, ViewportDimension.Y));
 }
 
 
 void RpgRenderer2D::End(int frameIndex) noexcept
 {
 	RPG_Assert(FrameIndex == frameIndex);
-
-	PopClipRect();
-	PopOrder();
-	RPG_Check(CurrentOrderIndex == RPG_INDEX_INVALID);
 }
 
 
-void RpgRenderer2D::AddMeshRect(RpgRectFloat rect, RpgColorRGBA color, const RpgSharedTexture2D& texture, const RpgSharedMaterial& material) noexcept
+void RpgRenderer2D::SetOrder(uint8_t value) noexcept
+{
+	FFrameData& frame = FrameDatas[FrameIndex];
+
+	if (CurrentOrderIndex == RPG_INDEX_INVALID)
+	{
+		RPG_Check(frame.Orders.IsEmpty());
+
+		CurrentOrderIndex = 0;
+
+		FOrder& order = frame.Orders.Add();
+		order.Value = value;
+		order.CurrentClipIndex = RPG_INDEX_INVALID;
+
+		return;
+	}
+
+	if (frame.Orders[CurrentOrderIndex].Value == value)
+	{
+		return;
+	}
+
+	bool bAddNewOrder = true;
+	int insertIndex = RPG_INDEX_INVALID;
+	for (int o = 0; o < frame.Orders.GetCount(); ++o)
+	{
+		const FOrder& check = frame.Orders[o];
+		if (value == check.Value)
+		{
+			CurrentOrderIndex = o;
+			bAddNewOrder = false;
+			break;
+		}
+
+		if (value > check.Value)
+		{
+			insertIndex = o;
+			break;
+		}
+	}
+
+	if (!bAddNewOrder)
+	{
+		return;
+	}
+
+	FOrder* newOrder = nullptr;
+
+	if (insertIndex == RPG_INDEX_INVALID)
+	{
+		CurrentOrderIndex = frame.Orders.GetCount();
+		newOrder = &frame.Orders.Add();
+	}
+	else
+	{
+		CurrentOrderIndex = insertIndex;
+		frame.Orders.InsertAt(FOrder(), insertIndex);
+		newOrder = &frame.Orders[insertIndex];
+	}
+
+	newOrder->Value = value;
+	newOrder->CurrentClipIndex = RPG_INDEX_INVALID;
+}
+
+
+void RpgRenderer2D::SetClipRect(RpgRectInt rect) noexcept
+{
+	FOrder& order = FrameDatas[FrameIndex].Orders[CurrentOrderIndex];
+
+	if (order.CurrentClipIndex == RPG_INDEX_INVALID)
+	{
+		RPG_Check(order.Clips.IsEmpty());
+		order.CurrentClipIndex = 0;
+
+		FClip& clip = order.Clips.Add();
+		clip.Rect = rect;
+
+		return;
+	}
+
+	FClip& currentClip = order.Clips[order.CurrentClipIndex];
+	if (currentClip.Rect == rect)
+	{
+		return;
+	}
+
+	bool bAddNewClip = true;
+
+	for (int c = 0; c < order.Clips.GetCount(); ++c)
+	{
+		const FClip& check = order.Clips[c];
+		if (check.Rect == rect)
+		{
+			order.CurrentClipIndex = c;
+			bAddNewClip = false;
+			break;
+		}
+	}
+
+	if (bAddNewClip)
+	{
+		order.CurrentClipIndex = order.Clips.GetCount();
+		FClip& newClip = order.Clips.Add();
+		newClip.Rect = rect;
+	}
+}
+
+
+void RpgRenderer2D::AddMeshRect(RpgRectFloat rect, RpgColor color, const RpgSharedTexture2D& texture, const RpgSharedMaterial& material) noexcept
 {
 	const RpgPointFloat dimension = rect.GetDimension();
 	if (dimension.X == 0 || dimension.Y == 0)
@@ -142,7 +247,7 @@ void RpgRenderer2D::AddMeshRect(RpgRectFloat rect, RpgColorRGBA color, const Rpg
 }
 
 
-void RpgRenderer2D::AddText(const char* text, int length, RpgPointFloat position, RpgColorRGBA color, const RpgSharedFont& font, const RpgSharedMaterial& material) noexcept
+void RpgRenderer2D::AddText(const char* text, int length, RpgPointFloat position, RpgColor color, const RpgSharedFont& font, const RpgSharedMaterial& material) noexcept
 {
 	if (text == nullptr || length == 0)
 	{
@@ -159,17 +264,18 @@ void RpgRenderer2D::AddText(const char* text, int length, RpgPointFloat position
 
 	mesh.MaterialInstanceIndex = GetOrAddMaterialInstanceId(
 		material ? material : DefaultMaterialFont,
-		font ? font->GetTexture() : DefaultFont->GetTexture(),
+		useFont->GetTexture(),
 		true
 	);
 
 	mesh.DataVertexStart = frame.MeshVertices.GetCount();
 	mesh.DataIndexStart = frame.MeshIndices.GetCount();
+
 	useFont->GenerateTextVertex(text, length, position, color, frame.MeshVertices, frame.MeshIndices, &mesh.DataVertexCount, &mesh.DataIndexCount);
 }
 
 
-void RpgRenderer2D::AddLine(RpgPointFloat p0, RpgPointFloat p1, RpgColorRGBA color) noexcept
+void RpgRenderer2D::AddLine(RpgPointFloat p0, RpgPointFloat p1, RpgColor color) noexcept
 {
 	FFrameData& frame = FrameDatas[FrameIndex];
 
@@ -187,7 +293,7 @@ void RpgRenderer2D::AddLine(RpgPointFloat p0, RpgPointFloat p1, RpgColorRGBA col
 }
 
 
-void RpgRenderer2D::AddLineRect(RpgRectFloat rect, RpgColorRGBA color) noexcept
+void RpgRenderer2D::AddLineRect(RpgRectFloat rect, RpgColor color) noexcept
 {
 	AddLine(RpgPointFloat(rect.Left, rect.Top), RpgPointFloat(rect.Right, rect.Top), color);
 	AddLine(RpgPointFloat(rect.Right, rect.Top), RpgPointFloat(rect.Right, rect.Bottom), color);
@@ -198,29 +304,37 @@ void RpgRenderer2D::AddLineRect(RpgRectFloat rect, RpgColorRGBA color) noexcept
 
 void RpgRenderer2D::PreRender(RpgRenderFrameContext& frameContext) noexcept
 {
-	auto LocalFunc_UpdateMeshBatchDraw = [&](FFrameData& frame, const FMesh& mesh, FDrawBatchArray& batchDraws)
+	auto LocalFunc_UpdateMeshBatchDraw = [&](FFrameData& frame, const FMesh& mesh, FDrawBatchArray& drawBatchArray)
 	{
 		const RpgSharedMaterial& material = MaterialInstanceTextures[mesh.MaterialInstanceIndex].Material;
 		const int shaderMaterialId = frameContext.MaterialResource->AddMaterial(material);
 
 		int batchDrawIndex = RPG_INDEX_INVALID;
-		if (batchDraws.AddUnique(FDrawBatch(shaderMaterialId), &batchDrawIndex))
+		if (drawBatchArray.AddUnique(FDrawBatch(shaderMaterialId), &batchDrawIndex))
 		{
-			FDrawBatch& batchDraw = batchDraws[batchDrawIndex];
-			batchDraw.IndexStart = frame.BatchMeshIndices.GetCount();
-			batchDraw.IndexCount = 0;
+			FDrawBatch& draw = drawBatchArray[batchDrawIndex];
+			draw.VertexStart = frame.BatchMeshVertices.GetCount();
+			draw.VertexCount = 0;
+			draw.IndexStart = frame.BatchMeshIndices.GetCount();
+			draw.IndexCount = 0;
 		}
 
-		FDrawBatch& batchDraw = batchDraws[batchDrawIndex];
-		RPG_Assert(batchDraw.ShaderMaterialId == shaderMaterialId);
+		FDrawBatch& draw = drawBatchArray[batchDrawIndex];
+		RPG_Assert(draw.ShaderMaterialId == shaderMaterialId);
 
-		const uint32_t vertexOffset = frame.BatchMeshVertices.GetCount();
+		const uint32_t vertexOffset = static_cast<uint32_t>(draw.VertexStart + draw.VertexCount);
 		if (vertexOffset > 0)
 		{
 			RpgVertexGeometryFactory::UpdateBatchIndices(frame.MeshIndices, vertexOffset, mesh.DataIndexStart, mesh.DataIndexCount);
 		}
 
-		batchDraw.IndexCount += mesh.DataIndexCount;
+		draw.VertexCount += mesh.DataVertexCount;
+		draw.IndexCount += mesh.DataIndexCount;
+
+		if (draw.IndexCount == 120)
+		{
+			//RPG_DebugBreak();
+		}
 
 		frame.BatchMeshVertices.InsertAtRange(frame.MeshVertices.GetData(mesh.DataVertexStart), mesh.DataVertexCount, RPG_INDEX_LAST);
 		frame.BatchMeshIndices.InsertAtRange(frame.MeshIndices.GetData(mesh.DataIndexStart), mesh.DataIndexCount, RPG_INDEX_LAST);
@@ -228,31 +342,28 @@ void RpgRenderer2D::PreRender(RpgRenderFrameContext& frameContext) noexcept
 
 
 	FFrameData& frame = FrameDatas[frameContext.Index];
+	uint8_t prevOrder = 255;
 
-	auto& batchDrawOrders = frame.BatchDrawOrders;
-
-	for (int o = 0; o < frame.Orders.GetCount(); ++o)
+	for (int i = 0; i < frame.Orders.GetCount(); ++i)
 	{
-		const FOrder& order = frame.Orders[o];
+		const FOrder& order = frame.Orders[i];
+		RPG_Check(order.Value <= prevOrder);
+		prevOrder = order.Value;
+
 		FDrawBatchOrder& batchOrder = frame.BatchDrawOrders.Add();
+		RPG_Check(batchOrder.Clips.IsEmpty());
 
 		for (int c = 0; c < order.Clips.GetCount(); ++c)
 		{
 			const FClip& clip = order.Clips[c];
-			if (clip.Shapes.GetCount() == 0 && clip.Texts.GetCount() == 0)
+			if (clip.Shapes.IsEmpty() && clip.Texts.IsEmpty())
 			{
 				continue;
 			}
 
-			int batchClipIndex = RPG_INDEX_INVALID;
-			if (batchOrder.Clips.AddUnique(FDrawBatchClip(clip.Rect), &batchClipIndex))
-			{
-				FDrawBatchClip& draw = batchOrder.Clips[batchClipIndex];
-				draw.Rect = clip.Rect;
-			}
-
-			FDrawBatchClip& batchClip = batchOrder.Clips[batchClipIndex];
-			RPG_Assert(batchClip.Rect == clip.Rect);
+			FDrawBatchClip& batchClip = batchOrder.Clips.Add();
+			batchClip.Rect = clip.Rect;
+			RPG_Check(batchClip.BatchDraws.IsEmpty());
 
 			for (int s = 0; s < clip.Shapes.GetCount(); ++s)
 			{
@@ -267,7 +378,7 @@ void RpgRenderer2D::PreRender(RpgRenderFrameContext& frameContext) noexcept
 	}
 	
 
-	if (!frame.BatchDrawOrders.IsEmpty())
+	if (!frame.BatchMeshVertices.IsEmpty())
 	{
 		RpgD3D12::ResizeBuffer(frame.MeshVertexBuffer, frame.BatchMeshVertices.GetMemorySizeBytes_Allocated(), false);
 		RPG_D3D12_SetDebugNameAllocation(frame.MeshVertexBuffer, "RES_R2D_MeshVtxBuffer");
@@ -361,8 +472,7 @@ void RpgRenderer2D::CommandDraw(const RpgRenderFrameContext& frameContext, ID3D1
 	cmdList->SetGraphicsRootDescriptorTable(RpgRenderPipeline::GRPI_TEXTURES, textureDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 
-	//if (!frame.BatchDrawClipMeshes.IsEmpty())
-	if (!frame.BatchDrawOrders.IsEmpty())
+	if (!frame.BatchMeshVertices.IsEmpty())
 	{
 		// Bind vertex buffer
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -397,6 +507,8 @@ void RpgRenderer2D::CommandDraw(const RpgRenderFrameContext& frameContext, ID3D1
 				const FDrawBatchClip& batchDrawClip = batchOrders[i].Clips[c];
 				const RpgRect rect = batchDrawClip.Rect;
 				RpgD3D12Command::SetScissor(cmdList, rect.Left, rect.Top, rect.Right, rect.Bottom);
+
+				RPG_Check(!batchDrawClip.BatchDraws.IsEmpty());
 
 				for (int d = 0; d < batchDrawClip.BatchDraws.GetCount(); ++d)
 				{

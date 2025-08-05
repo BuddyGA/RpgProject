@@ -55,7 +55,34 @@ namespace RpgAlgorithm
 		RPG_CheckV(dstIndex >= 0 && (dstIndex + shiftCount) <= dataCount, "RpgAlgorithm: Array shift elements dst range out of bound!");
 		RPG_CheckV(srcIndex >= 0 && srcIndex < dataCount, "RpgAlgorithm: Array shift elements src index out of bound!");
 
-		RpgPlatformMemory::MemMove(dataArray + dstIndex, dataArray + srcIndex, sizeof(T) * shiftCount);
+		if constexpr (std::is_trivially_copyable<T>::value)
+		{
+			RpgPlatformMemory::MemMove(dataArray + dstIndex, dataArray + srcIndex, sizeof(T) * shiftCount);
+		}
+		else
+		{
+			const int lastIndex = srcIndex + shiftCount;
+
+			// shift to right
+			if (dstIndex > srcIndex)
+			{
+				for (int i = lastIndex - 1; i >= srcIndex; --i)
+				{
+					RPG_Check(i + 1 < dataCount);
+					dataArray[i + 1] = std::move(dataArray[i]);
+				}
+			}
+			// shift to left
+			else
+			{
+				RPG_Check(dstIndex != srcIndex);
+
+				for (int i = srcIndex; i < lastIndex; ++i)
+				{
+					dataArray[i - 1] = std::move(dataArray[i]);
+				}
+			}
+		}
 	}
 
 
@@ -83,7 +110,7 @@ namespace RpgAlgorithm
 		{
 			RPG_Check(count == 1);
 			RPG_Check(!bKeepOrder);
-
+			
 			if constexpr (std::is_move_assignable<T>::value)
 			{
 				dataArray[index] = std::move(dataArray[lastIndex]);

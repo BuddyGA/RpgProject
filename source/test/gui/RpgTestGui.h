@@ -8,7 +8,7 @@ namespace RpgTest
 {
 	namespace Gui
 	{
-		extern void Create(RpgGuiCanvas* canvas) noexcept;
+		extern void Create(RpgGuiCanvas& canvas) noexcept;
 	}
 
 };

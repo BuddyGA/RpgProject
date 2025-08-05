@@ -194,11 +194,11 @@ public:
 	inline void StreamWrite(RpgStreamWriter& writer) const noexcept
 	{
 		writer.Write(Name);
-		writer.Write(Positions);
-		writer.Write(NormalTangents);
-		writer.Write(TexCoords);
-		writer.Write(Skins);
-		writer.Write(Indices);
+		writer.WriteArray(Positions);
+		writer.WriteArray(NormalTangents);
+		writer.WriteArray(TexCoords);
+		writer.WriteArray(Skins);
+		writer.WriteArray(Indices);
 		writer.Write(Flags);
 		writer.Write(Bound);
 	}
@@ -207,11 +207,11 @@ public:
 	inline void StreamRead(RpgStreamReader& reader) noexcept
 	{
 		reader.Read(Name);
-		reader.Read(Positions);
-		reader.Read(NormalTangents);
-		reader.Read(TexCoords);
-		reader.Read(Skins);
-		reader.Read(Indices);
+		reader.ReadArray(Positions);
+		reader.ReadArray(NormalTangents);
+		reader.ReadArray(TexCoords);
+		reader.ReadArray(Skins);
+		reader.ReadArray(Indices);
 		reader.Read(Flags);
 		reader.Read(Bound);
 	}

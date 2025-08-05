@@ -5,7 +5,9 @@
 #include "core/world/RpgWorld.h"
 #include "render/RpgRenderer.h"
 #include "render/RpgSceneViewport.h"
-#include "gui/RpgGuiConsole.h"
+#include "gui/RpgGuiContext.h"
+#include "gui/RpgGuiCanvas.h"
+#include "gui/widget/RpgGuiConsole.h"
 #include "script/RpgScript_DebugCamera.h"
 
 
@@ -78,11 +80,11 @@ private:
 	RpgSceneViewport SceneViewport;
 
 	// GUI context
-	//RpgGuiContext GuiContext;
-	//RpgUniquePtr<RpgGuiCanvas> GuiCanvas;
+	RpgGuiContext GuiContext;
+	RpgGuiCanvas GuiCanvas;
 
 	// GUI console
-	//RpgGuiConsole* GuiConsole;
+	RpgGuiConsole* GuiConsole;
 
 	// Main camera object inside main world
 	RpgGameObjectID MainCameraObject;

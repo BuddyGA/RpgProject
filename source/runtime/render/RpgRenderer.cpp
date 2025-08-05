@@ -94,11 +94,12 @@ void RpgRenderer::EndRender(int frameIndex, float deltaTime) noexcept
 }
 
 
-void RpgRenderer::Execute(int frameIndex, float deltaTime) noexcept
+void RpgRenderer::Execute(uint64_t frameCounter, int frameIndex, float deltaTime) noexcept
 {
 	FFrameData& frame = FrameDatas[frameIndex];
 
 	RpgRenderFrameContext frameContext;
+	frameContext.Counter = frameCounter;
 	frameContext.Index = frameIndex;
 	frameContext.DeltaTime = deltaTime;
 	frameContext.MaterialResource = frame.MaterialResource.Get();

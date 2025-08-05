@@ -20,19 +20,19 @@ private:
 	{
 		int BufferIndex{ RPG_INDEX_INVALID };
 		int BufferCount{ 0 };
-		RpgColorRGBA Color;
+		RpgColor Color;
 	};
 
 
 public:
 	RpgConsoleSystem() noexcept;
 
-	void AddLogMessage(const char* message, RpgColorRGBA color) noexcept;
+	void AddLogMessage(const char* message, RpgColor color) noexcept;
 	void AddLogCategoryMessage(const RpgPlatformLog::FCategory& category, RpgPlatformLog::EVerbosity verbosity, const char* message) noexcept;
 
 
 	template<typename...TVarArgs>
-	inline void AddLogMessageFormat(RpgColorRGBA color, const char* format, TVarArgs&&... args) noexcept
+	inline void AddLogMessageFormat(RpgColor color, const char* format, TVarArgs&&... args) noexcept
 	{
 		char message[RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT];
 		RpgPlatformMemory::MemZero(message, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT);
@@ -60,7 +60,7 @@ public:
 	}
 
 
-	inline const char* GetLogMessage(int index, int* optOut_CharLength = nullptr, RpgColorRGBA* optOut_Color = nullptr) const noexcept
+	inline const char* GetLogMessage(int index, int* optOut_CharLength = nullptr, RpgColor* optOut_Color = nullptr) const noexcept
 	{
 		const FLogInfo& info = LogInfos[index];
 

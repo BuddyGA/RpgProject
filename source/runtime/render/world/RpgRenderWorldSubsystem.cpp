@@ -141,7 +141,7 @@ void RpgRenderWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) noex
 				continue;
 			}
 
-			debugLine->AddAABB(comp.Bound, RpgColorRGBA(255, 255, 255));
+			debugLine->AddAABB(comp.Bound, RpgColor(255, 255, 255));
 		}
 	}
 

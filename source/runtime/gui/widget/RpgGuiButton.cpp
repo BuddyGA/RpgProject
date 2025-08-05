@@ -2,15 +2,16 @@
 #include "render/RpgRenderer2D.h"
 
 
-RpgGuiButton::RpgGuiButton() noexcept
+
+RpgGuiButton::RpgGuiButton(const RpgName& in_Name) noexcept
+	: RpgGuiWidget(in_Name)
 {
 }
 
 
 RpgGuiButton::RpgGuiButton(const RpgName& in_Name, RpgPointFloat in_Dimension) noexcept
-	: RpgGuiButton()
+	: RpgGuiButton(in_Name)
 {
-	Name = in_Name;
 	Dimension = in_Dimension;
 }
 
@@ -19,18 +20,18 @@ void RpgGuiButton::OnUpdate(RpgGuiContext& context) noexcept
 {
 	if (IsReleased())
 	{
-		EventPressed.Broadcast();
+		EventPressed.Broadcast(this);
 	}
 }
 
 
-void RpgGuiButton::OnRender(const RpgGuiContext& context, RpgRenderer2D& renderer, const RpgRectFloat& parentClipRect) const noexcept
+void RpgGuiButton::OnRender(RpgRenderer2D& renderer) const noexcept
 {
-	RpgColorRGBA color = RpgColorRGBA(30, 40, 50);
+	RpgColor color = RpgColor(30, 40, 50);
 
 	if (IsHovered())
 	{
-		color = RpgColorRGBA(60, 80, 100);
+		color = RpgColor(60, 80, 100);
 	}
 
 	renderer.AddMeshRect(AbsoluteRect, color);

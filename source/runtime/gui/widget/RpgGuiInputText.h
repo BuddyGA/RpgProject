@@ -1,9 +1,10 @@
 #pragma once
 
-#include "RpgGuiLayout.h"
+#include "../RpgGuiLayout.h"
 
 
-class RpgGuiInputText : public RpgGuiLayout
+
+class RpgGuiInputText : public RpgGuiWidget
 {
 public:
 	typedef RpgArrayInline<char, 8> FCharFilterArray;
@@ -24,15 +25,15 @@ public:
 	bool bCommitOnLostFocus;
 	bool bExitFocusOnEnter;
 	RpgSharedFont TextFont;
-	RpgColorRGBA TextColor;
-	RpgColorRGBA HighlightColor;
-	RpgColorRGBA DefaultBackgroundColor;
-	RpgColorRGBA FocusedBackgroundColor;
+	RpgColor TextColor;
+	RpgColor HighlightColor;
+	RpgColor DefaultBackgroundColor;
+	RpgColor FocusedBackgroundColor;
 	RpgString Value;
 
 
 public:
-	RpgGuiInputText() noexcept;
+	RpgGuiInputText(const RpgName& in_Name) noexcept;
 	RpgGuiInputText(const RpgName& in_Name, RpgPointFloat in_Dimension) noexcept;
 
 
@@ -47,7 +48,7 @@ protected:
 	virtual void OnFocusedEnter(RpgGuiContext& context) noexcept override;
 	virtual void OnFocusedExit(RpgGuiContext& context) noexcept override;
 	virtual void OnUpdate(RpgGuiContext& context) noexcept override;
-	virtual void OnRender(const RpgGuiContext& context, RpgRenderer2D& renderer, const RpgRectFloat& parentClipRect) const noexcept override;
+	virtual void OnRender(RpgRenderer2D& renderer) const noexcept override;
 
 
 private:

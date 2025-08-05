@@ -11,16 +11,7 @@
 #include "asset/RpgAssetManager.h"
 
 
-#pragma push_macro("free")
-#undef free
 
-#define NK_ASSERT						RPG_Assert
-#define NK_UINT_DRAW_INDEX
-#define NK_INCLUDE_COMMAND_USERDATA
-#define NK_KEYSTATE_BASED_INPUT
-#include "thirdparty/nuklear/nuklear.h"
-
-#pragma pop_macro("free")
 
 #include "../../test/gui/RpgTestGui.h"
 
@@ -35,6 +26,18 @@ RPG_LOG_DEFINE_CATEGORY(RpgLogEngine, VERBOSITY_DEBUG)
 
 
 
+/*
+#pragma push_macro("free")
+#undef free
+
+#define NK_ASSERT						RPG_Assert
+#define NK_UINT_DRAW_INDEX
+#define NK_INCLUDE_COMMAND_USERDATA
+#define NK_KEYSTATE_BASED_INPUT
+#include "thirdparty/nuklear/nuklear.h"
+
+#pragma pop_macro("free")
+
 static float Rpg_NuklearTextWidth(nk_handle handle, float height, const char* text, int len)
 {
 	return reinterpret_cast<RpgFont*>(handle.ptr)->CalculateTextDimension(text, len).X;
@@ -43,6 +46,7 @@ static float Rpg_NuklearTextWidth(nk_handle handle, float height, const char* te
 
 static nk_context NkContext;
 static nk_user_font NkTestFont;
+*/
 
 
 RpgEngine* g_Engine = nullptr;
@@ -104,11 +108,13 @@ void RpgEngine::Initialize() noexcept
 	MainRenderer = RpgPointer::MakeUnique<RpgRenderer>(RpgPlatformProcess::GetMainWindowHandle(), !RpgCommandLine::HasCommand("novsync"));
 
 	// gui canvas
-	//GuiCanvas = RpgPointer::MakeUnique<RpgGuiCanvas>();
-	//GuiCanvas->Name = "EngineCanvas";
+	GuiCanvas.Name = "engine_canvas";
 
-	//GuiConsole = GuiCanvas->AddChild<RpgGuiConsole>();
+	// gui console
+	GuiConsole = GuiCanvas.AddChild<RpgGuiConsole>();
 
+
+	/*
 	RpgSharedFont defaultRobotoFont = RpgFont::s_GetDefault_Roboto();
 
 	NkTestFont.userdata.ptr = defaultRobotoFont.Get();
@@ -116,17 +122,22 @@ void RpgEngine::Initialize() noexcept
 	NkTestFont.width = Rpg_NuklearTextWidth;
 
 	nk_init_fixed(&NkContext, calloc(1, RPG_MEMORY_SIZE_MiB(4)), RPG_MEMORY_SIZE_MiB(4), &NkTestFont);
+	*/
 
 #ifndef RPG_BUILD_SHIPPING
 	g_Editor = new RpgEditor();
-	//g_Editor->SetupGUI(GuiCanvas.Get());
+	g_Editor->SetupGUI(GuiCanvas);
 #endif // !RPG_BUILD_SHIPPING
 
 
-	CreateTestLevel();
-	
-	//RpgTest::Gui::Create(GuiCanvas.Get());
+	// test gui
+	RpgTest::Gui::Create(GuiCanvas);
 
+	// test level
+	CreateTestLevel();
+
+
+	// create main camera object
 	SetMainCamera(MainWorld->GameObject_Create("camera_main"));
 	MainWorld->GameObject_AttachScript(MainCameraObject, &ScriptDebugCamera);
 }
@@ -141,35 +152,35 @@ void RpgEngine::WindowSizeChanged(const RpgPlatformWindowEvent& e) noexcept
 
 void RpgEngine::MouseMove(const RpgPlatformMouseMoveEvent& e) noexcept
 {
-	//GuiContext.MouseMove(e);
+	GuiContext.MouseMove(e);
 	g_InputManager->MouseMove(e);
 }
 
 
 void RpgEngine::MouseWheel(const RpgPlatformMouseWheelEvent& e) noexcept
 {
-	//GuiContext.MouseWheel(e);
+	GuiContext.MouseWheel(e);
 	g_InputManager->MouseWheel(e);
 }
 
 
 void RpgEngine::MouseButton(const RpgPlatformMouseButtonEvent& e) noexcept
 {
-	//GuiContext.MouseButton(e);
+	GuiContext.MouseButton(e);
 	g_InputManager->MouseButton(e);
 }
 
 
 void RpgEngine::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 {
-	//GuiContext.KeyboardButton(e);
+	GuiContext.KeyboardButton(e);
 	g_InputManager->KeyboardButton(e);
 
 	if (e.bIsDown)
 	{
 		if (e.Button == RpgInputKey::KEYBOARD_TILDE)
 		{
-			//GuiConsole->Toggle();
+			GuiConsole->Toggle();
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_PLUS)
 		{
@@ -223,7 +234,7 @@ void RpgEngine::CharInput(char c) noexcept
 		return;
 	}
 
-	//GuiContext.CharInput(c);
+	GuiContext.CharInput(c);
 }
 
 
@@ -264,19 +275,20 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 	}
 
 
+	const RpgRectFloat windowClipRect(0.0f, 0.0f, static_cast<float>(WindowDimension.X), static_cast<float>(WindowDimension.Y));
+
 	// GUI
 	{
-		/*
 		GuiContext.Begin();
 
 		if (WindowState != RpgPlatformWindowSizeState::MINIMIZED)
 		{
-			GuiCanvas->Update(GuiContext, RpgRectFloat(0.0f, 0.0f, static_cast<float>(WindowDimension.X), static_cast<float>(WindowDimension.Y)));
+			GuiCanvas.UpdateWidgets(GuiContext, windowClipRect);
 		}
 
 		GuiContext.End();
-		*/
 
+		/*
 		nk_input_begin(&NkContext);
 		{
 			const RpgPoint mouseCursorPos = RpgPointInt(g_InputManager->GetMouseCursorPosition());
@@ -319,6 +331,7 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 			nk_layout_row_end(&NkContext);
 		}
 		nk_end(&NkContext);
+		*/
 	}
 
 
@@ -351,10 +364,64 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 
 			// Render 2D
 			RpgRenderer2D& renderer2d = MainRenderer->GetRenderer2D();
+			
+		#ifndef RPG_BUILD_SHIPPING
+			// Debug info
+			{
+				static RpgString debugInfoText;
+
+				RpgTransform mainCameraTransform = MainCameraObject.IsValid() ? MainWorld->GameObject_GetWorldTransform(MainCameraObject) : RpgTransform();
+				float pitch, yaw;
+				ScriptDebugCamera.GetRotationPitchYaw(pitch, yaw);
+
+				debugInfoText = RpgString::Format(
+					"WindowSize: %i, %i\n"
+					"CameraPosition: %.2f, %.2f, %.2f\n"
+					"CameraPitchYaw: %.2f, %.2f\n"
+					"CameraFrustumCulling: %d\n"
+					"Gamma: %.2f\n"
+					"VSync: %d\n"
+					"\n"
+					"GameObject: %i\n"
+					, WindowDimension.X, WindowDimension.Y
+					, mainCameraTransform.Position.X, mainCameraTransform.Position.Y, mainCameraTransform.Position.Z
+					, pitch, yaw
+					, mainCameraComp ? mainCameraComp->bFrustumCulling : false
+					, MainRenderer->Gamma
+					, MainRenderer->GetVsync()
+					, MainWorld->GameObject_GetCount()
+				);
+
+				renderer2d.AddText(*debugInfoText, debugInfoText.GetLength(), RpgPointFloat(8.0f, 8.0f), RpgColor(255, 255, 255));
+			}
+		#endif // !RPG_BUILD_SHIPPING
+
+
+			// Fps info
+			{
+				RpgColor fpsTextColor;
+
+				if (FpsCountMs < 30)
+				{
+					fpsTextColor = RpgColor::RED;
+				}
+				else if (FpsCountMs < 50)
+				{
+					fpsTextColor = RpgColor::YELLOW;
+				}
+				else
+				{
+					fpsTextColor = RpgColor::GREEN;
+				}
+
+				const RpgPointFloat fpsTextPos(static_cast<float>(renderer2d.GetViewportDimension().X) - 110.0f, 8.0f);
+				renderer2d.AddText(*FpsString, FpsString.GetLength(), fpsTextPos, fpsTextColor);
+			}
 
 			// GUI
-			//GuiCanvas->Render(GuiContext, renderer2d);
+			GuiCanvas.Render(GuiContext, renderer2d, 255, windowClipRect);
 
+			/*
 			const nk_command* cmd = 0;
 			for (cmd = nk__begin(&NkContext); cmd != 0; cmd = nk__next(&NkContext, cmd))
 			{
@@ -375,7 +442,7 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 						renderer2d.AddLine(
 							RpgPointFloat(cmdLine->begin.x, cmdLine->begin.y),
 							RpgPointFloat(cmdLine->end.x, cmdLine->end.y),
-							RpgColorRGBA(cmdLine->color.r, cmdLine->color.g, cmdLine->color.b, cmdLine->color.a)
+							RpgColor(cmdLine->color.r, cmdLine->color.g, cmdLine->color.b, cmdLine->color.a)
 						);
 
 						break;
@@ -392,7 +459,7 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 
 						renderer2d.AddLineRect(
 							RpgRectFloat(cmdRect->x, cmdRect->y, cmdRect->x + cmdRect->w, cmdRect->y + cmdRect->h),
-							RpgColorRGBA(cmdRect->color.r, cmdRect->color.g, cmdRect->color.b, cmdRect->color.a)
+							RpgColor(cmdRect->color.r, cmdRect->color.g, cmdRect->color.b, cmdRect->color.a)
 						);
 
 						break;
@@ -404,7 +471,7 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 
 						renderer2d.AddMeshRect(
 							RpgRectFloat(cmdRectFilled->x, cmdRectFilled->y, cmdRectFilled->x + cmdRectFilled->w, cmdRectFilled->y + cmdRectFilled->h),
-							RpgColorRGBA(cmdRectFilled->color.r, cmdRectFilled->color.g, cmdRectFilled->color.b, cmdRectFilled->color.a)
+							RpgColor(cmdRectFilled->color.r, cmdRectFilled->color.g, cmdRectFilled->color.b, cmdRectFilled->color.a)
 						);
 
 						break;
@@ -464,7 +531,7 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 					{
 						const nk_command_text* cmdText = reinterpret_cast<const nk_command_text*>(cmd);
 
-						renderer2d.AddText(cmdText->string, cmdText->length, RpgPointFloat(cmdText->x, cmdText->y), RpgColorRGBA::WHITE);
+						renderer2d.AddText(cmdText->string, cmdText->length, RpgPointFloat(cmdText->x, cmdText->y), RpgColor::WHITE);
 
 						break;
 					};
@@ -484,63 +551,13 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 			};
 
 			nk_clear(&NkContext);
+			*/
 
-		#ifndef RPG_BUILD_SHIPPING
-			// Debug info
-			{
-				static RpgString debugInfoText;
-
-				RpgTransform mainCameraTransform = MainCameraObject.IsValid() ? MainWorld->GameObject_GetWorldTransform(MainCameraObject) : RpgTransform();
-				float pitch, yaw;
-				ScriptDebugCamera.GetRotationPitchYaw(pitch, yaw);
-
-				debugInfoText = RpgString::Format(
-					"WindowSize: %i, %i\n"
-					"CameraPosition: %.2f, %.2f, %.2f\n"
-					"CameraPitchYaw: %.2f, %.2f\n"
-					"CameraFrustumCulling: %d\n"
-					"Gamma: %.2f\n"
-					"VSync: %d\n"
-					"\n"
-					"GameObject: %i\n"
-					, WindowDimension.X, WindowDimension.Y
-					, mainCameraTransform.Position.X, mainCameraTransform.Position.Y, mainCameraTransform.Position.Z
-					, pitch, yaw
-					, mainCameraComp ? mainCameraComp->bFrustumCulling : false
-					, MainRenderer->Gamma
-					, MainRenderer->GetVsync()
-					, MainWorld->GameObject_GetCount()
-				);
-
-				renderer2d.AddText(*debugInfoText, debugInfoText.GetLength(), RpgPointFloat(8.0f, 8.0f), RpgColorRGBA(255, 255, 255));
-			}
-		#endif // !RPG_BUILD_SHIPPING
-
-
-			// Fps info
-			{
-				RpgColorRGBA fpsTextColor;
-
-				if (FpsCountMs < 30)
-				{
-					fpsTextColor = RpgColorRGBA::RED;
-				}
-				else if (FpsCountMs < 50)
-				{
-					fpsTextColor = RpgColorRGBA::YELLOW;
-				}
-				else
-				{
-					fpsTextColor = RpgColorRGBA::GREEN;
-				}
-
-				const RpgPointFloat fpsTextPos(static_cast<float>(renderer2d.GetViewportDimension().X) - 110.0f, 8.0f);
-				renderer2d.AddText(*FpsString, FpsString.GetLength(), fpsTextPos, fpsTextColor);
-			}
+		
 		}
 		MainRenderer->EndRender(frameIndex, deltaTime);
 	}
-	RpgRenderThread::ExecuteFrame(frameIndex, deltaTime, MainRenderer.Get());
+	RpgRenderThread::ExecuteFrame(frameCounter, frameIndex, deltaTime, MainRenderer.Get());
 
 
 	// End frame

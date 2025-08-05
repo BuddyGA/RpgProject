@@ -18,12 +18,13 @@ public:
 	template<typename T>
 	inline void Write(const T& rhs) noexcept
 	{
+		static_assert(std::is_trivially_copyable<T>::value, "RpgStreamWriter::Write type of <T> must trivially copyable!");
 		WriteData(&rhs, sizeof(T));
 	}
 
 
 	template<typename T, int N>
-	inline void Write(const RpgArray<T, N>& dataArray) noexcept
+	inline void WriteArray(const RpgArray<T, N>& dataArray) noexcept
 	{
 		int count = dataArray.GetCount();
 		WriteData(&count, sizeof(int));
@@ -36,7 +37,7 @@ public:
 
 
 	template<typename T, int N>
-	inline void Write(const RpgArrayInline<T, N>& dataArray) noexcept
+	inline void WriteArray(const RpgArrayInline<T, N>& dataArray) noexcept
 	{
 		int count = dataArray.GetCount();
 		WriteData(&count, sizeof(int));
@@ -48,7 +49,7 @@ public:
 	}
 
 
-	inline void Write(const RpgString& str) noexcept
+	inline void WriteString(const RpgString& str) noexcept
 	{
 		int length = str.GetLength();
 		WriteData(&length, sizeof(int));
@@ -77,12 +78,13 @@ public:
 	template<typename T>
 	inline void Read(T& data) noexcept
 	{
+		static_assert(std::is_trivially_copyable<T>::value, "RpgStreamReader::Read type of <T> must trivially copyable!");
 		ReadData(&data, sizeof(T));
 	}
 
 
 	template<typename T, int N>
-	inline void Read(RpgArray<T, N>& dataArray) noexcept
+	inline void ReadArray(RpgArray<T, N>& dataArray) noexcept
 	{
 		int count = 0;
 		ReadData(&count, sizeof(int));
@@ -101,7 +103,7 @@ public:
 
 
 	template<typename T, int N>
-	inline void Read(RpgArrayInline<T, N>& dataArray) noexcept
+	inline void ReadArray(RpgArrayInline<T, N>& dataArray) noexcept
 	{
 		int count = 0;
 		ReadData(&count, sizeof(int));
@@ -119,7 +121,7 @@ public:
 	}
 
 
-	inline void Read(RpgString& str) noexcept
+	inline void ReadString(RpgString& str) noexcept
 	{
 		int length = 0;
 		ReadData(&length, sizeof(int));

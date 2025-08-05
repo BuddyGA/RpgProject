@@ -19,6 +19,8 @@ private:
 public:
 	void Begin(int frameIndex, RpgPointInt viewportDimension) noexcept;
 	void End(int frameIndex) noexcept;
+	void SetOrder(uint8_t value) noexcept;
+	void SetClipRect(RpgRectInt rect) noexcept;
 
 
 	inline RpgPointInt GetViewportDimension() const noexcept
@@ -27,53 +29,16 @@ public:
 	}
 
 
-	inline void PushOrder(uint8_t value) noexcept
+	inline uint8_t GetCurrentOrderValue() const noexcept
 	{
-		const int prevOrderIndex = CurrentOrderIndex;
-
-		FFrameData& frame = FrameDatas[FrameIndex];
-		CurrentOrderIndex = frame.Orders.GetCount();
-
-		FOrder& order = frame.Orders.Add();
-		order.PrevOrderIndex = prevOrderIndex;
-	}
-
-	inline void PopOrder() noexcept
-	{
-		FFrameData& frame = FrameDatas[FrameIndex];
-		
-		FOrder& order = frame.Orders[CurrentOrderIndex];
-		RPG_Check(order.CurrentClipIndex == RPG_INDEX_INVALID);
-
-		CurrentOrderIndex = order.PrevOrderIndex;
+		return FrameDatas[FrameIndex].Orders[CurrentOrderIndex].Value;
 	}
 
 
-	inline void PushClipRect(RpgRectInt rect) noexcept
-	{
-		FFrameData& frame = FrameDatas[FrameIndex];
-		FOrder& order = frame.Orders[CurrentOrderIndex];
-
-		const int parentClipIndex = order.CurrentClipIndex;
-		order.CurrentClipIndex = order.Clips.GetCount();
-
-		FClip& clip = order.Clips.Add();
-		clip.Rect = rect;
-		clip.ParentClipIndex = parentClipIndex;
-	}
-
-	inline void PopClipRect() noexcept
-	{
-		FFrameData& frame = FrameDatas[FrameIndex];
-		FOrder& order = frame.Orders[CurrentOrderIndex];
-		order.CurrentClipIndex = order.Clips[order.CurrentClipIndex].ParentClipIndex;
-	}
-
-
-	void AddMeshRect(RpgRectFloat rect, RpgColorRGBA color, const RpgSharedTexture2D& texture = RpgSharedTexture2D(), const RpgSharedMaterial& material = RpgSharedMaterial()) noexcept;
-	void AddText(const char* text, int length, RpgPointFloat position, RpgColorRGBA color, const RpgSharedFont& font = RpgSharedFont(), const RpgSharedMaterial& material = RpgSharedMaterial()) noexcept;
-	void AddLine(RpgPointFloat p0, RpgPointFloat p1, RpgColorRGBA color) noexcept;
-	void AddLineRect(RpgRectFloat rect, RpgColorRGBA color) noexcept;
+	void AddMeshRect(RpgRectFloat rect, RpgColor color, const RpgSharedTexture2D& texture = RpgSharedTexture2D(), const RpgSharedMaterial& material = RpgSharedMaterial()) noexcept;
+	void AddText(const char* text, int length, RpgPointFloat position, RpgColor color, const RpgSharedFont& font = RpgSharedFont(), const RpgSharedMaterial& material = RpgSharedMaterial()) noexcept;
+	void AddLine(RpgPointFloat p0, RpgPointFloat p1, RpgColor color) noexcept;
+	void AddLineRect(RpgRectFloat rect, RpgColor color) noexcept;
 
 	void PreRender(RpgRenderFrameContext& frameContext) noexcept;
 	void CommandCopy(const RpgRenderFrameContext& frameContext, ID3D12GraphicsCommandList* cmdList) noexcept;
@@ -109,17 +74,16 @@ private:
 	struct FClip
 	{
 		RpgRectInt Rect;
-		RpgArrayInline<FMesh, 64> Shapes;
-		RpgArrayInline<FMesh, 32> Texts;
-		int ParentClipIndex{ RPG_INDEX_INVALID };
+		RpgArrayInline<FMesh, 32> Shapes;
+		RpgArrayInline<FMesh, 16> Texts;
 	};
 
 
 	struct FOrder
 	{
-		RpgArrayInline<FClip, 16> Clips;
+		uint8_t Value{ 255 };
+		RpgArray<FClip, 8> Clips;
 		int CurrentClipIndex{ RPG_INDEX_INVALID };
-		int PrevOrderIndex{ RPG_INDEX_INVALID };
 	};
 
 	int CurrentOrderIndex;
@@ -128,12 +92,16 @@ private:
 	struct FDrawBatch
 	{
 		int ShaderMaterialId;
+		int VertexStart;
+		int VertexCount;
 		int IndexStart;
 		int IndexCount;
 
 
 		FDrawBatch(int in_MaterialId = RPG_INDEX_INVALID) noexcept
 			: ShaderMaterialId(in_MaterialId)
+			, VertexStart(0)
+			, VertexCount(0)
 			, IndexStart(0)
 			, IndexCount(0)
 		{
