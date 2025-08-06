@@ -49,7 +49,7 @@ RpgRectFloat RpgGuiConsole::UpdateRect(const RpgGuiContext& context, const RpgRe
 }
 
 
-void RpgGuiConsole::OnUpdate(RpgGuiContext& context) noexcept
+void RpgGuiConsole::OnUpdate(RpgGuiContext& context, RpgGuiWidget* parentLayout) noexcept
 {
 	if (bJustOpened)
 	{
@@ -59,11 +59,10 @@ void RpgGuiConsole::OnUpdate(RpgGuiContext& context) noexcept
 }
 
 
-
-
-
 void RpgGuiConsole::OnRender(RpgRenderer2D& renderer) const noexcept
 {
+	RpgGuiWidget::OnRender(renderer);
+
 	RPG_Check(renderer.GetCurrentOrderValue() == RPG_GUI_ORDER_WINDOW_CONSOLE);
 
 	RpgRectBorders borders(AbsoluteRect, BorderThickness, 0.0f);

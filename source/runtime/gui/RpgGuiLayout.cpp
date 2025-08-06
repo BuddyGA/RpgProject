@@ -7,15 +7,14 @@
 RpgGuiLayout::RpgGuiLayout(const RpgName& in_Name) noexcept
 	: RpgGuiWidget(in_Name)
 {
+	Flags = RpgGui::FLAG_Layout;
 }
 
 
 RpgGuiLayout::RpgGuiLayout(const RpgName& in_Name, RpgPointFloat in_Dimension, EDirection in_Direction) noexcept
+	: RpgGuiLayout(in_Name)
 {
-	Name = in_Name;
 	Dimension = in_Dimension;
-	Flags = RpgGui::FLAG_Layout;
-
 	Direction = in_Direction;
 	ChildSpace = RpgPointFloat(4);
 	bScrollableHorizontal = false;
@@ -116,9 +115,10 @@ void RpgGuiLayout::SetScrollValue(float x, float y) noexcept
 
 void RpgGuiLayout::OnRender(RpgRenderer2D& renderer) const noexcept
 {
+	RpgGuiWidget::OnRender(renderer);
+
 	if (IsHovered())
 	{
-		renderer.AddLineRect(AbsoluteRect, RpgColor::WHITE);
 		renderer.AddLineRect(ContentRect, RpgColor::BLUE);
 	}
 }

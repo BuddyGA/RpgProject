@@ -13,14 +13,6 @@ public:
 	float ScrollSpeed;
 	char TextInputChar;
 
-	RpgGuiWidget* PrevHovered;
-	//RpgGuiWidget* PrevHoveredLayout;
-	RpgGuiWidget* PrevPressed;
-	RpgGuiWidget* CurrentHovered;
-	RpgGuiWidget* CurrentHoveredLayout;
-	RpgGuiWidget* CurrentPressed;
-	RpgGuiWidget* CurrentFocused;
-
 
 public:
 	RpgGuiContext() noexcept;
@@ -47,12 +39,14 @@ public:
 	// Called by RpgEngine to end GUI drawing
 	void End() noexcept;
 
+
 	// Check if any mouse button down/pressed this frame
 	// @return TRUE if any mouse button down
 	inline bool IsMouseButtonAnyDown() const noexcept
 	{
 		return IsKeyButtonDown(RpgInputKey::MOUSE_LEFT) || IsKeyButtonDown(RpgInputKey::MOUSE_MIDDLE) || IsKeyButtonDown(RpgInputKey::MOUSE_RIGHT);
 	}
+
 
 	// Check if key button down/pressed this frame
 	// @param button - Input key button
@@ -62,6 +56,7 @@ public:
 		return KeyButtonDown[button];
 	}
 
+
 	// Check if key button up/released this frame
 	// @param button - Input key button
 	// @return TRUE if key button up/released
@@ -70,20 +65,26 @@ public:
 		return KeyButtonUp[button];
 	}
 
-	// Add layout as a candidate/potential hovered
+
+	// Add control as candidate hovered
+	// @param widget - Widget control
+	inline void AddControlHovered(RpgGuiWidget* widget) noexcept
+	{
+		RPG_Check(widget);
+		ControlHoveredCandidates.AddValue(widget);
+	}
+
+
+	// Add layout as a candidate hovered
 	// @param layout - Widget layout
-	inline void AddHoveredLayout(RpgGuiWidget* layout) noexcept
+	inline void AddLayoutHovered(RpgGuiWidget* layout) noexcept
 	{
 		RPG_Check(layout);
-		CandidateHoveredLayouts.AddValue(layout);
 
-		/*
-		if (PrevHoveredLayout == nullptr || layout->Order <= PrevHoveredLayout->Order)
-		{
-			PrevHoveredLayout = layout;
-		}
-		*/
+		//RPG_LogDebug(RpgLogTemp, "Add candicate hovered layout (%s)", *layout->Name);
+		LayoutHoveredCandidates.AddValue(layout);
 	}
+
 
 	// Force set the current focused widget
 	// @param widget - Widget to receive input focus
@@ -97,20 +98,72 @@ public:
 			return false;
 		}
 
-		if (CurrentFocused != widget)
+		if (WidgetFocused != widget)
 		{
-			widget->Flags |= RpgGui::FLAG_State_Focused;
-			widget->OnFocusedEnter(*this);
-			CurrentFocused = widget;
+			if (WidgetFocused)
+			{
+				WidgetFocused->FocusedExit();
+			}
+
+			widget->FocusedEnter();
+			WidgetFocused = widget;
 		}
 
 		return true;
 	}
 
 
+	// Get current hovered layout
+	// @return Current hovered layout
+	inline RpgGuiWidget* GetLayoutHovered() const noexcept
+	{
+		return LayoutHovered;
+	}
+
+
+	// Get current hovered control
+	// @return Current hovered control
+	inline RpgGuiWidget* GetControlHovered() const noexcept
+	{
+		return ControlHovered;
+	}
+
+	// Get current pressed widget
+	// @return Current pressed widget
+	inline RpgGuiWidget* GetWidgetPressed() const noexcept
+	{
+		return WidgetPressed;
+	}
+
+	// Get current focused widget
+	// @return Current input focused widget
+	inline RpgGuiWidget* GetWidgetFocused() const noexcept
+	{
+		return WidgetFocused;
+	}
+
+	// Force clear focused widget
+	inline void ClearWidgetFocused() noexcept
+	{
+		if (WidgetFocused)
+		{
+			WidgetFocused->FocusedExit();
+		}
+
+		WidgetFocused = nullptr;
+	}
+
+
 private:
-	RpgArrayInline<RpgGuiWidget*, 8> CandidateHoveredLayouts;
-	RpgArrayInline<RpgGuiWidget*, 4> CandicateHoveredControls;
+	RpgArrayInline<RpgGuiWidget*, 8> LayoutHoveredCandidates;
+	RpgGuiWidget* LayoutHovered;
+
+	RpgArrayInline<RpgGuiWidget*, 4> ControlHoveredCandidates;
+	RpgGuiWidget* ControlHovered;
+
+	RpgGuiWidget* WidgetPressed;
+	RpgGuiWidget* WidgetReleased;
+	RpgGuiWidget* WidgetFocused;
 
 	bool KeyButtonDown[RpgInputKey::MAX_COUNT];
 	bool KeyButtonUp[RpgInputKey::MAX_COUNT];

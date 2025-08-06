@@ -50,7 +50,7 @@ public:
 
 
 protected:
-	virtual void OnUpdate(RpgGuiContext& context) noexcept override;
+	virtual void OnUpdate(RpgGuiContext& context, RpgGuiWidget* parentLayout) noexcept override;
 	virtual void OnRender(RpgRenderer2D& renderer) const noexcept override;
 
 private:

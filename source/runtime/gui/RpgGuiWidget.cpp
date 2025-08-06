@@ -36,138 +36,56 @@ RpgRectFloat RpgGuiWidget::UpdateRect(const RpgGuiContext& context, const RpgRec
 }
 
 
-void RpgGuiWidget::UpdateState(RpgGuiContext& context) noexcept
+void RpgGuiWidget::UpdateState(RpgGuiContext& context, RpgGuiWidget* parentLayout) noexcept
 {
 	if (!IsVisible())
 	{
 		return;
 	}
 
-	OnUpdate(context);
-
-	const bool bMouseLeftPressed = context.IsKeyButtonDown(RpgInputKey::MOUSE_LEFT);
-	const bool bMouseLeftReleased = context.IsKeyButtonUp(RpgInputKey::MOUSE_LEFT);
-	const bool bIsMouseCursorInside = AbsoluteRect.IsPointInside(context.MouseCursorPosition);
 	const bool bIsLayout = IsLayout();
-	const bool bWasHovered = IsHovered();
-	const bool bWasPressed = IsPressed();
-	const bool bWasReleased = IsReleased();
-	const bool bWasFocused = IsFocused();
 
-	if (bIsLayout && bWasHovered && context.CurrentHoveredLayout != this)
-	{
-		RPG_LogDebug(RpgLogGui, "%s hovered (exit)", *Name);
-		Flags &= ~RpgGui::FLAG_State_Hovered;
-		OnHoveredExit(context);
-	}
-
-	// Remove pressed state if mouse left released even if cursor is outside rect
-	if (bWasPressed && bMouseLeftReleased)
-	{
-		Flags &= ~RpgGui::FLAG_State_Pressed;
-	}
-
-	if (bWasReleased)
-	{
-		Flags &= ~RpgGui::FLAG_State_Released;
-	}
-
-	if (bWasFocused && (context.CurrentFocused != this || (bMouseLeftPressed && !bIsMouseCursorInside)))
-	{
-		RPG_LogDebug(RpgLogGui, "%s focused (exit)", *Name);
-		Flags &= ~RpgGui::FLAG_State_Focused;
-		OnFocusedExit(context);
-
-		if (context.CurrentFocused == this)
-		{
-			context.CurrentFocused = nullptr;
-		}
-	}
+	// Update self
+	OnUpdate(context, parentLayout);
 
 	// Check if cursor intersect with rect
-	if (!bIsMouseCursorInside)
+	if (!AbsoluteRect.IsPointInside(context.MouseCursorPosition))
 	{
-		if (bWasHovered)
-		{
-			RPG_LogDebug(RpgLogGui, "%s hovered (exit)", *Name);
-			Flags &= ~RpgGui::FLAG_State_Hovered;
-			OnHoveredExit(context);
-		}
+		HoveredExit();
 
-		// Propagate update state to children
-		for (int c = 0; c < Children.GetCount(); ++c)
+		if (bIsLayout)
 		{
-			Children[c]->UpdateState(context);
+			// Propagate update state to children
+			for (int c = 0; c < Children.GetCount(); ++c)
+			{
+				Children[c]->UpdateState(context, this);
+			}
+		}
+		else
+		{
+			RPG_Check(Children.IsEmpty());
 		}
 
 		return;
 	}
 
-
 	if (bIsLayout)
 	{
-		context.AddHoveredLayout(this);
+		context.AddLayoutHovered(this);
+
+		// Propagate update state to children
+		for (int c = 0; c < Children.GetCount(); ++c)
+		{
+			Children[c]->UpdateState(context, this);
+		}
 	}
-	else
+	else if (parentLayout->IsHovered())
 	{
-		context.PrevHovered = this;
+		RPG_Check(Children.IsEmpty());
+
+		context.AddControlHovered(this);
 	}
 
-	if (bWasHovered)
-	{
-		if (bMouseLeftPressed)
-		{
-			context.PrevPressed = this;
-		}
-
-		// If was released while mouse cursor hovering
-		if (bWasReleased)
-		{
-			// Check if can receive focus
-			if (!bWasFocused && HasInputFocus())
-			{
-				context.CurrentFocused = this;
-
-				RPG_LogDebug(RpgLogGui, "%s focused (enter)", *Name);
-				Flags |= RpgGui::FLAG_State_Focused;
-				OnFocusedEnter(context);
-			}
-		}
-		// If was pressed while mouse cursor hovering
-		else if (bWasPressed)
-		{
-			// If mouse left released while mouse cursor hovering
-			if (bMouseLeftReleased)
-			{
-				RPG_LogDebug(RpgLogGui, "%s released", *Name);
-				Flags |= RpgGui::FLAG_State_Released;
-				OnReleased(context);
-			}
-		}
-		else if (context.CurrentPressed == this)
-		{
-			RPG_LogDebug(RpgLogGui, "%s pressed", *Name);
-			Flags |= RpgGui::FLAG_State_Pressed;
-			OnPressed(context);
-		}
-	}
-	else
-	{
-		const bool bHovered = bIsLayout ? (context.CurrentHoveredLayout == this) : (context.CurrentHovered == this);
-
-		if (bHovered)
-		{
-			RPG_LogDebug(RpgLogGui, "%s hovered (enter) (order: %u)", *Name, Order);
-			Flags |= RpgGui::FLAG_State_Hovered;
-			OnHoveredEnter(context);
-		}
-	}
-
-	// Propagate update state to children
-	for (int c = 0; c < Children.GetCount(); ++c)
-	{
-		Children[c]->UpdateState(context);
-	}
 }
 
 
@@ -215,5 +133,21 @@ void RpgGuiWidget::Render(const RpgGuiContext& context, RpgRenderer2D& renderer,
 		RPG_Check(Children.IsEmpty());
 
 		OnRender(renderer);
+	}
+}
+
+
+void RpgGuiWidget::OnRender(RpgRenderer2D& renderer) const noexcept
+{
+	if (IsHovered())
+	{
+		if (IsLayout())
+		{
+			renderer.AddLineRect(AbsoluteRect, RpgColor::WHITE);
+		}
+		else
+		{
+			renderer.AddLineRect(AbsoluteRect, RpgColor::GREEN);
+		}
 	}
 }

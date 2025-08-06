@@ -16,7 +16,7 @@ RpgGuiButton::RpgGuiButton(const RpgName& in_Name, RpgPointFloat in_Dimension) n
 }
 
 
-void RpgGuiButton::OnUpdate(RpgGuiContext& context) noexcept
+void RpgGuiButton::OnUpdate(RpgGuiContext& context, RpgGuiWidget* parentLayout) noexcept
 {
 	if (IsReleased())
 	{
@@ -27,6 +27,8 @@ void RpgGuiButton::OnUpdate(RpgGuiContext& context) noexcept
 
 void RpgGuiButton::OnRender(RpgRenderer2D& renderer) const noexcept
 {
+	RpgGuiWidget::OnRender(renderer);
+
 	RpgColor color = RpgColor(30, 40, 50);
 
 	if (IsHovered())

@@ -19,7 +19,7 @@ public:
 		Position = rect.GetPosition();
 		Dimension = rect.GetDimension();
 
-		UpdateState(context);
+		UpdateState(context, nullptr);
 		UpdateRect(context, AbsoluteRect, RpgPointFloat());
 	}
 

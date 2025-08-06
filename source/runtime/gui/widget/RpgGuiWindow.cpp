@@ -56,6 +56,8 @@ RpgRectFloat RpgGuiWindow::UpdateRect(const RpgGuiContext& context, const RpgRec
 
 void RpgGuiWindow::OnRender(RpgRenderer2D& renderer) const noexcept
 {
+	RpgGuiWidget::OnRender(renderer);
+
 	RPG_Check(renderer.GetCurrentOrderValue() == RPG_GUI_ORDER_WINDOW_DEFAULT);
 
 	const RpgRectBorders borders(AbsoluteRect, BorderThickness, 0.0f);

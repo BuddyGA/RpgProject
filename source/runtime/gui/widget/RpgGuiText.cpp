@@ -26,15 +26,12 @@ RpgRectFloat RpgGuiText::UpdateRect(const RpgGuiContext& context, const RpgRectF
 
 void RpgGuiText::OnRender(RpgRenderer2D& renderer) const noexcept
 {
+	RpgGuiWidget::OnRender(renderer);
+
 	if (TextValue.IsEmpty())
 	{
 		return;
 	}
 
 	renderer.AddText(*TextValue, TextValue.GetLength(), AbsoluteRect.GetPosition(), Color, Font);
-
-	if (IsHovered())
-	{
-		renderer.AddLineRect(AbsoluteRect, RpgColor::GREEN);
-	}
 }

@@ -45,9 +45,9 @@ public:
 
 
 protected:
-	virtual void OnFocusedEnter(RpgGuiContext& context) noexcept override;
-	virtual void OnFocusedExit(RpgGuiContext& context) noexcept override;
-	virtual void OnUpdate(RpgGuiContext& context) noexcept override;
+	virtual void OnFocusedEnter() noexcept override;
+	virtual void OnFocusedExit() noexcept override;
+	virtual void OnUpdate(RpgGuiContext& context, RpgGuiWidget* parentLayout) noexcept override;
 	virtual void OnRender(RpgRenderer2D& renderer) const noexcept override;
 
 

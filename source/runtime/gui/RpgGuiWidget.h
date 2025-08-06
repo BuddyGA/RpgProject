@@ -29,7 +29,7 @@ public:
 
 	virtual void Initialize() noexcept {}
 	virtual RpgRectFloat UpdateRect(const RpgGuiContext& context, const RpgRectFloat& canvasRect, const RpgPointFloat& offset) noexcept;
-	void UpdateState(RpgGuiContext& context) noexcept;
+	void UpdateState(RpgGuiContext& context, RpgGuiWidget* parentLayout) noexcept;
 	void Render(const RpgGuiContext& context, RpgRenderer2D& renderer, uint8_t parentOrder, const RpgRectFloat& parentClipRect) const noexcept;
 
 
@@ -53,7 +53,7 @@ public:
 
 		if (child->Order == 255)
 		{
-			child->Order = child->IsLayout() ? Order - 1 : Order;
+			child->Order = Order - 1;
 		}
 
 		child->Initialize();
@@ -115,14 +115,14 @@ public:
 
 
 protected:
-	virtual void OnHoveredEnter(RpgGuiContext& context) noexcept {}
-	virtual void OnHoveredExit(RpgGuiContext& context) noexcept {}
-	virtual void OnPressed(RpgGuiContext& context) noexcept {}
-	virtual void OnReleased(RpgGuiContext& context) noexcept {}
-	virtual void OnFocusedEnter(RpgGuiContext& context) noexcept {}
-	virtual void OnFocusedExit(RpgGuiContext& context) noexcept {}
-	virtual void OnUpdate(RpgGuiContext& context) noexcept {}
-	virtual void OnRender(RpgRenderer2D& renderer) const noexcept {};
+	virtual void OnHoveredEnter() noexcept {}
+	virtual void OnHoveredExit() noexcept {}
+	virtual void OnPressed() noexcept {}
+	virtual void OnReleased() noexcept {}
+	virtual void OnFocusedEnter() noexcept {}
+	virtual void OnFocusedExit() noexcept {}
+	virtual void OnUpdate(RpgGuiContext& context, RpgGuiWidget* parentLayout) noexcept {}
+	virtual void OnRender(RpgRenderer2D& renderer) const noexcept;
 
 
 protected:
@@ -130,6 +130,71 @@ protected:
 	RpgArray<RpgUniquePtr<RpgGuiWidget>> Children;
 	uint16_t Flags;
 
+
+private:
+	inline void HoveredEnter() noexcept
+	{
+		if (!(Flags & RpgGui::FLAG_State_Hovered))
+		{
+			RPG_LogDebug(RpgLogGui, "%s hovered (enter) (order: %u)", *Name, Order);
+			Flags |= RpgGui::FLAG_State_Hovered;
+			OnHoveredEnter();
+		}
+	}
+
+	inline void HoveredExit() noexcept
+	{
+		if (Flags & RpgGui::FLAG_State_Hovered)
+		{
+			RPG_LogDebug(RpgLogGui, "%s hovered (exit)", *Name);
+			Flags &= ~RpgGui::FLAG_State_Hovered;
+			OnHoveredExit();
+		}
+	}
+
+	inline void Pressed() noexcept
+	{
+		if (!(Flags & RpgGui::FLAG_State_Pressed))
+		{
+			RPG_LogDebug(RpgLogGui, "%s pressed", *Name);
+			Flags |= RpgGui::FLAG_State_Pressed;
+			OnPressed();
+		}
+	}
+
+	inline void Released() noexcept
+	{
+		if (!(Flags & RpgGui::FLAG_State_Released))
+		{
+			const bool bWasPressed = (Flags & RpgGui::FLAG_State_Pressed);
+			RPG_Check(bWasPressed);
+			Flags &= ~RpgGui::FLAG_State_Pressed;
+
+			RPG_LogDebug(RpgLogGui, "%s released", *Name);
+			Flags |= RpgGui::FLAG_State_Released;
+			OnReleased();
+		}
+	}
+
+	inline void FocusedEnter() noexcept
+	{
+		if (!(Flags & RpgGui::FLAG_State_Focused))
+		{
+			RPG_LogDebug(RpgLogGui, "%s focused (enter)", *Name);
+			Flags |= RpgGui::FLAG_State_Focused;
+			OnFocusedEnter();
+		}
+	}
+
+	inline void FocusedExit() noexcept
+	{
+		if (Flags & RpgGui::FLAG_State_Focused)
+		{
+			RPG_LogDebug(RpgLogGui, "%s focused (exit)", *Name);
+			Flags &= ~RpgGui::FLAG_State_Focused;
+			OnFocusedExit();
+		}
+	}
 
 	friend RpgGuiContext;
 

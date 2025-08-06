@@ -40,7 +40,7 @@ RpgGuiInputText::RpgGuiInputText(const RpgName& in_Name, RpgPointFloat in_Dimens
 }
 
 
-void RpgGuiInputText::OnFocusedEnter(RpgGuiContext& context) noexcept
+void RpgGuiInputText::OnFocusedEnter() noexcept
 {
 	RPG_LogDebug(RpgLogGui, "%s: Begin text edit (Got focus)", *Name);
 
@@ -52,7 +52,7 @@ void RpgGuiInputText::OnFocusedEnter(RpgGuiContext& context) noexcept
 }
 
 
-void RpgGuiInputText::OnFocusedExit(RpgGuiContext& context) noexcept
+void RpgGuiInputText::OnFocusedExit() noexcept
 {
 	RPG_LogDebug(RpgLogGui, "%s: End text edit (lost focus)", *Name);
 
@@ -69,7 +69,7 @@ void RpgGuiInputText::OnFocusedExit(RpgGuiContext& context) noexcept
 }
 
 
-void RpgGuiInputText::OnUpdate(RpgGuiContext& context) noexcept
+void RpgGuiInputText::OnUpdate(RpgGuiContext& context, RpgGuiWidget* parentLayout) noexcept
 {
 	bool bCommitted = false;
 	bool bShouldClearFocus = false;
@@ -224,14 +224,16 @@ void RpgGuiInputText::OnUpdate(RpgGuiContext& context) noexcept
 
 	if (bShouldClearFocus)
 	{
-		RPG_Assert(context.CurrentFocused == this);
-		context.CurrentFocused = nullptr;
+		RPG_Assert(context.GetWidgetFocused() == this);
+		context.ClearWidgetFocused();
 	}
 }
 
 
 void RpgGuiInputText::OnRender(RpgRenderer2D& renderer) const noexcept
 {
+	RpgGuiWidget::OnRender(renderer);
+
 	// Set cursor
 	if (IsHovered())
 	{
