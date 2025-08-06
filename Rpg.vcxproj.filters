@@ -270,9 +270,6 @@
     <ClCompile Include="source\runtime\gui\widget\RpgGuiWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\thirdparty\nuklear\__nuklear__build.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\runtime\gui\widget\RpgGuiText.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

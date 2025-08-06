@@ -217,7 +217,6 @@ copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(
     <ClCompile Include="source\runtime\gui\RpgGuiContext.cpp" />
     <ClCompile Include="source\runtime\gui\RpgGuiTypes.cpp" />
     <ClCompile Include="source\runtime\physics\task\RpgPhysicsTask_TestOverlapPair.cpp" />
-    <ClCompile Include="source\runtime\thirdparty\nuklear\__nuklear__build.cpp" />
     <ClCompile Include="source\test\core\RpgTestCore_DSA_Algorithm.cpp" />
     <ClCompile Include="source\test\core\RpgTestCore_DSA_Array.cpp" />
     <ClCompile Include="source\test\core\RpgTestCore_DSA_FreeList.cpp" />
