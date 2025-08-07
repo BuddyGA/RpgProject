@@ -1,16 +1,12 @@
 #pragma once
 
 #include "RpgGuiInputText.h"
+#include "RpgGuiWindow.h"
 
 
 
-class RpgGuiConsole : public RpgGuiWidget
+class RpgGuiConsole : public RpgGuiWindow
 {
-public:
-	float BorderThickness;
-	float InputTextHeight;
-
-
 public:
 	RpgGuiConsole() noexcept;
 	virtual void Initialize() noexcept override;
@@ -51,14 +47,16 @@ public:
 
 protected:
 	virtual void OnUpdate(RpgGuiContext& context, RpgGuiWidget* parentLayout) noexcept override;
-	virtual void OnRender(RpgRenderer2D& renderer) const noexcept override;
 
 private:
 	void Callback_InputTextCommand_Committed(const RpgString& value) noexcept;
 
 
 private:
-	RpgGuiLayout* LogLayout;
+	RpgGuiLayout* LayoutLog;
+	int LogEntryCount;
+
+	RpgGuiWidget* Separator;
 	RpgGuiInputText* InputTextCommand;
 	bool bJustOpened;
 	bool bOpened;

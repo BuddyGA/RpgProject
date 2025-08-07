@@ -11,8 +11,11 @@ class RpgGuiWindow : public RpgGuiWidget
 public:
 	float BorderThickness;
 	RpgColor BorderColor;
-	RpgColor BackgroundColor;
 	float TitleHeight;
+	RpgColor ContentBackgroundColor;
+	RpgRectFloat ContentChildPadding;
+	RpgPointFloat ContentChildSpace;
+	RpgGuiLayout::EDirection ContentDirection;
 
 
 public:
@@ -26,7 +29,13 @@ public:
 		TitleText->SetTextValue(RpgString(*in_TitleText));
 	}
 
+	inline const RpgPointFloat GetWindowContentDimension() const noexcept
+	{
+		return LayoutContent->Dimension;
+	}
 
+
+	/*
 	inline void Open() noexcept
 	{
 		if (!bOpened)
@@ -56,6 +65,7 @@ public:
 			Open();
 		}
 	}
+	*/
 
 
 protected:
@@ -73,6 +83,6 @@ private:
 	RpgGuiButton* TitleButton;
 	RpgGuiText* TitleText;
 	RpgGuiLayout* LayoutContent;
-	bool bOpened;
+	//bool bOpened;
 
 };

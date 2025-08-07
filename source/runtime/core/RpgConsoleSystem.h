@@ -120,7 +120,22 @@ extern RpgConsoleSystem* g_ConsoleSystem;
 
 
 
-#define RPG_CONSOLE_Debug(category, format, ...) g_ConsoleSystem->AddLogCategoryMessageFormat(category, RpgPlatformLog::VERBOSITY_DEBUG, format, __VA_ARGS__)
-#define RPG_CONSOLE_Log(category, format, ...) g_ConsoleSystem->AddLogCategoryMessageFormat(category, RpgPlatformLog::VERBOSITY_LOG, format, __VA_ARGS__)
-#define RPG_CONSOLE_Warn(category, format, ...) g_ConsoleSystem->AddLogCategoryMessageFormat(category, RpgPlatformLog::VERBOSITY_WARN, format, __VA_ARGS__)
-#define RPG_CONSOLE_Error(category, format, ...) g_ConsoleSystem->AddLogCategoryMessageFormat(category, RpgPlatformLog::VERBOSITY_ERROR, format, __VA_ARGS__)
+#define RPG_CONSOLE_Log(category, format, ...)																		\
+{																													\
+	g_ConsoleSystem->AddLogCategoryMessageFormat(category, RpgPlatformLog::VERBOSITY_LOG, format, __VA_ARGS__);		\
+	RPG_Log(category, format, __VA_ARGS__);																			\
+}
+
+
+#define RPG_CONSOLE_Warn(category, format, ...)																		\
+{																													\
+	g_ConsoleSystem->AddLogCategoryMessageFormat(category, RpgPlatformLog::VERBOSITY_WARN, format, __VA_ARGS__);	\
+	RPG_LogWarn(category, format, __VA_ARGS__);																		\
+}
+
+
+#define RPG_CONSOLE_Error(category, format, ...)																	\
+{																													\
+	g_ConsoleSystem->AddLogCategoryMessageFormat(category, RpgPlatformLog::VERBOSITY_ERROR, format, __VA_ARGS__);	\
+	RPG_LogError(category, format, __VA_ARGS__);																	\
+}

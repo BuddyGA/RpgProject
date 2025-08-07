@@ -12,6 +12,7 @@ public:
 
 
 public:
+	RpgGuiText() noexcept;
 	RpgGuiText(const RpgName& in_Name) noexcept;
 	virtual RpgRectFloat UpdateRect(const RpgGuiContext& context, const RpgRectFloat& canvasRect, const RpgPointFloat& offset) noexcept override;
 

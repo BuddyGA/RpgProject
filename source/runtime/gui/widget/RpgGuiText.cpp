@@ -6,6 +6,7 @@
 RpgGuiText::RpgGuiText(const RpgName& in_Name) noexcept
 	: RpgGuiWidget(in_Name)
 {
+	BackgroundColor = RpgColor::BLACK_TRANSPARENT;
 	Color = RpgColor::WHITE;
 	bDirtyDimension = false;
 }

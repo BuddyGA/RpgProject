@@ -20,8 +20,8 @@ RpgGuiInputText::RpgGuiInputText(const RpgName& in_Name) noexcept
 
 	TextColor = RpgColor::WHITE;
 	HighlightColor = RpgColor(50, 100, 150);
-	DefaultBackgroundColor = RpgColor(10, 20, 30);
-	FocusedBackgroundColor = RpgColor(20, 40, 60);
+	BackgroundColor = RpgColor(10, 20, 30);
+	BackgroundColorFocused = RpgColor(20, 40, 60);
 
 	State = STATE_NONE;
 	CursorIndex = RPG_INDEX_INVALID;
@@ -246,11 +246,11 @@ void RpgGuiInputText::OnRender(RpgRenderer2D& renderer) const noexcept
 
 
 	// Draw rect
-	RpgColor color = DefaultBackgroundColor;
+	RpgColor color = BackgroundColor;
 
 	if (IsFocused())
 	{
-		color = FocusedBackgroundColor;
+		color = BackgroundColorFocused;
 		renderer.AddLineRect(AbsoluteRect, RpgColor::YELLOW);
 	}
 

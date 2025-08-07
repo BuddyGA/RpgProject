@@ -7,6 +7,7 @@
 RpgGuiWidget::RpgGuiWidget() noexcept
 {
 	Flags = RpgGui::FLAG_None;
+	BackgroundColor = RpgColor(50, 50, 50);
 	Order = 255;
 }
 
@@ -139,6 +140,11 @@ void RpgGuiWidget::Render(const RpgGuiContext& context, RpgRenderer2D& renderer,
 
 void RpgGuiWidget::OnRender(RpgRenderer2D& renderer) const noexcept
 {
+	if (BackgroundColor.A > 0)
+	{
+		renderer.AddMeshRect(AbsoluteRect, BackgroundColor);
+	}
+
 	if (IsHovered())
 	{
 		if (IsLayout())

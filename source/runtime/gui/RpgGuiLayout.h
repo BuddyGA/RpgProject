@@ -37,7 +37,12 @@ protected:
 
 
 private:
+	void ApplyScroll(float x, float y) noexcept;
+
+
+private:
 	RpgRectFloat ContentRect;
 	RpgPointFloat ScrollValue;
+	RpgPointFloat PendingScrollValue;
 
 };

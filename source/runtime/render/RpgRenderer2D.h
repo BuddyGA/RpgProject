@@ -75,7 +75,7 @@ private:
 	{
 		RpgRectInt Rect;
 		RpgArrayInline<FMesh, 32> Shapes;
-		RpgArrayInline<FMesh, 16> Texts;
+		RpgArrayInline<FMesh, 64> Texts;
 	};
 
 

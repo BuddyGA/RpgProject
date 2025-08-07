@@ -5,81 +5,95 @@
 
 
 
+#define RPG_GUI_CONSOLE_INPUT_TEXT_HEIGHT	24
+
+
 RpgGuiConsole::RpgGuiConsole() noexcept
+	: RpgGuiWindow("console")
 {
-	Name = "console";
-	Flags = RpgGui::FLAG_Layout;
-	Position = RpgPointFloat(8.0f, 8.0f);
+	Position = RpgPointFloat(4.0f, 4.0f);
 	Order = RPG_GUI_ORDER_WINDOW_CONSOLE;
+
 	BorderThickness = 4.0f;
-	InputTextHeight = 24.0f;
-	LogLayout = nullptr;
+	ContentChildPadding = RpgRectFloat(0.0f);
+	ContentChildSpace = RpgPointFloat(0.0f);
+	ContentDirection = RpgGuiLayout::DIRECTION_VERTICAL;
+
+	LayoutLog = nullptr;
+	LogEntryCount = 0;
+
 	InputTextCommand = nullptr;
 	bJustOpened = false;
 	bOpened = false;
-
-	SetVisibility(false);
 }
 
 
 void RpgGuiConsole::Initialize() noexcept
 {
-	LogLayout = AddChild<RpgGuiLayout>("console/logs");
+	RpgGuiWindow::Initialize();
 
-	InputTextCommand = AddChild<RpgGuiInputText>("console/command");
+	SetTitleText("CONSOLE");
+
+	LayoutLog = AddContentChild<RpgGuiLayout>("console/logs");
+	LayoutLog->ChildPadding = RpgRectFloat(4.0f);
+	LayoutLog->Direction = RpgGuiLayout::DIRECTION_VERTICAL;
+	LayoutLog->bScrollableVertical = true;
+
+	Separator = AddContentChild<RpgGuiWidget>("console/separator");
+	Separator->BackgroundColor = BorderColor;
+
+	InputTextCommand = AddContentChild<RpgGuiInputText>("console/command");
 	InputTextCommand->bExitFocusOnEnter = false;
 	InputTextCommand->TextFont = RpgFont::s_GetDefault_ShareTechMono();
-	InputTextCommand->DefaultBackgroundColor = RpgColor(10, 10, 10);
-	InputTextCommand->FocusedBackgroundColor = RpgColor(20, 20, 20);
+	InputTextCommand->BackgroundColor = RpgColor(15, 15, 15);
+	InputTextCommand->BackgroundColorFocused = RpgColor(30, 30, 30);
 	InputTextCommand->EventCommitted.AddObjectFunction(this, &RpgGuiConsole::Callback_InputTextCommand_Committed);
 }
 
 
 RpgRectFloat RpgGuiConsole::UpdateRect(const RpgGuiContext& context, const RpgRectFloat& canvasRect, const RpgPointFloat& offset) noexcept
 {
-	Dimension = RpgPointFloat(canvasRect.GetWidth() * 0.5f, canvasRect.GetHeight() * 0.5f);
+	const RpgRectFloat absRect = RpgGuiWindow::UpdateRect(context, canvasRect, offset);
 
-	LogLayout->Position = RpgPointFloat(BorderThickness, BorderThickness);
-	LogLayout->Dimension = RpgPointFloat(Dimension.X - BorderThickness * 2.0f, Dimension.Y - BorderThickness * 2.0f - InputTextHeight - BorderThickness);
+	const RpgPointFloat canvasDimension = canvasRect.GetDimension();
+	Dimension.X = canvasDimension.X * 0.5f;
+	Dimension.Y = canvasDimension.Y * 0.5f;
 
-	InputTextCommand->Position = RpgPointFloat(BorderThickness, LogLayout->Dimension.Y + BorderThickness * 2.0f);
-	InputTextCommand->Dimension = RpgPointFloat(Dimension.X - BorderThickness * 2.0f, InputTextHeight);
+	const RpgPointFloat contentDimension = GetWindowContentDimension();
+	LayoutLog->Dimension = RpgPointFloat(0.0f, contentDimension.Y - Separator->Dimension.Y - InputTextCommand->Dimension.Y);
+	Separator->Dimension = RpgPointFloat(0.0f, BorderThickness);
+	InputTextCommand->Dimension = RpgPointFloat(0.0f, RPG_GUI_CONSOLE_INPUT_TEXT_HEIGHT);
 
-	return RpgGuiWidget::UpdateRect(context, canvasRect, offset);
+	return absRect;
 }
 
 
 void RpgGuiConsole::OnUpdate(RpgGuiContext& context, RpgGuiWidget* parentLayout) noexcept
 {
+	const int consoleLogEntryCount = g_ConsoleSystem->GetLogCount();
+
+	if (consoleLogEntryCount > LogEntryCount)
+	{
+		for (int i = LogEntryCount; i < consoleLogEntryCount; ++i)
+		{
+			RpgColor color;
+			const char* message = g_ConsoleSystem->GetLogMessage(i, nullptr, &color);
+
+			RpgGuiText* logText = LayoutLog->AddChild<RpgGuiText>(RpgName::Format("console/logs/entry_%i", i));
+			logText->Font = RpgFont::s_GetDefault_ShareTechMono();
+			logText->Color = color;
+			logText->SetTextValue(RpgString(message));
+		}
+
+		LayoutLog->SetScrollValue(0.0f, RPG_GUI_SCROLL_VALUE_LAST);
+		LogEntryCount = consoleLogEntryCount;
+	}
+
 	if (bJustOpened)
 	{
 		context.SetFocusWidget(InputTextCommand);
 		bJustOpened = false;
 	}
-}
-
-
-void RpgGuiConsole::OnRender(RpgRenderer2D& renderer) const noexcept
-{
-	RpgGuiWidget::OnRender(renderer);
-
-	RPG_Check(renderer.GetCurrentOrderValue() == RPG_GUI_ORDER_WINDOW_CONSOLE);
-
-	RpgRectBorders borders(AbsoluteRect, BorderThickness, 0.0f);
-	const RpgColor borderColor(50, 50, 50);
-
-	for (int i = 0; i < RpgRectBorders::MAX_COUNT; ++i)
-	{
-		renderer.AddMeshRect(borders.BorderRects[i], borderColor);
-	}
-
-	const RpgRectFloat innerRect = borders.GetInnerRect();
-
-	const RpgRectFloat logRect(innerRect.Left, innerRect.Top, innerRect.Right, innerRect.Bottom - InputTextHeight - BorderThickness);
-	renderer.AddMeshRect(logRect, RpgColor(10, 10, 10, 220));
-
-	const RpgRectFloat separatorRect(innerRect.Left, logRect.Bottom, innerRect.Right, logRect.Bottom + BorderThickness);
-	renderer.AddMeshRect(separatorRect, borderColor);
 }
 
 

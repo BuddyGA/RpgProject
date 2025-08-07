@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/RpgString.h"
+#include "core/RpgConsoleSystem.h"
 #include "core/RpgPointer.h"
 #include "core/world/RpgWorld.h"
 #include "render/RpgRenderer.h"
@@ -23,7 +23,7 @@ public:
 	~RpgEngine() noexcept;
 
 	void Initialize() noexcept;
-
+	void HandleConsoleCommand(const RpgName& command, const RpgConsoleCommandParams& params) noexcept;
 	void WindowSizeChanged(const RpgPlatformWindowEvent& e) noexcept;
 	void MouseMove(const RpgPlatformMouseMoveEvent& e) noexcept;
 	void MouseWheel(const RpgPlatformMouseWheelEvent& e) noexcept;

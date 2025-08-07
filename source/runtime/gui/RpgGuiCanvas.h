@@ -10,6 +10,7 @@ public:
 	RpgGuiCanvas() noexcept
 	{
 		Flags = RpgGui::FLAG_Layout;
+		BackgroundColor = RpgColor::BLACK_TRANSPARENT;
 		Order = RPG_GUI_ORDER_CANVAS;
 	}
 

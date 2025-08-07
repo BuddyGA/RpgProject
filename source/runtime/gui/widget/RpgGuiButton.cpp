@@ -29,7 +29,7 @@ void RpgGuiButton::OnRender(RpgRenderer2D& renderer) const noexcept
 {
 	RpgGuiWidget::OnRender(renderer);
 
-	RpgColor color = RpgColor(30, 40, 50);
+	RpgColor color = BackgroundColor;
 
 	if (IsHovered())
 	{

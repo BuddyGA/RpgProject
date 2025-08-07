@@ -27,8 +27,7 @@ public:
 	RpgSharedFont TextFont;
 	RpgColor TextColor;
 	RpgColor HighlightColor;
-	RpgColor DefaultBackgroundColor;
-	RpgColor FocusedBackgroundColor;
+	RpgColor BackgroundColorFocused;
 	RpgString Value;
 
 

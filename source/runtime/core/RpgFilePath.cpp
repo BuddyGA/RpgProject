@@ -270,7 +270,7 @@ void RpgFileSystem::Initialize() noexcept
 
 	SourceDirPath = ProjectDirPath + "source/";
 	AssetDirPath = ProjectDirPath + "assets/";
-	AssetRawDirPath = ProjectDirPath + "assets/__raw/";
+	AssetRawDirPath = ProjectDirPath + "__raw/";
 }
 
 

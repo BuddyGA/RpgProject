@@ -9,16 +9,19 @@ RpgGuiWindow::RpgGuiWindow(const RpgName& in_Name) noexcept
 	Flags = RpgGui::FLAG_Layout;
 	Position = RpgPointFloat(16.0f, 16.0f);
 	Dimension = RpgPointFloat(512.0f, 512.0f);
+	BackgroundColor = RpgColor::BLACK_TRANSPARENT;
 	Order = RPG_GUI_ORDER_WINDOW_DEFAULT;
 	
-	BorderThickness = 6.0f;
+	BorderThickness = 5.0f;
 	BorderColor = RpgColor(20, 30, 50);
-	BackgroundColor = RpgColor(10, 10, 10, 220);
 	TitleHeight = 24.0f;
+	ContentBackgroundColor = RpgColor(10, 10, 10, 220);
+	ContentChildPadding = RpgRectFloat(4.0f);
+	ContentChildSpace = RpgPointFloat(4.0f);
+	ContentDirection = RpgGuiLayout::DIRECTION_NONE;
 	TitleButton = nullptr;
 	TitleText = nullptr;
 	LayoutContent = nullptr;
-	bOpened = false;
 
 	SetVisibility(false);
 }
@@ -27,12 +30,15 @@ RpgGuiWindow::RpgGuiWindow(const RpgName& in_Name) noexcept
 void RpgGuiWindow::Initialize() noexcept
 {
 	TitleButton = AddChild<RpgGuiButton>(RpgName::Format("%s/title_button", *Name));
+	TitleButton->BackgroundColor = BorderColor;
 
 	TitleText = AddChild<RpgGuiText>(RpgName::Format("%s/title_text", *Name));
 
 	LayoutContent = AddChild<RpgGuiLayout>(RpgName::Format("%s/content", *Name));
-	LayoutContent->ChildPadding = RpgRectFloat(4.0f);
-	LayoutContent->ChildSpace = RpgPointFloat(4.0f);
+	LayoutContent->BackgroundColor = ContentBackgroundColor;
+	LayoutContent->ChildPadding = ContentChildPadding;
+	LayoutContent->ChildSpace = ContentChildSpace;
+	LayoutContent->Direction = ContentDirection;
 }
 
 
@@ -57,8 +63,6 @@ RpgRectFloat RpgGuiWindow::UpdateRect(const RpgGuiContext& context, const RpgRec
 void RpgGuiWindow::OnRender(RpgRenderer2D& renderer) const noexcept
 {
 	RpgGuiWidget::OnRender(renderer);
-
-	RPG_Check(renderer.GetCurrentOrderValue() == RPG_GUI_ORDER_WINDOW_DEFAULT);
 
 	const RpgRectBorders borders(AbsoluteRect, BorderThickness, 0.0f);
 

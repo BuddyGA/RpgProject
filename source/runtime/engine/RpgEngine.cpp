@@ -1,5 +1,6 @@
 #include "RpgEngine.h"
 #include "core/RpgCommandLine.h"
+#include "core/RpgConsoleSystem.h"
 #include "input/RpgInputManager.h"
 #include "physics/world/RpgPhysicsComponent.h"
 #include "physics/world/RpgPhysicsWorldSubsystem.h"
@@ -50,6 +51,8 @@ RpgEngine::~RpgEngine() noexcept
 
 void RpgEngine::Initialize() noexcept
 {
+	g_ConsoleSystem->RegisterObjectCommandListener(this, &RpgEngine::HandleConsoleCommand);
+
 	// input manager
 	g_InputManager = new RpgInputManager();
 
@@ -103,6 +106,15 @@ void RpgEngine::Initialize() noexcept
 	// create main camera object
 	SetMainCamera(MainWorld->GameObject_Create("camera_main"));
 	MainWorld->GameObject_AttachScript(MainCameraObject, &ScriptDebugCamera);
+}
+
+
+void RpgEngine::HandleConsoleCommand(const RpgName& command, const RpgConsoleCommandParams& params) noexcept
+{
+	if (command == "exit")
+	{
+		RequestExit(false);
+	}
 }
 
 

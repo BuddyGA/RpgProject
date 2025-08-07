@@ -19,6 +19,10 @@ public:
 	// Dimension X (width) and Y (height)
 	RpgPointFloat Dimension;
 
+	// Background color
+	RpgColor BackgroundColor;
+
+	// Z-order, lower value means in front
 	uint8_t Order;
 
 

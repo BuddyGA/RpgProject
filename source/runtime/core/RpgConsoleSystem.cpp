@@ -86,11 +86,9 @@ void RpgConsoleSystem::AddLogCategoryMessage(const RpgPlatformLog::FCategory& ca
 
 	char output[RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT];
 	RpgPlatformMemory::MemZero(output, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT);
-	snprintf(output, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT, "<%s>: %s\n", category.Name, message);
+	snprintf(output, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT, "<%s>: %s", category.Name, message);
 
 	AddLogMessage(output, color);
-
-	RpgPlatformLog::OutputMessage(consoleOutputColor, output);
 }
 
 
@@ -164,7 +162,7 @@ void RpgConsoleSystem::ExecuteCommand(const char* commandArgs) noexcept
 	}
 	else
 	{
-		AddLogMessageFormat(RpgColor::WHITE, "Command: %s", commandArgs);
+		AddLogMessageFormat(RpgColor::GREEN, "Command: %s", commandArgs);
 		RegisteredListeners.Broadcast(name, params);
 	}
 }
