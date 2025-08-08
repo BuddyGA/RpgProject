@@ -50,43 +50,28 @@ void RpgGuiWidget::UpdateState(RpgGuiContext& context, RpgGuiWidget* parentLayou
 	OnUpdate(context, parentLayout);
 
 	// Check if cursor intersect with rect
-	if (!AbsoluteRect.IsPointInside(context.MouseCursorPosition))
+	if (AbsoluteRect.IsPointInside(context.MouseCursorPosition))
 	{
-		HoveredExit();
-
 		if (bIsLayout)
 		{
-			// Propagate update state to children
-			for (int c = 0; c < Children.GetCount(); ++c)
-			{
-				Children[c]->UpdateState(context, this);
-			}
+			context.AddLayoutHovered(this);
 		}
-		else
+		else if (parentLayout->IsHovered())
 		{
 			RPG_Check(Children.IsEmpty());
-		}
-
-		return;
-	}
-
-	if (bIsLayout)
-	{
-		context.AddLayoutHovered(this);
-
-		// Propagate update state to children
-		for (int c = 0; c < Children.GetCount(); ++c)
-		{
-			Children[c]->UpdateState(context, this);
+			context.AddControlHovered(this);
 		}
 	}
-	else if (parentLayout->IsHovered())
+	else
 	{
-		RPG_Check(Children.IsEmpty());
-
-		context.AddControlHovered(this);
+		HoveredExit();
 	}
-
+	
+	// Propagate update state to children
+	for (int c = 0; c < Children.GetCount(); ++c)
+	{
+		Children[c]->UpdateState(context, this);
+	}
 }
 
 

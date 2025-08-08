@@ -322,8 +322,8 @@ void RpgEngine::CreateTestLevel() noexcept
 
 	//TestLevel_Animations(MainWorld);
 
-	//TestLevel_PrimitiveShapes(MainWorld);
+	TestLevel_PrimitiveShapes(MainWorld);
 
-	TestLevel_Import(MainWorld, RpgFileSystem::GetAssetRawDirPath() + "default_cube.fbx", 1.0f);
+	//TestLevel_Import(MainWorld, RpgFileSystem::GetAssetRawDirPath() + "default_cube.fbx", 1.0f);
 }
 

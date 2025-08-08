@@ -37,7 +37,7 @@ void RpgInputManager::MouseButton(const RpgPlatformMouseButtonEvent& e) noexcept
 
 void RpgInputManager::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 {
-	const RpgInputKey::EButton kb = static_cast<RpgInputKey::EButton>(e.Button);
+	const RpgInputKey::EButton kb = static_cast<RpgInputKey::EButton>(e.KeyCode);
 	KeyButtonDown[1][kb] = e.bIsDown;
 }
 

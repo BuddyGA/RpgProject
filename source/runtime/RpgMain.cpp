@@ -214,7 +214,9 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 		case WM_SYSKEYDOWN:
 		{
 			RpgPlatformKeyboardEvent e{};
-			e.Button = RpgInputWindows::MapToKeyButton(wParam, lParam);
+			e.KeyCode = RpgInputWindows::MapVirtualKeyToKeyButton(wParam, lParam);
+			e.ScanCode = (lParam >> 16) & 0xFF;
+			e.RepeatCount = lParam & 0xFFFF;
 			e.bIsDown = true;
 
 			g_Engine->KeyboardButton(e);
@@ -227,7 +229,9 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 		case WM_SYSKEYUP:
 		{
 			RpgPlatformKeyboardEvent e{};
-			e.Button = RpgInputWindows::MapToKeyButton(wParam, lParam);
+			e.KeyCode = RpgInputWindows::MapVirtualKeyToKeyButton(wParam, lParam);
+			e.ScanCode = (lParam >> 16) & 0xFF;
+			e.RepeatCount = lParam & 0xFFFF;
 			e.bIsDown = false;
 
 			g_Engine->KeyboardButton(e);

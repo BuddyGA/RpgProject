@@ -141,7 +141,7 @@ void RpgGuiInputText::OnUpdate(RpgGuiContext& context, RpgGuiWidget* parentLayou
 			TempValue.InsertCharAt(c, CursorIndex++);
 			bCommitted = bCommitOnValueChanged;
 		}
-		else if (context.IsKeyButtonDown(RpgInputKey::KEYBOARD_ARROW_LEFT))
+		else if (context.IsKeyButtonDown(RpgInputKey::KEYBOARD_LEFT))
 		{
 			if (!bSelecting && SelectedCharCount > 0)
 			{
@@ -153,7 +153,7 @@ void RpgGuiInputText::OnUpdate(RpgGuiContext& context, RpgGuiWidget* parentLayou
 				--CursorIndex;
 			}
 		}
-		else if (context.IsKeyButtonDown(RpgInputKey::KEYBOARD_ARROW_RIGHT))
+		else if (context.IsKeyButtonDown(RpgInputKey::KEYBOARD_RIGHT))
 		{
 			if (!bSelecting && SelectedCharCount > 0)
 			{

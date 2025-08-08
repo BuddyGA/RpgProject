@@ -41,7 +41,7 @@ void RpgEditor::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 {
 	if (e.bIsDown)
 	{
-		if (e.Button == RpgInputKey::KEYBOARD_F1)
+		if (e.KeyCode == RpgInputKey::KEYBOARD_F1)
 		{
 			const bool bVisible = AssetBrowser->IsVisible();
 			AssetBrowser->SetVisibility(!bVisible);

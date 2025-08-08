@@ -153,34 +153,34 @@ void RpgEngine::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 
 	if (e.bIsDown)
 	{
-		if (e.Button == RpgInputKey::KEYBOARD_TILDE)
+		if (e.KeyCode == RpgInputKey::KEYBOARD_TILDE)
 		{
 			GuiConsole->Toggle();
 		}
-		else if (e.Button == RpgInputKey::KEYBOARD_PLUS)
+		else if (e.KeyCode == RpgInputKey::KEYBOARD_EQUALS)
 		{
 			MainRenderer->Gamma += 0.01f;
 		}
-		else if (e.Button == RpgInputKey::KEYBOARD_MINUS)
+		else if (e.KeyCode == RpgInputKey::KEYBOARD_MINUS)
 		{
 			MainRenderer->Gamma -= 0.01f;
 		}
-		else if (e.Button == RpgInputKey::KEYBOARD_0)
+		else if (e.KeyCode == RpgInputKey::KEYBOARD_0)
 		{
 			RpgRenderComponent_Camera* cameraComp = MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(MainCameraObject);
 			cameraComp->bFrustumCulling = !cameraComp->bFrustumCulling;
 		}
-		else if (e.Button == RpgInputKey::KEYBOARD_9)
+		else if (e.KeyCode == RpgInputKey::KEYBOARD_9)
 		{
 			RpgAnimationWorldSubsystem* subsystem = MainWorld->Subsystem_Get<RpgAnimationWorldSubsystem>();
 			subsystem->bDebugDrawSkeletonBones = !subsystem->bDebugDrawSkeletonBones;
 		}
-		else if (e.Button == RpgInputKey::KEYBOARD_8)
+		else if (e.KeyCode == RpgInputKey::KEYBOARD_8)
 		{
 			RpgRenderWorldSubsystem* subsystem = MainWorld->Subsystem_Get<RpgRenderWorldSubsystem>();
 			subsystem->bDebugDrawMeshBound = !subsystem->bDebugDrawMeshBound;
 		}
-		else if (e.Button == RpgInputKey::KEYBOARD_F9)
+		else if (e.KeyCode == RpgInputKey::KEYBOARD_F9)
 		{
 			if (MainWorld->HasStartedPlay())
 			{

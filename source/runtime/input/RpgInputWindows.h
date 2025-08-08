@@ -25,10 +25,10 @@ namespace RpgInputWindows
 		VK_NEXT,		// KEYBOARD_PAGE_DOWN
 		VK_END,			// KEYBOARD_END
 		VK_HOME,		// KEYBOARD_HOME
-		VK_LEFT,		// KEYBOARD_ARROW_LEFT
-		VK_UP,			// KEYBOARD_ARROW_UP
-		VK_RIGHT,		// KEYBOARD_ARROW_RIGHT
-		VK_DOWN,		// KEYBOARD_ARROW_DOWN
+		VK_LEFT,		// KEYBOARD_LEFT
+		VK_UP,			// KEYBOARD_UP
+		VK_RIGHT,		// KEYBOARD_RIGHT
+		VK_DOWN,		// KEYBOARD_DOWN
 		VK_PRINT,		// KEYBOARD_PRINT_SCREEN
 		VK_INSERT,		// KEYBOARD_INSERT
 		VK_DELETE,		// KEYBOARD_DELETE
@@ -104,7 +104,7 @@ namespace RpgInputWindows
 		VK_LMENU,		// KEYBOARD_ALT_LEFT
 		VK_RMENU,		// KEYBOARD_ALT_RIGHT
 		VK_OEM_1,		// KEYBOARD_SEMICOLON
-		VK_OEM_PLUS,	// KEYBOARD_PLUS
+		VK_OEM_PLUS,	// KEYBOARD_EQUALS
 		VK_OEM_COMMA,	// KEYBOARD_COMMA
 		VK_OEM_MINUS,	// KEYBOARD_MINUS
 		VK_OEM_PERIOD,	// KEYBOARD_PERIOD
@@ -115,14 +115,170 @@ namespace RpgInputWindows
 		VK_OEM_6,		// KEYBOARD_BRACKET_RIGHT
 		VK_OEM_7,		// KEYBOARD_QUOTE
 	};
-	static_assert(sizeof(KEY_BUTTON_TO_VK) / sizeof(WPARAM) == RpgInputKey::MAX_COUNT, "KEY_BUTTON_TO_VK key not equals!");
+	static_assert(sizeof(KEY_BUTTON_TO_VK) / sizeof(WPARAM) == RpgInputKey::MAX_COUNT, "KEY_BUTTON_TO_VK invalid mappings!");
 
 
 
-	inline RpgInputKey::EButton MapToKeyButton(WPARAM wParam, LPARAM lParam) noexcept
+	constexpr RpgInputKey::EButton SC_TO_KEY_BUTTON[] =
 	{
-		const UINT scanCode = (lParam & 0x00FF0000) >> 16;
-		const bool bExtended = (lParam & 0x01000000) != 0;
+		RpgInputKey::NONE,
+		RpgInputKey::KEYBOARD_ESCAPE,	
+		RpgInputKey::KEYBOARD_1,
+		RpgInputKey::KEYBOARD_2,
+		RpgInputKey::KEYBOARD_3,
+		RpgInputKey::KEYBOARD_4,
+		RpgInputKey::KEYBOARD_5,
+		RpgInputKey::KEYBOARD_6,
+		RpgInputKey::KEYBOARD_7,
+		RpgInputKey::KEYBOARD_8,
+		RpgInputKey::KEYBOARD_9,
+		RpgInputKey::KEYBOARD_0,
+		RpgInputKey::KEYBOARD_MINUS,
+		RpgInputKey::KEYBOARD_EQUALS,
+		RpgInputKey::KEYBOARD_BACKSPACE,
+		RpgInputKey::KEYBOARD_TAB,
+		RpgInputKey::KEYBOARD_Q,
+		RpgInputKey::KEYBOARD_W,
+		RpgInputKey::KEYBOARD_E,
+		RpgInputKey::KEYBOARD_R,
+		RpgInputKey::KEYBOARD_T,
+		RpgInputKey::KEYBOARD_Y,
+		RpgInputKey::KEYBOARD_U,
+		RpgInputKey::KEYBOARD_I,
+		RpgInputKey::KEYBOARD_O,
+		RpgInputKey::KEYBOARD_P,
+		RpgInputKey::KEYBOARD_BRACKET_LEFT,
+		RpgInputKey::KEYBOARD_BRACKET_RIGHT,
+		RpgInputKey::KEYBOARD_ENTER,
+		RpgInputKey::KEYBOARD_CTRL_LEFT,
+		RpgInputKey::KEYBOARD_A,
+		RpgInputKey::KEYBOARD_S,
+		RpgInputKey::KEYBOARD_D,
+		RpgInputKey::KEYBOARD_F,
+		RpgInputKey::KEYBOARD_G,
+		RpgInputKey::KEYBOARD_H,
+		RpgInputKey::KEYBOARD_J,
+		RpgInputKey::KEYBOARD_K,
+		RpgInputKey::KEYBOARD_L,
+		RpgInputKey::KEYBOARD_SEMICOLON,
+		RpgInputKey::KEYBOARD_QUOTE,
+		RpgInputKey::KEYBOARD_TILDE,
+		RpgInputKey::KEYBOARD_SHIFT_LEFT,
+		RpgInputKey::KEYBOARD_BACKSLASH,
+		RpgInputKey::KEYBOARD_Z,
+		RpgInputKey::KEYBOARD_X,
+		RpgInputKey::KEYBOARD_C,
+		RpgInputKey::KEYBOARD_V,
+		RpgInputKey::KEYBOARD_B,
+		RpgInputKey::KEYBOARD_N,
+		RpgInputKey::KEYBOARD_M,
+		RpgInputKey::KEYBOARD_COMMA,
+		RpgInputKey::KEYBOARD_PERIOD,
+		RpgInputKey::KEYBOARD_SLASH,
+		RpgInputKey::KEYBOARD_SHIFT_RIGHT,
+		RpgInputKey::KEYBOARD_NUMPAD_MUL,
+		RpgInputKey::KEYBOARD_ALT_LEFT,
+		RpgInputKey::KEYBOARD_SPACEBAR,
+		RpgInputKey::KEYBOARD_CAPS_LOCK,
+		RpgInputKey::KEYBOARD_F1,
+		RpgInputKey::KEYBOARD_F2,
+		RpgInputKey::KEYBOARD_F3,
+		RpgInputKey::KEYBOARD_F4,
+		RpgInputKey::KEYBOARD_F5,
+		RpgInputKey::KEYBOARD_F6,
+		RpgInputKey::KEYBOARD_F7,
+		RpgInputKey::KEYBOARD_F8,
+		RpgInputKey::KEYBOARD_F9,
+		RpgInputKey::KEYBOARD_F10,
+		RpgInputKey::KEYBOARD_NUM_LOCK,
+		RpgInputKey::KEYBOARD_SCROLL_LOCK,
+		RpgInputKey::KEYBOARD_NUMPAD_7,
+		RpgInputKey::KEYBOARD_NUMPAD_8,
+		RpgInputKey::KEYBOARD_NUMPAD_9,
+		RpgInputKey::KEYBOARD_NUMPAD_SUB,
+		RpgInputKey::KEYBOARD_NUMPAD_4,
+		RpgInputKey::KEYBOARD_NUMPAD_5,
+		RpgInputKey::KEYBOARD_NUMPAD_6,
+		RpgInputKey::KEYBOARD_NUMPAD_ADD,
+		RpgInputKey::KEYBOARD_NUMPAD_1,
+		RpgInputKey::KEYBOARD_NUMPAD_2,
+		RpgInputKey::KEYBOARD_NUMPAD_3,
+		RpgInputKey::KEYBOARD_NUMPAD_0,
+		RpgInputKey::KEYBOARD_NUMPAD_DOT,
+
+		RpgInputKey::NONE,
+		RpgInputKey::NONE,
+		RpgInputKey::NONE,
+
+		RpgInputKey::KEYBOARD_F11,
+		RpgInputKey::KEYBOARD_F12
+	};
+	constexpr int SC_TO_KEY_BUTTON_COUNT = sizeof(SC_TO_KEY_BUTTON) / sizeof(uint8_t);
+
+
+
+	constexpr uint8_t SC_EXT[] =
+	{
+		0x1C,	// KEYBOARD_NUMPAD_ENTER
+		0x1D,	// KEYBOARD_CTRL_RIGHT
+		0x35,	// KEYBOARD_NUMPAD_DIV
+		0x37,	// KEYBOARD_PRINT_SCREEN
+		0x38,	// KEYBOARD_ALT_RIGHT
+		0x47,	// KEYBOARD_HOME
+		0x48,	// KEYBOARD_UP
+		0x49,	// KEYBOARD_PAGE_UP
+		0x4B,	// KEYBOARD_LEFT
+		0x4D,	// KEYBOARD_RIGHT
+		0x4F,	// KEYBOARD_END
+		0x50,	// KEYBOARD_DOWN
+		0x51,	// KEYBOARD_PAGE_DOWN
+		0x52,	// KEYBOARD_INSERT
+		0x53,	// KEYBOARD_DELETE
+		0x57,	// KEYBOARD_F11
+		0x58,	// KEYBOARD_F12
+	};
+	constexpr int SC_EXT_COUNT = sizeof(SC_EXT) / sizeof(uint8_t);
+
+
+	constexpr RpgInputKey::EButton SC_EXT_INDEX_TO_KEY_BUTTON[] =
+	{
+		RpgInputKey::KEYBOARD_ENTER,
+		RpgInputKey::KEYBOARD_CTRL_RIGHT,
+		RpgInputKey::KEYBOARD_NUMPAD_DIV,
+		RpgInputKey::KEYBOARD_PRINT_SCREEN,
+		RpgInputKey::KEYBOARD_ALT_RIGHT,
+		RpgInputKey::KEYBOARD_HOME,
+		RpgInputKey::KEYBOARD_UP,
+		RpgInputKey::KEYBOARD_PAGE_UP,
+		RpgInputKey::KEYBOARD_LEFT,
+		RpgInputKey::KEYBOARD_RIGHT,
+		RpgInputKey::KEYBOARD_END,
+		RpgInputKey::KEYBOARD_DOWN,
+		RpgInputKey::KEYBOARD_PAGE_DOWN,
+		RpgInputKey::KEYBOARD_INSERT,
+		RpgInputKey::KEYBOARD_DELETE,
+		RpgInputKey::KEYBOARD_F11,
+		RpgInputKey::KEYBOARD_F12
+	};
+	constexpr int SC_EXT_INDEX_TO_KEY_BUTTON_COUNT = sizeof(SC_EXT_INDEX_TO_KEY_BUTTON) / sizeof(RpgInputKey::EButton);
+
+
+	static_assert(SC_EXT_COUNT == SC_EXT_INDEX_TO_KEY_BUTTON_COUNT, "SC_EXT and SC_EXT_INDEX_TO_KEY_BUTTON invalid mappings!");
+
+
+
+	inline RpgInputKey::EButton MapVirtualKeyToKeyButton(WPARAM wParam, LPARAM lParam) noexcept
+	{
+		const uint8_t scanCode = (lParam >> 16) & 0xFF;
+		bool bExtended = (lParam >> 24) & 1;
+
+		if (scanCode == 0x45)
+		{
+			bExtended = false;
+		}
+
+
+	#ifndef RPG_BUILD_SHIPPING
 		WPARAM virtualKey = wParam;
 
 		if (wParam == VK_SHIFT)
@@ -150,7 +306,71 @@ namespace RpgInputWindows
 
 		RPG_Check(keyButtonIndex >= 0 && keyButtonIndex < RpgInputKey::MAX_COUNT);
 
-		return static_cast<RpgInputKey::EButton>(keyButtonIndex);
+		const RpgInputKey::EButton keyButtonFromVk = static_cast<RpgInputKey::EButton>(keyButtonIndex);
+		
+		RpgInputKey::EButton keyButtonFromSc = RpgInputKey::NONE;
+
+		if (bExtended)
+		{
+			int index = RPG_INDEX_INVALID;
+
+			for (int i = 0; i < SC_EXT_COUNT; ++i)
+			{
+				if (SC_EXT[i] == scanCode)
+				{
+					index = i;
+					break;
+				}
+			}
+
+			RPG_Check(index != RPG_INDEX_INVALID);
+			keyButtonFromSc = SC_EXT_INDEX_TO_KEY_BUTTON[index];
+		}
+		else
+		{
+			RPG_Check(scanCode < SC_TO_KEY_BUTTON_COUNT);
+			keyButtonFromSc = SC_TO_KEY_BUTTON[scanCode];
+		}
+
+
+		RPG_Check(keyButtonFromSc != RpgInputKey::NONE);
+		RPG_Check(keyButtonFromVk == keyButtonFromSc);
+
+	#else
+		RpgInputKey::EButton keyButtonFromSc = RpgInputKey::NONE;
+
+		if (scanCode == 0x45)
+		{
+			bExtended = false;
+		}
+
+		if (bExtended)
+		{
+			int index = RPG_INDEX_INVALID;
+			
+			for (int i = 0; i < SC_EXT_COUNT; ++i)
+			{
+				if (SC_EXT[i] == scanCode)
+				{
+					index = i;
+					break;
+				}
+			}
+
+			if (index != RPG_INDEX_INVALID)
+			{
+				keyButtonFromSc = SC_EXT_INDEX_TO_KEY_BUTTON[index];
+			}
+		}
+		else if (scanCode >= 0 && scanCode < SC_TO_KEY_BUTTON_COUNT)
+		{
+			keyButtonFromSc = SC_TO_KEY_BUTTON[scanCode];
+		}
+
+	#endif // !RPG_BUILD_SHIPPING
+
+
+		return keyButtonFromSc;
 	}
 
 };
