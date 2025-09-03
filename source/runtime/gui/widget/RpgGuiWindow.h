@@ -35,39 +35,6 @@ public:
 	}
 
 
-	/*
-	inline void Open() noexcept
-	{
-		if (!bOpened)
-		{
-			SetVisibility(true);
-			bOpened = true;
-		}
-	}
-
-	inline void Close() noexcept
-	{
-		if (bOpened)
-		{
-			bOpened = false;
-			SetVisibility(false);
-		}
-	}
-
-	inline void Toggle() noexcept
-	{
-		if (bOpened)
-		{
-			Close();
-		}
-		else
-		{
-			Open();
-		}
-	}
-	*/
-
-
 protected:
 	virtual void OnRender(RpgRenderer2D& renderer) const noexcept override;
 	
@@ -78,11 +45,15 @@ protected:
 		return LayoutContent->AddChild<TWidget>(std::forward<TConstructorArgs>(args)...);
 	}
 
+	inline void ClearContentChildren() noexcept
+	{
+		LayoutContent->ClearChildren();
+	}
+
 
 private:
 	RpgGuiButton* TitleButton;
 	RpgGuiText* TitleText;
 	RpgGuiLayout* LayoutContent;
-	//bool bOpened;
 
 };

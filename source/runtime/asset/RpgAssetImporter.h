@@ -9,15 +9,6 @@ RPG_LOG_DECLARE_CATEGORY_EXTERN(RpgLogAssetImporter)
 
 
 
-enum class RpgAssetImportType : uint8_t
-{
-	NONE = 0,
-	MODEL,
-	TEXTURE
-};
-
-
-
 struct RpgAssetImportSetting_Texture
 {
 	RpgFilePath SourceFilePath;
@@ -52,15 +43,5 @@ public:
 	void Reset() noexcept;
 	void ImportTexture(RpgSharedTexture2D& out_Texture, const RpgAssetImportSetting_Texture& setting) noexcept;
 	void ImportModel(RpgArray<RpgSharedModel>& out_Models, RpgSharedAnimationSkeleton& out_Skeleton, RpgArray<RpgSharedAnimationClip>& out_Animations, const RpgAssetImportSetting_Model& setting) noexcept;
-
-
-	inline RpgAssetImportType GetCurrentImportType() noexcept
-	{
-		return ImportingType;
-	}
-
-
-private:
-	RpgAssetImportType ImportingType;
-
+	
 };

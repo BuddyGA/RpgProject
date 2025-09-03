@@ -8,9 +8,19 @@ RPG_LOG_DECLARE_CATEGORY_EXTERN(RpgLogEditor)
 
 
 
-struct RpgEditorAssetInfo
+struct RpgEditorAssetFile
+{
+	RpgString Path;
+	RpgName Name;
+	RpgSharedTexture2D PreviewImage;
+	RpgAssetFileType Type{ RpgAssetFileType::NONE };
+};
+
+
+
+struct RpgEditorAssetFolder
 {
 	RpgFilePath Path;
-	RpgSharedTexture2D Icon;
-	RpgAssetFileType Type{ RpgAssetFileType::NONE };
+	RpgArray<RpgEditorAssetFolder> Subfolders;
+	RpgArray<RpgEditorAssetFile> Files;
 };

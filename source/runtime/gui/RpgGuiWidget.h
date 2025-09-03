@@ -65,6 +65,12 @@ public:
 		return child;
 	}
 
+	inline void ClearChildren() noexcept
+	{
+		Children.Clear();
+	}
+
+
 	inline void SetVisibility(bool bVisible) noexcept
 	{
 		RpgType::BitSetCondition<uint16_t>(Flags, RpgGui::FLAG_State_Invisible, !bVisible);

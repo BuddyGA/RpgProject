@@ -72,7 +72,6 @@ void RpgPhysicsWorldSubsystem::TickUpdate(float deltaTime) noexcept
 	// generate pairs for narrowphase
 	RpgPhysicsCollision::Broadphase::GeneratePairs(NarrowphaseCollisionPairs, BroadphaseCollisionPairs);
 
-
 	// wait update shape finished
 	TaskUpdateShape.Wait();
 

@@ -38,6 +38,9 @@ public:
 public:
 	RpgMesh(const RpgName& name) noexcept;
 
+	void StreamWrite(RpgStreamWriter& writer) const noexcept;
+	void StreamRead(RpgStreamReader& reader) noexcept;
+
 
 	// Free memory and overwrite existing vertex data 
 	void UpdateVertexData(int vertexCount, const RpgVertex::FMeshPosition* positionData, const RpgVertex::FMeshNormalTangent* normalTangentData, const RpgVertex::FMeshTexCoord* texCoordData, const RpgVertex::FMeshSkin* skinData, int indexCount, const RpgVertex::FIndex* indexData) noexcept;
@@ -188,32 +191,6 @@ public:
 	inline const RpgBoundingAABB& GetBound() const noexcept
 	{
 		return Bound;
-	}
-
-
-	inline void StreamWrite(RpgStreamWriter& writer) const noexcept
-	{
-		writer.Write(Name);
-		writer.WriteArray(Positions);
-		writer.WriteArray(NormalTangents);
-		writer.WriteArray(TexCoords);
-		writer.WriteArray(Skins);
-		writer.WriteArray(Indices);
-		writer.Write(Flags);
-		writer.Write(Bound);
-	}
-
-
-	inline void StreamRead(RpgStreamReader& reader) noexcept
-	{
-		reader.Read(Name);
-		reader.ReadArray(Positions);
-		reader.ReadArray(NormalTangents);
-		reader.ReadArray(TexCoords);
-		reader.ReadArray(Skins);
-		reader.ReadArray(Indices);
-		reader.Read(Flags);
-		reader.Read(Bound);
 	}
 
 

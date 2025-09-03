@@ -12,12 +12,21 @@ RpgWorld::RpgWorld(const RpgName& name) noexcept
     Name = name;
     bHasStartedPlay = false;
     FrameIndex = 0;
+    ComponentStorages.Resize(RPG_COMPONENT_TYPE_MAX_COUNT);
+
+    Level_Create(RpgName::Format("%s/level_main", *name));
 }
 
 
 RpgWorld::~RpgWorld() noexcept
 {
     RPG_LogDebug(RpgLogWorld, "Destroy world (%s)", *Name);
+
+    for (int i = 0; i < Levels.GetCount(); ++i)
+    {
+        delete Levels[i];
+        Levels[i] = nullptr;
+    }
 
     for (int i = 0; i < ComponentStorages.GetCount(); ++i)
     {
@@ -32,6 +41,62 @@ RpgWorld::~RpgWorld() noexcept
     {
         RPG_LogDebug(RpgLogWorld, "Destroy subsystem (%s)", *Subsystems[i]->Name);
         delete Subsystems[i];
+    }
+}
+
+
+void RpgWorld::StreamWrite(RpgStreamWriter& writer) const noexcept
+{
+    writer.Write(Name);
+
+    const int levelCount = Levels.GetCount();
+    writer.Write(levelCount);
+
+    const int objectCount = GameObjectNames.GetCount();
+
+    for (int i = 0; i < ComponentStorages.GetCount(); ++i)
+    {
+        ComponentStorages[i]->StreamWrite(writer);
+    }
+
+    for (int i = 0; i < levelCount; ++i)
+    {
+        Levels[i]->StreamWrite(writer);
+    }
+}
+
+
+void RpgWorld::StreamRead(RpgStreamReader& reader) noexcept
+{
+    reader.Read(Name);
+
+    int levelCount = 0;
+    reader.Read(levelCount);
+
+    int objectCount = 0;
+    reader.Read(objectCount);
+
+    GameObjectNames.Clear(true);
+    GameObjectNames.Reserve(objectCount);
+
+    GameObjectInfos.Clear(true);
+    GameObjectInfos.Reserve(objectCount);
+
+    GameObjectTransforms.Clear(true);
+    GameObjectTransforms.Reserve(objectCount);
+    
+
+    for (int i = 0; i < ComponentStorages.GetCount(); ++i)
+    {
+        ComponentStorages[i]->StreamRead(reader);
+    }
+    
+
+    Levels.Clear(true);
+
+    for (int i = 0; i < levelCount; ++i)
+    {
+        Level_Create("")->StreamRead(reader);
     }
 }
 
@@ -161,6 +226,35 @@ void RpgWorld::DispatchRender(int frameIndex, RpgRenderer* renderer) noexcept
 }
 
 
+
+// --------------------------------------------------------------------------------------------------------------------------------------------- //
+// 	Level interface
+// --------------------------------------------------------------------------------------------------------------------------------------------- //
+RpgLevel* RpgWorld::Level_Create(const RpgName& name) noexcept
+{
+    for (int i = 0; i < Levels.GetCount(); ++i)
+    {
+        if (Levels[i]->GetName() == name)
+        {
+            RPG_LogWarn(RpgLogWorld, "Ignore create level. Level with name (%s) already exists!", *name);
+            return Levels[i];
+        }
+    }
+
+    RpgLevel* newLevel = new RpgLevel(name);
+    newLevel->World = this;
+    
+    Levels.AddValue(newLevel);
+
+    return newLevel;
+}
+
+
+
+
+// --------------------------------------------------------------------------------------------------------------------------------------------- //
+// 	GameObject interface
+// --------------------------------------------------------------------------------------------------------------------------------------------- //
 RpgGameObjectID RpgWorld::GameObject_Create(const RpgName& name, const RpgTransform& worldTransform) noexcept
 {
     RPG_IsMainThread();
@@ -221,4 +315,39 @@ void RpgWorld::GameObject_Destroy(RpgGameObjectID& gameObject) noexcept
     }
 
     gameObject = RpgGameObjectID();
+}
+
+
+void RpgWorld::GameObject_Spawn(RpgGameObjectID gameObject, RpgLevel* opt_Level) noexcept
+{
+    RPG_Check(GameObject_IsValid(gameObject));
+
+    RpgLevel* level = opt_Level == nullptr ? Levels[0] : opt_Level;
+    RPG_Check(level);
+    level->AddGameObject(gameObject);
+
+    FGameObjectInfo& info = GameObjectInfos[gameObject.Index];
+    info.Flags |= FLAG_Spawned;
+}
+
+
+void RpgWorld::GameObject_StreamWrite(RpgGameObjectID gameObject, RpgStreamWriter& writer) const noexcept
+{
+    RPG_Check(GameObject_IsValid(gameObject));
+
+    const int id = gameObject.Index;
+    writer.Write(GameObjectNames[id]);
+    writer.Write(GameObjectInfos[id]);
+    writer.Write(GameObjectTransforms[id]);
+}
+
+
+void RpgWorld::GameObject_StreamRead(RpgGameObjectID gameObject, RpgStreamReader& reader) noexcept
+{
+    RPG_Check(GameObject_IsValid(gameObject));
+
+    const int id = gameObject.Index;
+    reader.Read(GameObjectNames[id]);
+    reader.Read(GameObjectInfos[id]);
+    reader.Read(GameObjectTransforms[id]);
 }

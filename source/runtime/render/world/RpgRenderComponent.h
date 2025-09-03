@@ -12,12 +12,9 @@ class RpgRenderTask_CaptureLight;
 
 
 
-class RpgRenderComponent_Mesh
-{
-	RPG_COMPONENT_TYPE("RpgComponent (Render) - Mesh");
+RPG_COMPONENT_CLASS_BEGIN(RpgRenderComponent_Mesh, 2, "RpgRenderComponent - Mesh")
 
 public:
-	RpgBoundingAABB Bound;
 	RpgSharedMesh Mesh;
 	RpgSharedMaterial Material;
 	bool bIsVisible;
@@ -26,8 +23,8 @@ public:
 public:
 	RpgRenderComponent_Mesh() noexcept
 	{
-		Bound = RpgBoundingAABB(RpgVector3(-32.0f), RpgVector3(32.0f));
 		bIsVisible = false;
+		Bound = RpgBoundingAABB(RpgVector3(-32.0f), RpgVector3(32.0f));
 	}
 
 
@@ -37,15 +34,24 @@ public:
 	}
 
 
+	inline const RpgBoundingAABB& GetBound() const noexcept
+	{
+		return Bound;
+	}
+
+
+private:
+	RpgBoundingAABB Bound;
+
+
 	friend RpgRenderWorldSubsystem;
 
-};
+RPG_COMPONENT_CLASS_END()
 
 
 
-class RpgRenderComponent_Light
-{
-	RPG_COMPONENT_TYPE("RpgComponent (Render) - Light");
+
+RPG_COMPONENT_CLASS_BEGIN(RpgRenderComponent_Light, 3, "RpgRenderComponent - Light")
 
 public:
 	// Light type (point light, spot light, directional light)
@@ -106,13 +112,12 @@ private:
 
 	friend class RpgRenderWorldSubsystem;
 
-};
+RPG_COMPONENT_CLASS_END()
 
 
 
-class RpgRenderComponent_Camera
-{
-	RPG_COMPONENT_TYPE("RpgComponent (Render) - Camera");
+
+RPG_COMPONENT_CLASS_BEGIN(RpgRenderComponent_Camera, 4, "RpgRenderComponent - Camera")
 
 public:
 	RpgPointInt RenderTargetDimension;
@@ -131,7 +136,7 @@ public:
 	{
 		RenderTargetDimension = RpgPointInt(1600, 900);
 		ProjectionMode = RpgRenderProjectionMode::PERSPECTIVE;
-		PerspectiveFoVDegree = 90.0f;
+		PerspectiveFoVDegree = 60.0f;
 		NearClipZ = 10.0f;
 		FarClipZ = 10000.0f;
 		bActivated = false;
@@ -170,4 +175,4 @@ private:
 	friend RpgRenderTask_CaptureMesh;
 	friend RpgRenderTask_CaptureLight;
 
-};
+RPG_COMPONENT_CLASS_END()

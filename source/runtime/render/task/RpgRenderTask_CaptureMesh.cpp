@@ -40,8 +40,9 @@ void RpgRenderTask_CaptureMesh::Execute() noexcept
 
 		// - check valid model
 		// - check visibility
+		// - check if spawned on level
 		// - if frustum culling enabled, test bound againts frustum
-		if (!comp.Mesh || !comp.bIsVisible || (bFrustumCulling && !frustum.TestIntersectAABB(comp.Bound)) )
+		if (!comp.Mesh || !comp.bIsVisible || !World->GameObject_IsSpawned(comp.GameObject) || (bFrustumCulling && !frustum.TestIntersectAABB(comp.GetBound())) )
 		{
 			continue;
 		}

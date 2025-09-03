@@ -118,4 +118,5 @@ void RpgAnimationWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) n
 		}
 	}
 #endif // !RPG_BUILD_SHIPPING
+
 }

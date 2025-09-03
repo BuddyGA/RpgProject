@@ -4,12 +4,6 @@
 
 #include <mimalloc-override.h>
 
-#include <winsdkver.h>
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0A00
-#endif
-#include <sdkddkver.h>
-
 #define NOMINMAX
 #define NODRAWTEXT
 #define NOGDI
@@ -394,8 +388,7 @@ struct RpgPlatformMouseButtonEvent
 
 struct RpgPlatformKeyboardEvent
 {
-	uint8_t KeyCode{ 0 };
-	uint8_t ScanCode{ 0 };
+	uint8_t Button{ 0 };
 	uint16_t RepeatCount{ 0 };
 	bool bIsDown{ false };
 };

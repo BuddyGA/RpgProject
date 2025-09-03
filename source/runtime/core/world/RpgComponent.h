@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../RpgStream.h"
 #include "../dsa/RpgFreeList.h"
 #include "RpgGameObject.h"
 
@@ -12,13 +13,25 @@ class RpgWorld;
 
 
 
-#define RPG_COMPONENT_TYPE(name)																	\
-friend RpgWorld;																					\
-private:																							\
-inline static uint16_t TYPE_ID = UINT16_MAX;														\
-public:																								\
-static constexpr const char* TYPE_NAME = name;														\
-RpgGameObjectID GameObject;
+#define RPG_COMPONENT_CLASS_BEGIN(type, id, name)										\
+class type																				\
+{																						\
+public:																					\
+	static constexpr uint16_t TYPE_ID = id;												\
+	static constexpr const char* TYPE_NAME = name;										\
+	static void StreamWrite(RpgStreamWriter& writer, const type& data) noexcept;		\
+	static void StreamRead(RpgStreamReader& reader, type& data) noexcept;				\
+public:																					\
+	RpgGameObjectID GameObject;
+
+
+#define RPG_COMPONENT_CLASS_END()		\
+	friend RpgWorld;			\
+};
+
+
+#define RPG_COMPONENT_DEFINITION_STATIC_StreamWrite(type)	void type::StreamWrite(RpgStreamWriter& writer, const type& data) noexcept
+#define RPG_COMPONENT_DEFINITION_STATIC_StreamRead(type)	void type::StreamRead(RpgStreamReader& reader, type& data) noexcept
 
 
 
@@ -31,6 +44,8 @@ public:
 	RpgComponentStorageInterface() noexcept = default;
 	virtual ~RpgComponentStorageInterface() noexcept = default;
 
+	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept = 0;
+	virtual void StreamRead(RpgStreamReader& reader) noexcept = 0;
 	virtual void Remove(int index) noexcept = 0;
 
 };
@@ -48,6 +63,38 @@ public:
 		RPG_LogDebug(RpgLogTemp, "Destroy component storage (%s)", TComponent::TYPE_NAME);
 	}
 
+	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override
+	{
+		const int count = Components.GetCount();
+		writer.Write(count);
+
+		for (auto it = Components.CreateConstIterator(); it; ++it)
+		{
+			const TComponent& comp = it.GetValue();
+			TComponent::StreamWrite(writer, comp);
+		}
+	}
+
+	virtual void StreamRead(RpgStreamReader& reader) noexcept override
+	{
+		int count = 0;
+		reader.Read(count);
+
+		Components.Clear(true);
+		Components.Reserve(count);
+
+		for (int i = 0; i < count; ++i)
+		{
+			const int index = Components.Add();
+			TComponent::StreamRead(reader, Components[index]);
+		}
+	}
+
+	virtual void Remove(int id) noexcept override
+	{
+		Components.RemoveAt(id);
+	}
+
 
 	inline bool IsValid(int id) const noexcept 
 	{
@@ -57,11 +104,6 @@ public:
 	[[nodiscard]] inline int Add() noexcept 
 	{
 		return Components.Add();
-	}
-
-	virtual void Remove(int id) noexcept override
-	{
-		Components.RemoveAt(id);
 	}
 
 	inline TComponent& Get(int id) noexcept

@@ -20,6 +20,10 @@ public:
 
 
 private:
-	RpgEditorAssetBrowser* AssetBrowser;
+	RpgString OpenImportAssetDialog() const noexcept;
+
+
+private:
+	RpgEditorAssetBrowserWindow* AssetBrowser;
 
 };

@@ -469,6 +469,11 @@ public:
 		return GetLength() == 0;
 	}
 
+	inline RpgString ToString() const noexcept
+	{
+		return RpgString(CharArray);
+	}
+
 
 private:
 	inline void CopyFromCstr(const char* cstr) noexcept

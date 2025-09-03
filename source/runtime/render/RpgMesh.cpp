@@ -14,6 +14,32 @@ RpgMesh::RpgMesh(const RpgName& name) noexcept
 }
 
 
+void RpgMesh::StreamWrite(RpgStreamWriter& writer) const noexcept
+{
+	writer.Write(Name);
+	writer.WriteArray(Positions);
+	writer.WriteArray(NormalTangents);
+	writer.WriteArray(TexCoords);
+	writer.WriteArray(Skins);
+	writer.WriteArray(Indices);
+	writer.Write(Flags);
+	writer.Write(Bound);
+}
+
+
+void RpgMesh::StreamRead(RpgStreamReader& reader) noexcept
+{
+	reader.Read(Name);
+	reader.ReadArray(Positions);
+	reader.ReadArray(NormalTangents);
+	reader.ReadArray(TexCoords);
+	reader.ReadArray(Skins);
+	reader.ReadArray(Indices);
+	reader.Read(Flags);
+	reader.Read(Bound);
+}
+
+
 void RpgMesh::UpdateVertexData(int vertexCount, const RpgVertex::FMeshPosition* positionData, const RpgVertex::FMeshNormalTangent* normalTangentData, const RpgVertex::FMeshTexCoord* texCoordData, const RpgVertex::FMeshSkin* skinData, int indexCount, const RpgVertex::FIndex* indexData) noexcept
 {
 	RPG_Assert(vertexCount > 0);

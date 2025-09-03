@@ -58,10 +58,6 @@ public:
 
 
 private:
-	void CreateTestLevel() noexcept;
-
-
-private:
 	// Main window size
 	RpgPointInt WindowDimension;
 

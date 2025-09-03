@@ -4,6 +4,7 @@
 
 
 class RpgWorld;
+class RpgLevel;
 
 
 
@@ -49,7 +50,7 @@ public:
 
 
 private:
-	class RpgWorld* World;
+	RpgWorld* World;
 	int Index;
 	uint16_t Gen;
 

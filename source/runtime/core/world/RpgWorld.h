@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../RpgMath.h"
-#include "../RpgString.h"
-#include "RpgComponent.h"
+#include "../RpgPointer.h"
+#include "RpgLevel.h"
+
 
 
 #define RPG_WORLD_MAX_GAMEOBJECT	65536
@@ -24,7 +24,6 @@ public:
 	RpgWorldSubsystem() noexcept
 	{
 		World = nullptr;
-		UpdatePriority = 0;
 	}
 
 	virtual ~RpgWorldSubsystem() noexcept = default;
@@ -54,7 +53,6 @@ protected:
 
 private:
 	RpgWorld* World;
-	uint8_t UpdatePriority;
 
 
 	friend RpgWorld;
@@ -72,6 +70,9 @@ public:
 	RpgWorld(const RpgName& name) noexcept;
 	~RpgWorld() noexcept;
 
+	void StreamWrite(RpgStreamWriter& writer) const noexcept;
+	void StreamRead(RpgStreamReader& reader) noexcept;
+
 	void BeginFrame(int frameIndex) noexcept;
 	void EndFrame(int frameIndex) noexcept;
 
@@ -82,12 +83,12 @@ public:
 	void DispatchRender(int frameIndex, RpgRenderer* renderer) noexcept;
 
 
-	[[nodiscard]] inline const RpgName& GetName() const noexcept
+	inline const RpgName& GetName() const noexcept
 	{
 		return Name;
 	}
 
-	[[nodiscard]] inline bool HasStartedPlay() const noexcept
+	inline bool HasStartedPlay() const noexcept
 	{
 		return bHasStartedPlay;
 	}
@@ -113,7 +114,7 @@ private:
 // --------------------------------------------------------------------------------------------------------------------------------------------- //
 public:
 	template<typename TWorldSubsystem>
-	inline void Subsystem_Register(uint8_t updatePriority = 0) noexcept
+	inline void Subsystem_Register() noexcept
 	{
 		static_assert(std::is_base_of<RpgWorldSubsystem, TWorldSubsystem>::value, "RpgWorld: Add subsystem type of <TWorldSubsystem> must be derived from type <RpgWorldSubsystem>!");
 		
@@ -128,7 +129,6 @@ public:
 
 		RpgWorldSubsystem* subsystem = new TWorldSubsystem();
 		subsystem->World = this;
-		subsystem->UpdatePriority = updatePriority;
 
 		Subsystems.AddValue(subsystem);
 	}
@@ -163,33 +163,37 @@ public:
 	template<typename TComponent>
 	inline void Component_Register() noexcept
 	{
-		TComponent::TYPE_ID = ComponentStorages.GetCount();
 		RPG_CheckV(TComponent::TYPE_ID >= 0 && TComponent::TYPE_ID < RPG_COMPONENT_TYPE_MAX_COUNT, "RpgWorld: Exceeds maximum component type count!");
-		ComponentStorages.AddValue(new RpgComponentStorage<TComponent>());
+		RPG_Check(ComponentStorages[TComponent::TYPE_ID] == nullptr);
+		ComponentStorages[TComponent::TYPE_ID] = new RpgComponentStorage<TComponent>();
+
+		RPG_Log(RpgLogWorld, "Registered component of type (%s)", TComponent::TYPE_NAME);
 	}
 
 	template<typename TComponent>
-	[[nodiscard]] inline RpgComponentStorage<TComponent>* Component_GetStorage() noexcept
-	{
-		return static_cast<RpgComponentStorage<TComponent>*>(ComponentStorages[TComponent::TYPE_ID]);
-	}
-
-	template<typename TComponent>
-	[[nodiscard]] inline const RpgComponentStorage<TComponent>* Component_GetStorage() const noexcept
-	{
-		return static_cast<const RpgComponentStorage<TComponent>*>(ComponentStorages[TComponent::TYPE_ID]);
-	}
-
-	template<typename TComponent>
-	[[nodiscard]] inline RpgFreeList<TComponent>::Iterator Component_CreateIterator() noexcept
+	inline RpgFreeList<TComponent>::Iterator Component_CreateIterator() noexcept
 	{
 		return Component_GetStorage<TComponent>()->GetComponents().CreateIterator();
 	}
 
 	template<typename TComponent>
-	[[nodiscard]] inline RpgFreeList<TComponent>::ConstIterator Component_CreateConstIterator() const noexcept
+	inline RpgFreeList<TComponent>::ConstIterator Component_CreateConstIterator() const noexcept
 	{
 		return Component_GetStorage<TComponent>()->GetComponents().CreateConstIterator();
+	}
+
+
+private:
+	template<typename TComponent>
+	inline RpgComponentStorage<TComponent>* Component_GetStorage() noexcept
+	{
+		return static_cast<RpgComponentStorage<TComponent>*>(ComponentStorages[TComponent::TYPE_ID]);
+	}
+
+	template<typename TComponent>
+	inline const RpgComponentStorage<TComponent>* Component_GetStorage() const noexcept
+	{
+		return static_cast<const RpgComponentStorage<TComponent>*>(ComponentStorages[TComponent::TYPE_ID]);
 	}
 
 
@@ -199,14 +203,40 @@ private:
 
 
 // --------------------------------------------------------------------------------------------------------------------------------------------- //
+// 	Level interface
+// --------------------------------------------------------------------------------------------------------------------------------------------- //
+public:
+	RpgLevel* Level_Create(const RpgName& name) noexcept;
+
+
+	inline RpgLevel* Level_GetMain() noexcept
+	{
+		return Levels[0];
+	}
+
+	inline const RpgLevel* Level_GetMain() const noexcept
+	{
+		return Levels[0];
+	}
+
+
+private:
+	RpgArray<RpgLevel*> Levels;
+
+
+
+// --------------------------------------------------------------------------------------------------------------------------------------------- //
 // 	GameObject interface
 // --------------------------------------------------------------------------------------------------------------------------------------------- //
 public:
 	[[nodiscard]] RpgGameObjectID GameObject_Create(const RpgName& name, const RpgTransform& worldTransform = RpgTransform()) noexcept;
 	void GameObject_Destroy(RpgGameObjectID& gameObject) noexcept;
+	void GameObject_Spawn(RpgGameObjectID gameObject, RpgLevel* opt_Level = nullptr) noexcept;
+	void GameObject_StreamWrite(RpgGameObjectID gameObject, RpgStreamWriter& writer) const noexcept;
+	void GameObject_StreamRead(RpgGameObjectID gameObject, RpgStreamReader& reader) noexcept;
 
 
-	[[nodiscard]] inline bool GameObject_IsValid(RpgGameObjectID gameObject) const noexcept
+	inline bool GameObject_IsValid(RpgGameObjectID gameObject) const noexcept
 	{
 		if (!gameObject.IsValid() || gameObject.World != this || !GameObjectInfos.IsValid(gameObject.Index))
 		{
@@ -229,7 +259,7 @@ public:
 	}
 
 
-	[[nodiscard]] inline RpgTransform GameObject_GetWorldTransform(RpgGameObjectID gameObject) const noexcept
+	inline RpgTransform GameObject_GetWorldTransform(RpgGameObjectID gameObject) const noexcept
 	{
 		RPG_Check(GameObject_IsValid(gameObject));
 
@@ -240,14 +270,14 @@ public:
 	}
 
 
-	[[nodiscard]] inline const RpgName& GameObject_GetName(RpgGameObjectID gameObject) const noexcept
+	inline const RpgName& GameObject_GetName(RpgGameObjectID gameObject) const noexcept
 	{
 		RPG_Check(GameObject_IsValid(gameObject));
 		return GameObjectNames[gameObject.Index];
 	}
 
 
-	[[nodiscard]] inline const RpgMatrixTransform& GameObject_GetWorldTransformMatrix(RpgGameObjectID gameObject) const noexcept
+	inline const RpgMatrixTransform& GameObject_GetWorldTransformMatrix(RpgGameObjectID gameObject) const noexcept
 	{
 		RPG_Check(GameObject_IsValid(gameObject));
 		return GameObjectTransforms[gameObject.Index].WorldMatrix;
@@ -302,7 +332,7 @@ public:
 
 
 	template<typename TComponent>
-	[[nodiscard]] inline TComponent* GameObject_GetComponent(RpgGameObjectID gameObject) noexcept
+	inline TComponent* GameObject_GetComponent(RpgGameObjectID gameObject) noexcept
 	{
 		RPG_Check(GameObject_IsValid(gameObject));
 
@@ -322,7 +352,7 @@ public:
 
 
 	template<typename TComponent>
-	[[nodiscard]] inline const TComponent* GameObject_GetComponent(RpgGameObjectID gameObject) const noexcept
+	inline const TComponent* GameObject_GetComponent(RpgGameObjectID gameObject) const noexcept
 	{
 		RPG_Check(GameObject_IsValid(gameObject));
 
@@ -423,13 +453,18 @@ public:
 	}
 
 
-	[[nodiscard]] inline int GameObject_GetCount() const noexcept
+	inline int GameObject_GetCount() const noexcept
 	{
 		return GameObjectInfos.GetCount();
 	}
 
+	inline bool GameObject_IsSpawned(RpgGameObjectID gameObject) const noexcept
+	{
+		RPG_Check(GameObject_IsValid(gameObject));
+		return GameObjectInfos[gameObject.Index].Flags & FLAG_Spawned;
+	}
 
-	[[nodiscard]] inline bool GameObject_IsTransformUpdated(RpgGameObjectID gameObject) const noexcept
+	inline bool GameObject_IsTransformUpdated(RpgGameObjectID gameObject) const noexcept
 	{
 		RPG_Check(GameObject_IsValid(gameObject));
 		return GameObjectInfos[gameObject.Index].Flags & FLAG_TransformUpdated;
@@ -462,8 +497,9 @@ private:
 		FLAG_Allocated			= (1 << 0),
 		FLAG_Loading			= (1 << 1),
 		FLAG_Loaded				= (1 << 2),
-		FLAG_PendingDestroy		= (1 << 3),
-		FLAG_TransformUpdated	= (1 << 4),
+		FLAG_Spawned			= (1 << 3),
+		FLAG_PendingDestroy		= (1 << 4),
+		FLAG_TransformUpdated	= (1 << 5),
 	};
 
 	struct FGameObjectInfo
@@ -486,7 +522,6 @@ private:
 		RpgMatrixTransform LocalMatrix;
 		RpgMatrixTransform WorldMatrix;
 		RpgMatrixTransform InverseWorldMatrix;
-		RpgGameObjectID Parent;
 	};
 
 	RpgFreeList<RpgName> GameObjectNames;

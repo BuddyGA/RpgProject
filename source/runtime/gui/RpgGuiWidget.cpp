@@ -21,11 +21,6 @@ RpgGuiWidget::RpgGuiWidget(const RpgName& in_Name) noexcept
 
 RpgRectFloat RpgGuiWidget::UpdateRect(const RpgGuiContext& context, const RpgRectFloat& canvasRect, const RpgPointFloat& offset) noexcept
 {
-	if (!IsVisible())
-	{
-		return RpgRectFloat();
-	}
-
 	AbsoluteRect = CalculateAbsoluteRect(offset);
 
 	for (int c = 0; c < Children.GetCount(); ++c)
@@ -44,15 +39,13 @@ void RpgGuiWidget::UpdateState(RpgGuiContext& context, RpgGuiWidget* parentLayou
 		return;
 	}
 
-	const bool bIsLayout = IsLayout();
-
 	// Update self
 	OnUpdate(context, parentLayout);
 
 	// Check if cursor intersect with rect
 	if (AbsoluteRect.IsPointInside(context.MouseCursorPosition))
 	{
-		if (bIsLayout)
+		if (IsLayout())
 		{
 			context.AddLayoutHovered(this);
 		}

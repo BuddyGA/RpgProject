@@ -12,7 +12,6 @@ RpgAssetImporter* g_AssetImporter = nullptr;
 
 RpgAssetImporter::RpgAssetImporter() noexcept
 {
-	ImportingType = RpgAssetImportType::NONE;
 	CMP_InitFramework();
 }
 
@@ -24,7 +23,6 @@ RpgAssetImporter::~RpgAssetImporter() noexcept
 
 void RpgAssetImporter::Reset() noexcept
 {
-	ImportingType = RpgAssetImportType::NONE;
 }
 
 
@@ -40,8 +38,6 @@ void RpgAssetImporter::ImportModel(RpgArray<RpgSharedModel>& out_Models, RpgShar
 	out_Models.Clear();
 	out_Skeleton.Release();
 	out_Animations.Clear();
-
-	ImportingType = RpgAssetImportType::MODEL;
 
 	RpgAssetTask_ImportModel task;
 	task.Reset();

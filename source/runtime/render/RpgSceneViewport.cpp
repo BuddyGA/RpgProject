@@ -9,7 +9,7 @@ RpgSceneViewport::RpgSceneViewport() noexcept
 	: FrameDatas()
 {
 	RenderTargetDimension = RpgPointInt(1600, 900);
-	FovDegree = 90.0f;
+	FovDegree = 60.0f;
 	NearClipZ = 10.0f;
 	FarClipZ = 10000.0f;
 	bOrthographicProjection = false;

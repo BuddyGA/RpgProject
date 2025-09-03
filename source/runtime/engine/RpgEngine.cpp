@@ -11,11 +11,11 @@
 #include "animation/world/RpgAnimationWorldSubsystem.h"
 #include "asset/RpgAssetManager.h"
 
-#include "../../test/gui/RpgTestGui.h"
-
 
 #ifndef RPG_BUILD_SHIPPING
 #include "RpgEditor.h"
+#include "../../test/gui/RpgTestGui.h"
+#include "../../test/engine/RpgTestEngine.h"
 #endif // !RPG_BUILD_SHIPPING
 
 
@@ -66,9 +66,9 @@ void RpgEngine::Initialize() noexcept
 		MainWorld = CreateWorld("world_main");
 
 		// Subsystems
-		MainWorld->Subsystem_Register<RpgPhysicsWorldSubsystem>(0);
-		MainWorld->Subsystem_Register<RpgAnimationWorldSubsystem>(1);
-		MainWorld->Subsystem_Register<RpgRenderWorldSubsystem>(2);
+		MainWorld->Subsystem_Register<RpgPhysicsWorldSubsystem>();
+		MainWorld->Subsystem_Register<RpgAnimationWorldSubsystem>();
+		MainWorld->Subsystem_Register<RpgRenderWorldSubsystem>();
 
 		// Components
 		MainWorld->Component_Register<RpgPhysicsComponent_Filter>();
@@ -93,14 +93,13 @@ void RpgEngine::Initialize() noexcept
 #ifndef RPG_BUILD_SHIPPING
 	g_Editor = new RpgEditor();
 	g_Editor->SetupGUI(GuiCanvas);
-#endif // !RPG_BUILD_SHIPPING
-
 
 	// test gui
 	RpgTest::Gui::Create(GuiCanvas);
 
 	// test level
-	CreateTestLevel();
+	RpgTest::Engine::Create(MainWorld);
+#endif // !RPG_BUILD_SHIPPING
 
 
 	// create main camera object
@@ -153,34 +152,34 @@ void RpgEngine::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 
 	if (e.bIsDown)
 	{
-		if (e.KeyCode == RpgInputKey::KEYBOARD_TILDE)
+		if (e.Button == RpgInputKey::KEYBOARD_TILDE)
 		{
 			GuiConsole->Toggle();
 		}
-		else if (e.KeyCode == RpgInputKey::KEYBOARD_EQUALS)
+		else if (e.Button == RpgInputKey::KEYBOARD_EQUALS)
 		{
 			MainRenderer->Gamma += 0.01f;
 		}
-		else if (e.KeyCode == RpgInputKey::KEYBOARD_MINUS)
+		else if (e.Button == RpgInputKey::KEYBOARD_MINUS)
 		{
 			MainRenderer->Gamma -= 0.01f;
 		}
-		else if (e.KeyCode == RpgInputKey::KEYBOARD_0)
+		else if (e.Button == RpgInputKey::KEYBOARD_0)
 		{
 			RpgRenderComponent_Camera* cameraComp = MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(MainCameraObject);
 			cameraComp->bFrustumCulling = !cameraComp->bFrustumCulling;
 		}
-		else if (e.KeyCode == RpgInputKey::KEYBOARD_9)
+		else if (e.Button == RpgInputKey::KEYBOARD_9)
 		{
 			RpgAnimationWorldSubsystem* subsystem = MainWorld->Subsystem_Get<RpgAnimationWorldSubsystem>();
 			subsystem->bDebugDrawSkeletonBones = !subsystem->bDebugDrawSkeletonBones;
 		}
-		else if (e.KeyCode == RpgInputKey::KEYBOARD_8)
+		else if (e.Button == RpgInputKey::KEYBOARD_8)
 		{
 			RpgRenderWorldSubsystem* subsystem = MainWorld->Subsystem_Get<RpgRenderWorldSubsystem>();
 			subsystem->bDebugDrawMeshBound = !subsystem->bDebugDrawMeshBound;
 		}
-		else if (e.KeyCode == RpgInputKey::KEYBOARD_F9)
+		else if (e.Button == RpgInputKey::KEYBOARD_F9)
 		{
 			if (MainWorld->HasStartedPlay())
 			{

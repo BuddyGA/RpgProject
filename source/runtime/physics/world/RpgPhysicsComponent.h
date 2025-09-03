@@ -5,10 +5,7 @@
 
 
 
-class RpgPhysicsComponent_Filter
-{
-	RPG_COMPONENT_TYPE("RpgComponent (Physics) - Filter");
-
+RPG_COMPONENT_CLASS_BEGIN(RpgPhysicsComponent_Filter, 0, "RpgPhysicsComponent - Filter")
 public:
 	// Object collision channel
 	RpgPhysicsCollision::EChannel ObjectChannel;
@@ -30,14 +27,12 @@ public:
 		// Nothing to do
 	}
 
-};
+RPG_COMPONENT_CLASS_END()
 
 
 
-class RpgPhysicsComponent_Collision
-{
-	RPG_COMPONENT_TYPE("RpgComponent (Physics) - Collision");
 
+RPG_COMPONENT_CLASS_BEGIN(RpgPhysicsComponent_Collision, 1, "RpgPhysicsComponent - Collision")
 public:
 	RpgPhysicsComponent_Collision() noexcept
 	{
@@ -76,12 +71,6 @@ public:
 	}
 
 
-	inline float GetSpeed() const noexcept
-	{
-		return Velocity.GetMagnitude();
-	}
-
-
 private:
 	// Internal bounding sphere for broadphase
 	RpgBoundingSphere Bound;
@@ -94,12 +83,6 @@ private:
 	// Collision shape
 	RpgPhysicsCollision::EShape Shape;
 
-	// Linear velocity, rate of position change over time
-	RpgVector3 Velocity;
-
-	// Angular velocity, rate of orientation change over time
-	RpgVector3 AngularVelocity;
-
 	// Set true to update internal bounding AABB
 	bool bUpdateBounding;
 
@@ -108,4 +91,4 @@ private:
 	friend RpgPhysicsTask_UpdateBound;
 	friend RpgPhysicsTask_UpdateShape;
 
-};
+RPG_COMPONENT_CLASS_END()

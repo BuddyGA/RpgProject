@@ -5,9 +5,20 @@
 
 
 
-class RpgEditorAssetBrowser : public RpgGuiWindow
+
+class RpgEditorAssetBrowserWindow : public RpgGuiWindow
 {
 public:
-	RpgEditorAssetBrowser() noexcept;
+	RpgEditorAssetBrowserWindow() noexcept;
+	void Refresh() noexcept;
+
+
+private:
+	void ScanAssetFiles(RpgEditorAssetFolder& folder) noexcept;
+	void AddWidgetTreeItem(const RpgEditorAssetFolder& folder, float& out_IndentOffset, int& out_FolderIndex, int& out_FileIndex) noexcept;
+
+
+private:
+	RpgEditorAssetFolder AssetFolder;
 
 };

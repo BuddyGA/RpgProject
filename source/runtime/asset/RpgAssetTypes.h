@@ -44,10 +44,7 @@ enum class RpgAssetFileType : uint16_t
 	TEXTURE,
 	FONT,
 	MATERIAL,
-	ANIM_SKELETON,
-	ANIM_CLIP,
 	AUDIO,
-	PREFAB,
 
 	MAX_COUNT
 };
@@ -60,10 +57,7 @@ constexpr const char* RPG_ASSET_FILE_TYPE_NAMES[static_cast<uint16_t>(RpgAssetFi
 	"Texture",
 	"Font",
 	"Material",
-	"Anim Skeleton",
-	"Anim Clip",
-	"Audio",
-	"Prefab"
+	"Audio"
 };
 
 
@@ -82,7 +76,10 @@ static_assert(std::is_trivially_copyable<RpgAssetFileHeader>::value, "RpgAssetFi
 
 struct RpgAssetInfo
 {
-	RpgFilePath FilePath;
+	// Asset path (relative to asset directory)
+	RpgString Path;
+
+	// Asset type
 	RpgAssetFileType Type;
 };
 
@@ -94,8 +91,8 @@ namespace RpgAssetFileImage
 	{
 		BMP = 0,
 		PNG,
-		DDS,
 		TGA,
+		DDS,
 		JPG,
 		// ...
 		MAX_COUNT
@@ -106,8 +103,8 @@ namespace RpgAssetFileImage
 	{
 		".bmp",
 		".png",
-		".dds",
 		".tga",
+		".dds",
 		".jpg",
 	};
 
