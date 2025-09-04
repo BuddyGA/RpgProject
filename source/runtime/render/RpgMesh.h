@@ -9,6 +9,8 @@ typedef RpgSharedPtr<class RpgMesh> RpgSharedMesh;
 
 class RpgMesh : public RpgAssetInterface
 {
+	RPG_ASSET_FILE(RpgAssetFileType::MESH, 1)
+
 public:
 	struct FVertexData
 	{
@@ -33,9 +35,10 @@ public:
 
 
 public:
+	RpgMesh() noexcept;
 	RpgMesh(const RpgName& name) noexcept;
 
-	virtual uint32_t CalculateDataSizeBytes() const noexcept override;
+	virtual uint32_t CalculateAssetDataSizeBytes() const noexcept override;
 	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
 	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
 
@@ -307,12 +310,5 @@ private:
 
 	// Reader-writer lock (vertex index)
 	mutable SRWLOCK LockIndex;
-
-
-public:
-	// Create shared mesh
-	// @param name - Mesh name
-	// @return Shared pointer of type <RpgMesh>
-	[[nodiscard]] static RpgSharedMesh s_CreateShared(const RpgName& name) noexcept;
 
 };

@@ -15,10 +15,25 @@
 
 
 
-typedef RpgSharedPtr<class RpgTexture2D> RpgSharedTexture2D;
+class RpgTexture2D;
+typedef RpgSharedPtr<RpgTexture2D> RpgSharedTexture2D;
+
+class RpgTextureRenderTarget;
+typedef RpgSharedPtr<RpgTextureRenderTarget> RpgSharedTextureRenderTarget;
+
+class RpgTextureDepthStencil;
+typedef RpgSharedPtr<RpgTextureDepthStencil> RpgSharedTextureDepthStencil;
+
+class RpgTextureDepthCube;
+typedef RpgSharedPtr<class RpgTextureDepthCube> RpgSharedTextureDepthCube;
+
+
+
 
 class RpgTexture2D : public RpgAssetInterface
 {
+	RPG_ASSET_FILE(RpgAssetFileType::TEXTURE, 1)
+
 public:
 	struct FMipData
 	{
@@ -32,11 +47,11 @@ public:
 
 
 public:
-	RpgTexture2D(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height, uint8_t mipCount, uint16_t flags) noexcept;
+	RpgTexture2D() noexcept;
+	RpgTexture2D(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height, uint8_t mipCount) noexcept;
 	~RpgTexture2D() noexcept;
 
-
-	virtual uint32_t CalculateDataSizeBytes() const noexcept override;
+	virtual uint32_t CalculateAssetDataSizeBytes() const noexcept override;
 	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
 	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
 
@@ -71,7 +86,7 @@ public:
 	{
 		RPG_Check(newWidth >= RPG_TEXTURE_MIN_DIM && newWidth <= RPG_TEXTURE_MAX_DIM);
 		RPG_Check(newHeight >= RPG_TEXTURE_MIN_DIM && newHeight <= RPG_TEXTURE_MAX_DIM);
-		RPG_Check((Flags & (FLAG_IsRenderTarget | FLAG_IsDepthStencil)));
+		RPG_Check((Flags & (FLAG_RenderTarget | FLAG_DepthStencil)));
 
 		Width = newWidth;
 		Height = newHeight;
@@ -81,7 +96,7 @@ public:
 	inline const uint8_t* MipReadLock(uint8_t mipLevel, FMipData& out_MipData) const noexcept
 	{
 		RPG_Check(mipLevel >= 0 && mipLevel < MipCount);
-		RPG_Check(!(Flags & (FLAG_IsRenderTarget | FLAG_IsDepthStencil)));
+		RPG_Check(!(Flags & (FLAG_RenderTarget | FLAG_DepthStencil)));
 
 		AcquireSRWLockShared(&MipLocks[mipLevel]);
 		out_MipData = MipDatas[mipLevel];
@@ -92,7 +107,7 @@ public:
 	inline void MipReadUnlock(uint8_t mipLevel) noexcept
 	{
 		RPG_Check(mipLevel >= 0 && mipLevel < MipCount);
-		RPG_Check(!(Flags & (FLAG_IsRenderTarget | FLAG_IsDepthStencil)));
+		RPG_Check(!(Flags & (FLAG_RenderTarget | FLAG_DepthStencil)));
 
 		ReleaseSRWLockShared(&MipLocks[mipLevel]);
 	}
@@ -101,7 +116,7 @@ public:
 	inline uint8_t* MipWriteLock(uint8_t mipLevel, FMipData& out_MipData) noexcept
 	{
 		RPG_Check(mipLevel >= 0 && mipLevel < MipCount);
-		RPG_Check(!(Flags & (FLAG_IsRenderTarget | FLAG_IsDepthStencil)));
+		RPG_Check(!(Flags & (FLAG_RenderTarget | FLAG_DepthStencil)));
 
 		AcquireSRWLockExclusive(&MipLocks[mipLevel]);
 		out_MipData = MipDatas[mipLevel];
@@ -113,7 +128,7 @@ public:
 	inline void MipWriteUnlock(uint8_t mipLevel) noexcept
 	{
 		RPG_Check(mipLevel >= 0 && mipLevel < MipCount);
-		RPG_Check(!(Flags & (FLAG_IsRenderTarget | FLAG_IsDepthStencil)));
+		RPG_Check(!(Flags & (FLAG_RenderTarget | FLAG_DepthStencil)));
 
 		ReleaseSRWLockExclusive(&MipLocks[mipLevel]);
 	}
@@ -126,12 +141,12 @@ public:
 
 	inline bool IsRenderTarget() const noexcept
 	{
-		return (Flags & FLAG_IsRenderTarget);
+		return (Flags & FLAG_RenderTarget);
 	}
 
 	inline bool IsDepthStencil() const noexcept
 	{
-		return (Flags & FLAG_IsDepthStencil);
+		return (Flags & FLAG_DepthStencil);
 	}
 
 
@@ -192,8 +207,8 @@ protected:
 	enum EFlag : uint16_t
 	{
 		FLAG_None						= (0),
-		FLAG_IsRenderTarget				= (1 << 0),
-		FLAG_IsDepthStencil				= (1 << 1),
+		FLAG_RenderTarget				= (1 << 0),
+		FLAG_DepthStencil				= (1 << 1),
 		FLAG_Runtime_Loading			= (1 << 2),
 		FLAG_Runtime_Loaded				= (1 << 3),
 		FLAG_Runtime_PendingDestroy		= (1 << 4),
@@ -226,10 +241,6 @@ protected:
 
 
 public:
-	[[nodiscard]] static RpgSharedTexture2D s_CreateShared2D(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height, uint8_t mipCount) noexcept;
-	[[nodiscard]] static RpgSharedTexture2D s_CreateSharedRenderTarget(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height) noexcept;
-	[[nodiscard]] static RpgSharedTexture2D s_CreateSharedDepthStencil(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height) noexcept;
-
 	static void s_CreateDefaults() noexcept;
 	static void s_DestroyDefaults() noexcept;
 
@@ -239,17 +250,32 @@ public:
 
 
 
-typedef RpgSharedPtr<class RpgTextureDepthCube> RpgSharedTextureDepthCube;
 
-class RpgTextureDepthCube : public RpgTexture2D
+class RpgTextureRenderTarget : public RpgTexture2D
 {
 public:
-	RpgTextureDepthCube(const RpgName name, RpgTextureFormat::EType format, uint16_t width, uint16_t height) noexcept;
+	RpgTextureRenderTarget(const RpgName& in_Name, RpgTextureFormat::EType in_Format, uint16_t in_Width, uint16_t in_Height) noexcept;
+
+};
+
+
+
+
+class RpgTextureDepthStencil : public RpgTexture2D
+{
+public:
+	RpgTextureDepthStencil(const RpgName& in_Name, RpgTextureFormat::EType in_Format, uint16_t in_Width, uint16_t in_Height) noexcept;
+
+};
+
+
+
+
+class RpgTextureDepthCube : public RpgTextureDepthStencil
+{
+public:
+	RpgTextureDepthCube(const RpgName& in_Name, RpgTextureFormat::EType in_Format, uint16_t in_Width, uint16_t in_Height) noexcept;
 
 	virtual void GPU_UpdateResource() noexcept override;
-
-
-public:
-	[[nodiscard]] static RpgSharedTextureDepthCube s_CreateShared(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height) noexcept;
 
 };

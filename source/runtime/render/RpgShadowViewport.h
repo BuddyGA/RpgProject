@@ -32,7 +32,7 @@ public:
 	virtual ~RpgShadowViewport() noexcept = default;
 	virtual void PreRender(RpgRenderFrameContext& frameContext, RpgWorldResource* worldResource, const RpgWorld* world, RpgWorldResource::FLightID lightId) noexcept = 0;
 	virtual void SetupRenderPasses(const RpgRenderFrameContext& frameContext, const RpgWorldResource* worldResource, const RpgWorld* world, RpgRenderTask_RenderPassShadowArray& out_ShadowPasses) noexcept = 0;
-	virtual RpgSharedTexture2D GetTextureDepth(int frameIndex) noexcept = 0;
+	virtual RpgSharedTextureDepthStencil GetTextureDepth(int frameIndex) noexcept = 0;
 
 };
 
@@ -47,9 +47,9 @@ public:
 	virtual void SetupRenderPasses(const RpgRenderFrameContext& frameContext, const RpgWorldResource* worldResource, const RpgWorld* world, RpgRenderTask_RenderPassShadowArray& out_ShadowPasses) noexcept override;
 	
 	
-	virtual RpgSharedTexture2D GetTextureDepth(int frameIndex) noexcept override
+	virtual RpgSharedTextureDepthStencil GetTextureDepth(int frameIndex) noexcept override
 	{
-		return FrameDatas[frameIndex].TextureDepthCube.Cast<RpgTexture2D>();
+		return FrameDatas[frameIndex].TextureDepthCube.Cast<RpgTextureDepthStencil>();
 	}
 
 
@@ -86,7 +86,7 @@ public:
 	virtual void SetupRenderPasses(const RpgRenderFrameContext& frameContext, const RpgWorldResource* worldResource, const RpgWorld* world, RpgRenderTask_RenderPassShadowArray& out_ShadowPasses) noexcept override;
 
 
-	virtual RpgSharedTexture2D GetTextureDepth(int frameIndex) noexcept override
+	virtual RpgSharedTextureDepthStencil GetTextureDepth(int frameIndex) noexcept override
 	{
 		return FrameDatas[frameIndex].TextureDepth;
 	}
@@ -98,7 +98,7 @@ private:
 
 	struct FFrameData
 	{
-		RpgSharedTexture2D TextureDepth;
+		RpgSharedTextureDepthStencil TextureDepth;
 		RpgArray<RpgDrawIndexedDepth> DrawMeshes;
 		RpgArray<RpgDrawIndexedDepth> DrawSkinnedMeshes;
 		RpgRenderTask_RenderPassShadow TaskRenderPassShadow;

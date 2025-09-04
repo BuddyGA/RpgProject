@@ -26,43 +26,39 @@ const DXGI_FORMAT RPG_TEXTURE_FORMAT_TO_DXGI_FORMAT[static_cast<uint8_t>(RpgText
 
 
 
-RpgTexture2D::RpgTexture2D(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height, uint8_t mipCount, uint16_t flags) noexcept
+RpgTexture2D::RpgTexture2D() noexcept
+	: MipDatas()
+	, MipLocks()
 {
+	Flags = FLAG_None;
+	Format = RpgTextureFormat::NONE;
+	Width = 0;
+	Height = 0;
+	MipCount = 1;
+	PixelSizeBytes = 0;
+	PixelData = nullptr;
+	GpuState = D3D12_RESOURCE_STATE_COMMON;
+}
+
+
+RpgTexture2D::RpgTexture2D(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height, uint8_t mipCount) noexcept
+	: RpgTexture2D()
+{
+	RPG_Check(format >= RpgTextureFormat::TEX_2D_R && format <= RpgTextureFormat::TEX_2D_BC7U);
+
 	Name = name;
-
-	if (flags & FLAG_IsRenderTarget)
-	{
-		RPG_Check(format >= RpgTextureFormat::TEX_RT_RGBA && format <= RpgTextureFormat::TEX_RT_BGRA);
-	}
-	else if (flags & FLAG_IsDepthStencil)
-	{
-		RPG_Check(format >= RpgTextureFormat::TEX_DS_16 && format <= RpgTextureFormat::TEX_DS_32);
-	}
-	else
-	{
-		RPG_Check(format >= RpgTextureFormat::TEX_2D_R && format <= RpgTextureFormat::TEX_2D_BC7U);
-	}
-
-	Flags = flags;
-
 	Format = format;
 
-	//RPG_PLATFORM_Check(width >= RPG_TEXTURE_MIN_DIM && width <= RPG_TEXTURE_MAX_DIM);
+	RPG_Check(width >= RPG_TEXTURE_MIN_DIM && width <= RPG_TEXTURE_MAX_DIM);
 	Width = width;
 
-	//RPG_PLATFORM_Check(height >= RPG_TEXTURE_MIN_DIM && height <= RPG_TEXTURE_MAX_DIM);
+	RPG_Check(height >= RPG_TEXTURE_MIN_DIM && height <= RPG_TEXTURE_MAX_DIM);
 	Height = height;
 
 	RPG_Check(mipCount > 0 && mipCount <= RPG_TEXTURE_MAX_MIP);
 	MipCount = mipCount;
 
-	PixelSizeBytes = 0;
-
-	PixelData = nullptr;
-
 	InitializeMips();
-
-	GpuState = D3D12_RESOURCE_STATE_COMMON;
 }
 
 
@@ -78,7 +74,7 @@ RpgTexture2D::~RpgTexture2D() noexcept
 }
 
 
-uint32_t RpgTexture2D::CalculateDataSizeBytes() const noexcept
+uint32_t RpgTexture2D::CalculateAssetDataSizeBytes() const noexcept
 {
 	// name
 	uint32_t sizeBytes = sizeof(RpgName);
@@ -104,7 +100,7 @@ void RpgTexture2D::StreamWrite(RpgStreamWriter& writer) const noexcept
 	writer.Write(Name);
 
 	const uint16_t savedFlags = (Flags & ~RUNTIME_FLAGS);
-	RPG_Check(!(savedFlags & (FLAG_IsRenderTarget | FLAG_IsDepthStencil)));
+	RPG_Check(!(savedFlags & (FLAG_RenderTarget | FLAG_DepthStencil)));
 	writer.Write(savedFlags);
 
 	writer.Write(Format);
@@ -138,8 +134,8 @@ void RpgTexture2D::StreamRead(RpgStreamReader& reader) noexcept
 
 void RpgTexture2D::GPU_UpdateResource() noexcept
 {
-	const bool bIsRenderTarget = (Flags & FLAG_IsRenderTarget);
-	const bool bIsDepthStencil = (Flags & FLAG_IsDepthStencil);
+	const bool bIsRenderTarget = (Flags & FLAG_RenderTarget);
+	const bool bIsDepthStencil = (Flags & FLAG_DepthStencil);
 	bool bShouldCreateNew = (GpuAlloc == nullptr);
 
 	if (!bShouldCreateNew && (bIsRenderTarget || bIsDepthStencil))
@@ -204,11 +200,7 @@ void RpgTexture2D::GPU_CommandCopy(ID3D12GraphicsCommandList* cmdList) const noe
 
 void RpgTexture2D::InitializeMips() noexcept
 {
-	if (Flags & (FLAG_IsRenderTarget | FLAG_IsDepthStencil))
-	{
-		return;
-	}
-
+	RPG_Check(!(Flags & (FLAG_RenderTarget | FLAG_DepthStencil)));
 	RPG_Check(MipCount > 0 && MipCount <= RPG_TEXTURE_MAX_MIP);
 
 	const D3D12_RESOURCE_DESC textureDesc = RpgD3D12::CreateResourceDesc_Texture(RPG_TEXTURE_FORMAT_TO_DXGI_FORMAT[static_cast<uint8_t>(Format)], Width, Height, MipCount);
@@ -252,31 +244,13 @@ void RpgTexture2D::InitializeMips() noexcept
 static RpgArray<RpgSharedTexture2D> DefaultTextures;
 
 
-RpgSharedTexture2D RpgTexture2D::s_CreateShared2D(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height, uint8_t mipCount) noexcept
-{
-	return RpgSharedTexture2D(new RpgTexture2D(name, format, width, height, mipCount, 0));
-}
-
-
-RpgSharedTexture2D RpgTexture2D::s_CreateSharedRenderTarget(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height) noexcept
-{
-	return RpgSharedTexture2D(new RpgTexture2D(name, format, width, height, 1, FLAG_IsRenderTarget));
-}
-
-
-RpgSharedTexture2D RpgTexture2D::s_CreateSharedDepthStencil(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height) noexcept
-{
-	return RpgSharedTexture2D(new RpgTexture2D(name, format, width, height, 1, FLAG_IsDepthStencil));
-}
-
-
 void RpgTexture2D::s_CreateDefaults() noexcept
 {
 	RPG_LogDebug(RpgLogTexture, "Create default textures...");
 
 	// texture2d-white
 	{
-		RpgSharedTexture2D defWhite = s_CreateShared2D("tex2d_def_white", RpgTextureFormat::TEX_2D_RGBA, RPG_TEXTURE_MIN_DIM, RPG_TEXTURE_MIN_DIM, 1);
+		RpgSharedTexture2D defWhite = RpgPointer::MakeShared<RpgTexture2D>("tex2d_def_white", RpgTextureFormat::TEX_2D_RGBA, RPG_TEXTURE_MIN_DIM, RPG_TEXTURE_MIN_DIM, 1);
 		
 		FMipData mipData;
 		uint8_t* pixelData = defWhite->MipWriteLock(0, mipData);
@@ -301,10 +275,38 @@ const RpgSharedTexture2D& RpgTexture2D::s_GetDefault_White() noexcept
 
 
 
+RpgTextureRenderTarget::RpgTextureRenderTarget(const RpgName& in_Name, RpgTextureFormat::EType in_Format, uint16_t in_Width, uint16_t in_Height) noexcept
+	: RpgTexture2D()
+{
+	RPG_Check(in_Format >= RpgTextureFormat::TEX_RT_RGBA && in_Format <= RpgTextureFormat::TEX_RT_BGRA);
+
+	Name = in_Name;
+	Flags = FLAG_RenderTarget;
+	Format = in_Format;
+	Width = in_Width;
+	Height = in_Height;
+
+}
 
 
-RpgTextureDepthCube::RpgTextureDepthCube(const RpgName name, RpgTextureFormat::EType format, uint16_t width, uint16_t height) noexcept
-	: RpgTexture2D(name, format, width, height, 1, FLAG_IsDepthStencil)
+
+
+RpgTextureDepthStencil::RpgTextureDepthStencil(const RpgName& in_Name, RpgTextureFormat::EType in_Format, uint16_t in_Width, uint16_t in_Height) noexcept
+	: RpgTexture2D()
+{
+	RPG_Check(in_Format >= RpgTextureFormat::TEX_DS_16 && in_Format <= RpgTextureFormat::TEX_DS_32);
+
+	Name = in_Name;
+	Flags = FLAG_DepthStencil;
+	Format = in_Format;
+	Width = in_Width;
+	Height = in_Height;
+}
+
+
+
+RpgTextureDepthCube::RpgTextureDepthCube(const RpgName& in_Name, RpgTextureFormat::EType in_Format, uint16_t in_Width, uint16_t in_Height) noexcept
+	: RpgTextureDepthStencil(in_Name, in_Format, in_Width, in_Height)
 {
 }
 
@@ -329,11 +331,4 @@ void RpgTextureDepthCube::GPU_UpdateResource() noexcept
 
 		RPG_D3D12_SetDebugNameAllocation(GpuAlloc, "RES_%s", *Name);
 	}
-}
-
-
-
-RpgSharedTextureDepthCube RpgTextureDepthCube::s_CreateShared(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height) noexcept
-{
-	return RpgSharedTextureDepthCube(new RpgTextureDepthCube(name, format, width, height));
 }

@@ -26,7 +26,7 @@ int RpgModel::AddMeshEmpty() noexcept
 
 	for (int l = 0; l < LodCount; ++l)
 	{
-		Meshes[meshIndex][l] = RpgMesh::s_CreateShared(RpgName::Format("%s_mesh%i_lod%i", *Name, meshIndex, l));
+		Meshes[meshIndex][l] = RpgPointer::MakeShared<RpgMesh>(RpgName::Format("%s_mesh%i_lod%i", *Name, meshIndex, l));
 	}
 	
 	return meshIndex;

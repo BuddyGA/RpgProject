@@ -70,12 +70,12 @@ public:
 		return ViewFrustum;
 	}
 
-	inline const RpgSharedTexture2D& GetTextureRenderTarget(int frameIndex) const noexcept
+	inline const RpgSharedTextureRenderTarget& GetTextureRenderTarget(int frameIndex) const noexcept
 	{
 		return FrameDatas[frameIndex].TextureRenderTarget;
 	}
 
-	inline const RpgSharedTexture2D& GetTextureDepthStencil(int frameIndex) const noexcept
+	inline const RpgSharedTextureDepthStencil& GetTextureDepthStencil(int frameIndex) const noexcept
 	{
 		return FrameDatas[frameIndex].TextureDepthStencil;
 	}
@@ -106,8 +106,8 @@ private:
 
 	struct FFrameData
 	{
-		RpgSharedTexture2D TextureRenderTarget;
-		RpgSharedTexture2D TextureDepthStencil;
+		RpgSharedTextureRenderTarget TextureRenderTarget;
+		RpgSharedTextureDepthStencil TextureDepthStencil;
 
 		RpgArray<RpgSceneMesh> Meshes;
 		RpgArray<RpgSceneLight> Lights;

@@ -18,11 +18,11 @@ void RpgShadowViewport_SpotLight::PreRender(RpgRenderFrameContext& frameContext,
 	frame.DrawSkinnedMeshes.Clear();
 
 	const uint16_t shadowTextureDimension = RpgRenderLight::SHADOW_TEXTURE_DIMENSION_SPOT_LIGHT[frameContext.ShadowQuality];
-	RpgSharedTexture2D& depthTexture = frame.TextureDepth;
+	RpgSharedTextureDepthStencil& depthTexture = frame.TextureDepth;
 
 	if (!depthTexture)
 	{
-		depthTexture = RpgTexture2D::s_CreateSharedDepthStencil(RpgName::Format("TEXD_SdwVprt_SL_%i", lightId), RpgTextureFormat::TEX_DS_16, shadowTextureDimension, shadowTextureDimension);
+		depthTexture = RpgPointer::MakeShared<RpgTextureDepthStencil>(RpgName::Format("texds_shdw_vprt_sl_%i", lightId), RpgTextureFormat::TEX_DS_16, shadowTextureDimension, shadowTextureDimension);
 	}
 
 	depthTexture->Resize(shadowTextureDimension, shadowTextureDimension);

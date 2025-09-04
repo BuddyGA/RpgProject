@@ -11,27 +11,6 @@
 // Magic number for asset file header
 #define RPG_ASSET_FILE_MAGIX					0x41475052 // (RPGA)
 
-// Mesh asset version
-#define RPG_ASSET_FILE_VERSION_MESH				1
-
-// Texture asset version
-#define RPG_ASSET_FILE_VERSION_TEXTURE			1
-
-// Font asset version
-#define RPG_ASSET_FILE_VERSION_FONT				1
-
-// Material asset version
-#define RPG_ASSET_FILE_VERSION_MATERIAL			1
-
-// Animation skeleton asset version
-#define RPG_ASSET_FILE_VERSION_ANIM_SKELETON	1
-
-// Animation clip asset version
-#define RPG_ASSET_FILE_VERSION_ANIM_CLIP		1
-
-// Audio asset version
-#define RPG_ASSET_FILE_VERSION_AUDIO			1
-
 
 RPG_LOG_DECLARE_CATEGORY_EXTERN(RpgLogAsset)
 
@@ -68,7 +47,6 @@ struct RpgAssetFileHeader
 	uint32_t Magix{ 0 };
 	uint16_t Type{ 0 };
 	uint16_t Version{ 0 };
-	uint32_t OffsetBytes{ 0 };
 	uint32_t SizeBytes{ 0 };
 };
 static_assert(std::is_trivially_copyable<RpgAssetFileHeader>::value, "RpgAssetFileHeader must be POD!");
@@ -163,10 +141,17 @@ class RpgAssetInterface
 public:
 	RpgAssetInterface() noexcept = default;
 	virtual ~RpgAssetInterface() noexcept = default;
-	virtual uint32_t CalculateDataSizeBytes() const noexcept = 0;
+	virtual uint32_t CalculateAssetDataSizeBytes() const noexcept = 0;
 	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept = 0;
 	virtual void StreamRead(RpgStreamReader& reader) noexcept = 0;
 
 };
 
 typedef RpgSharedPtr<RpgAssetInterface> RpgSharedAsset;
+
+
+
+#define RPG_ASSET_FILE(type, version)				\
+public:												\
+static constexpr RpgAssetFileType FILE_TYPE = type;	\
+static constexpr uint16_t FILE_VERSION = version;

@@ -7,6 +7,12 @@ RPG_LOG_DECLARE_CATEGORY_STATIC(RpgLogMaterial, VERBOSITY_DEBUG)
 
 
 
+RpgMaterial::RpgMaterial() noexcept
+{
+	Flags = FLAG_None;
+}
+
+
 RpgMaterial::RpgMaterial(const RpgName& in_Name, const RpgRenderPipelineState& in_RenderState, const RpgMaterialParameterLayout& in_ParameterLayout) noexcept
 {
 	Name = in_Name;
@@ -38,8 +44,9 @@ RpgMaterial::~RpgMaterial() noexcept
 }
 
 
-uint32_t RpgMaterial::CalculateDataSizeBytes() const noexcept
+uint32_t RpgMaterial::CalculateAssetDataSizeBytes() const noexcept
 {
+	RPG_NotImplementedYet();
 	return 0;
 }
 

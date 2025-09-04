@@ -141,10 +141,9 @@ private:
 
 
 
-template<typename T>
 struct RpgPointerRefCount
 {
-	T* Pointer{ nullptr };
+	void* Pointer{ nullptr };
 	RpgAtomicInt SharedCount;
 	RpgAtomicInt WeakCount;
 };
@@ -162,7 +161,7 @@ public:
 
 		if (in_Obj)
 		{
-			Ref = new RpgPointerRefCount<T>();
+			Ref = new RpgPointerRefCount();
 			Ref->Pointer = in_Obj;
 			Ref->SharedCount = 1;
 			Ref->WeakCount = 0;
@@ -238,12 +237,12 @@ public:
 
 	inline T* operator->() noexcept
 	{
-		return Ref ? Ref->Pointer : nullptr;
+		return Ref ? static_cast<T*>(Ref->Pointer) : nullptr;
 	}
 
 	inline const T* operator->() const noexcept
 	{
-		return Ref ? Ref->Pointer : nullptr;
+		return Ref ? static_cast<const T*>(Ref->Pointer) : nullptr;
 	}
 
 
@@ -266,7 +265,7 @@ public:
 		{
 			if (InterlockedAdd(&Ref->SharedCount, -1) == 0)
 			{
-				delete Ref->Pointer;
+				delete static_cast<T*>(Ref->Pointer);
 				Ref->Pointer = nullptr;
 
 				if (Ref->WeakCount == 0)
@@ -282,12 +281,12 @@ public:
 
 	inline T* Get() noexcept
 	{
-		return Ref ? Ref->Pointer : nullptr;
+		return Ref ? static_cast<T*>(Ref->Pointer) : nullptr;
 	}
 
 	inline const T* Get() const noexcept
 	{
-		return Ref ? Ref->Pointer : nullptr;
+		return Ref ? static_cast<const T*>(Ref->Pointer) : nullptr;
 	}
 
 	inline int GetRefCount() const noexcept
@@ -301,22 +300,22 @@ public:
 	{
 		static_assert(std::is_convertible<T*, U*>::value, "RpgSharedPtr: Cast type <T> must be convertible to type <U>!");
 		
-		if (Ref)
+		if (Ref == nullptr)
 		{
-			InterlockedAdd(&Ref->SharedCount, 1);
+			return RpgSharedPtr<U>();
 		}
 
+		InterlockedAdd(&Ref->SharedCount, 1);
+
 		RpgSharedPtr<U> parent;
-		parent.Ref->Pointer = Ref->Pointer;
-		parent.Ref->SharedCount = Ref->SharedCount;
-		parent.Ref->WeakCount = Ref->WeakCount;
+		parent.Ref = Ref;
 
 		return parent;
 	}
 
 
 private:
-	RpgPointerRefCount<T>* Ref;
+	RpgPointerRefCount* Ref;
 
 
 	template<typename U>
@@ -485,7 +484,7 @@ public:
 
 
 private:
-	RpgPointerRefCount<T>* Ref;
+	RpgPointerRefCount* Ref;
 
 };
 

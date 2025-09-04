@@ -42,7 +42,7 @@ private:
 class RpgRenderTask_RenderPassShadow : public RpgRenderTask_RenderPass
 {
 public:
-	RpgTexture2D* TextureDepth;
+	RpgTextureDepthStencil* TextureDepth;
 	RpgWorldResource::FViewID ViewId;
 
 	const RpgDrawIndexedDepth* DrawMeshData;
@@ -75,8 +75,8 @@ protected:
 class RpgRenderTask_RenderPassForward : public RpgRenderTask_RenderPass
 {
 public:
-	RpgTexture2D* TextureRenderTarget;
-	RpgTexture2D* TextureDepthStencil;
+	RpgTextureRenderTarget* TextureRenderTarget;
+	RpgTextureDepthStencil* TextureDepthStencil;
 
 	const RpgDrawIndexed* DrawMeshData;
 	int DrawMeshCount;

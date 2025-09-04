@@ -86,7 +86,7 @@ namespace RpgCompressonator
 		CMP_MipSet* mipSet = bCompressTexture ? &compressedMipSet : &srcMipSet;
 		RPG_Check(mipSet);
 
-		out_Texture = RpgTexture2D::s_CreateShared2D(filePath.GetFileName(), format, mipSet->m_nWidth, mipSet->m_nHeight, mipSet->m_nMipLevels);
+		out_Texture = RpgPointer::MakeShared<RpgTexture2D>(filePath.GetFileName(), format, mipSet->m_nWidth, mipSet->m_nHeight, mipSet->m_nMipLevels);
 		RPG_Check(out_Texture->GetMipCount() == mipSet->m_nMipLevels);
 
 		for (int m = 0; m < mipSet->m_nMipLevels; ++m)

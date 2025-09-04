@@ -40,7 +40,7 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 	{
 		if (!frame.TextureRenderTarget)
 		{
-			frame.TextureRenderTarget = RpgTexture2D::s_CreateSharedRenderTarget("TEXRT_ScnVprt", RpgTextureFormat::TEX_RT_RGBA, RenderTargetDimension.X, RenderTargetDimension.Y);
+			frame.TextureRenderTarget = RpgPointer::MakeShared<RpgTextureRenderTarget>("texrt_scn_vprt", RpgTextureFormat::TEX_RT_RGBA, RenderTargetDimension.X, RenderTargetDimension.Y);
 		}
 
 		frame.TextureRenderTarget->Resize(RenderTargetDimension.X, RenderTargetDimension.Y);
@@ -50,7 +50,7 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 		// Resize depth-stencil
 		if (!frame.TextureDepthStencil)
 		{
-			frame.TextureDepthStencil = RpgTexture2D::s_CreateSharedDepthStencil("TEXDS_ScnVprt", RpgTextureFormat::TEX_DS_32, RenderTargetDimension.X, RenderTargetDimension.Y);
+			frame.TextureDepthStencil = RpgPointer::MakeShared<RpgTextureDepthStencil>("texds_scn_vprt", RpgTextureFormat::TEX_DS_32, RenderTargetDimension.X, RenderTargetDimension.Y);
 		}
 
 		frame.TextureDepthStencil->Resize(RenderTargetDimension.X, RenderTargetDimension.Y);

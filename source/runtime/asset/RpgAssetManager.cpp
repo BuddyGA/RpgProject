@@ -11,7 +11,7 @@ RpgAssetManager* g_AssetManager = nullptr;
 namespace RpgAssetStream
 {
 	template<typename TAsset>
-	static RpgString SaveToFile(const RpgSharedPtr<TAsset>& asset, RpgAssetFileType type, uint16_t version, const char* directory) noexcept
+	static RpgString SaveToFile(const RpgSharedPtr<TAsset>& asset, const char* directory) noexcept
 	{
 		if (!asset.IsValid())
 		{
@@ -19,17 +19,14 @@ namespace RpgAssetStream
 			return RpgString();
 		}
 
-		RpgAssetFileHeader fileHeader;
-		fileHeader.Magix = RPG_ASSET_FILE_MAGIX;
-		fileHeader.Type = static_cast<uint16_t>(type);
-		fileHeader.Version = version;
-		fileHeader.OffsetBytes = 0;
-		fileHeader.SizeBytes = sizeof(RpgAssetFileHeader) +		// header
-			asset->CalculateDataSizeBytes() +					// data
-			sizeof(int);										// eof
+		RpgAssetFileHeader header;
+		header.Magix = RPG_ASSET_FILE_MAGIX;
+		header.Type = static_cast<uint16_t>(TAsset::FILE_TYPE);
+		header.Version = TAsset::FILE_VERSION;
+		header.SizeBytes = asset->CalculateAssetDataSizeBytes();
 
 		RpgBinaryStreamWriter writer;
-		writer.Write(fileHeader);
+		writer.Write(header);
 		asset->StreamWrite(writer);
 		writer.Write(RPG_ASSET_FILE_MAGIX);
 
@@ -45,6 +42,64 @@ namespace RpgAssetStream
 		RPG_CONSOLE_Log(RpgLogAsset, "Saved asset (%s) to file (%s)", name, *filePath);
 
 		return filePath;
+	}
+
+
+	template<typename TAsset>
+	static RpgSharedPtr<TAsset> LoadFromFile(const RpgString& path, RpgAssetLoadedData<TAsset>& out_LoadedData, const RpgArray<uint64_t>& registryHashes, const RpgArray<RpgAssetInfo>& registryInfos)
+	{
+		const uint64_t hash = XXH3_64bits(*path, path.GetLength());
+
+		// check if loaded
+		int loadedIndex = RPG_INDEX_INVALID;
+		if (out_LoadedData.IsLoaded(hash, &loadedIndex))
+		{
+			return out_LoadedData.GetSharedAtIndex(loadedIndex);
+		}
+
+		// check in registry
+		const int regIndex = registryHashes.FindIndexByValue(hash);
+		if (regIndex == RPG_INDEX_INVALID)
+		{
+			RPG_CONSOLE_Error(RpgLogAsset, "Asset (%s) not found in registry!", *path);
+			return RpgSharedPtr<TAsset>();
+		}
+
+		RPG_Check(registryInfos[regIndex].Type == TAsset::FILE_TYPE);
+
+
+		// load asset
+		RPG_CONSOLE_Log(RpgLogAsset, "Load asset (%s)", *path);
+
+		const RpgString filePath = RpgString::Format("%s/%s.rpga", *RpgFileSystem::GetAssetDirPath(), *path);
+
+		RpgArray<uint8_t> data;
+		if (!RpgFileSystem::ReadFromFile(filePath, data))
+		{
+			RPG_CONSOLE_Error(RpgLogAsset, "Fail to load asset (%s). Reading file data failed! (FilePath: %s)", *path, *filePath);
+			return RpgSharedPtr<TAsset>();
+		}
+
+		RpgBinaryStreamReader reader(data);
+
+		RpgAssetFileHeader header;
+		reader.Read(header);
+		RPG_Check(header.Magix == RPG_ASSET_FILE_MAGIX);
+		RPG_Check(header.Type == static_cast<uint16_t>(TAsset::FILE_TYPE));
+		RPG_Check(header.Version == TAsset::FILE_VERSION);
+
+		RpgSharedPtr<TAsset> asset = RpgPointer::MakeShared<TAsset>();
+		asset->StreamRead(reader);
+		RPG_Check(header.SizeBytes == asset->CalculateAssetDataSizeBytes());
+
+		int eof = 0;
+		reader.Read(eof);
+		RPG_Check(eof == RPG_ASSET_FILE_MAGIX);
+
+		// add to loaded data
+		out_LoadedData.Add(hash, asset);
+
+		return asset;
 	}
 
 };
@@ -131,7 +186,7 @@ void RpgAssetManager::ScanAssetFiles() noexcept
 
 void RpgAssetManager::SaveMesh(const RpgSharedMesh& mesh) noexcept
 {
-	const RpgString filePath = RpgAssetStream::SaveToFile(mesh, RpgAssetFileType::MESH, RPG_ASSET_FILE_VERSION_MESH, "mesh");
+	const RpgString filePath = RpgAssetStream::SaveToFile<RpgMesh>(mesh, "mesh");
 	RPG_Check(!filePath.IsEmpty());
 
 	uint64_t assetHash = 0;
@@ -143,63 +198,13 @@ void RpgAssetManager::SaveMesh(const RpgSharedMesh& mesh) noexcept
 
 RpgSharedMesh RpgAssetManager::LoadMesh(const RpgString& path) noexcept
 {
-	const uint64_t hash = XXH3_64bits(*path, path.GetLength());
-
-	// check if loaded
-	int index = RPG_INDEX_INVALID;
-	if (LoadedMeshData.IsLoaded(hash, &index))
-	{
-		return LoadedMeshData.GetSharedAtIndex(index);
-	}
-
-	// check in registry
-	const RpgAssetInfo* info = GetAssetInfoByHash(hash);
-	if (info == nullptr)
-	{
-		RPG_CONSOLE_Error(RpgLogAsset, "Mesh asset (%s) not found in registry!", *path);
-		return RpgSharedMesh();
-	}
-
-	RPG_Check(info->Type == RpgAssetFileType::MESH);
-
-
-	// load mesh
-	RPG_CONSOLE_Log(RpgLogAsset, "Load mesh asset (%s)", *path);
-
-	const RpgString filePath = RpgString::Format("%s/%s.rpga", *RpgFileSystem::GetAssetDirPath(), *path);
-
-	RpgArray<uint8_t> data;
-	if (!RpgFileSystem::ReadFromFile(filePath, data))
-	{
-		RPG_CONSOLE_Error(RpgLogAsset, "Fail to load mesh (%s). Reading file data failed! (FilePath: %s)", *path, *filePath);
-		return RpgSharedMesh();
-	}
-
-	RpgBinaryStreamReader reader(data);
-
-	RpgAssetFileHeader header;
-	reader.Read(header);
-	RPG_Check(header.Magix == RPG_ASSET_FILE_MAGIX);
-	RPG_Check(header.Type == static_cast<uint16_t>(RpgAssetFileType::MESH));
-	RPG_Check(header.Version == RPG_ASSET_FILE_VERSION_MESH);
-
-	RpgSharedMesh mesh = RpgMesh::s_CreateShared("");
-	mesh->StreamRead(reader);
-
-	int eof = 0;
-	reader.Read(eof);
-	RPG_Check(eof == RPG_ASSET_FILE_MAGIX);
-
-	// add to loaded mesh
-	LoadedMeshData.Add(hash, mesh);
-
-	return mesh;
+	return RpgAssetStream::LoadFromFile<RpgMesh>(path, LoadedMeshData, RegisteredAssetHashes, RegisteredAssetInfos);
 }
 
 
 void RpgAssetManager::SaveTexture(const RpgSharedTexture2D& texture) noexcept
 {
-	const RpgString filePath = RpgAssetStream::SaveToFile(texture, RpgAssetFileType::TEXTURE, RPG_ASSET_FILE_VERSION_TEXTURE, "texture");
+	const RpgString filePath = RpgAssetStream::SaveToFile<RpgTexture2D>(texture, "texture");
 	RPG_Check(!filePath.IsEmpty());
 
 	uint64_t assetHash = 0;
@@ -211,14 +216,13 @@ void RpgAssetManager::SaveTexture(const RpgSharedTexture2D& texture) noexcept
 
 RpgSharedTexture2D RpgAssetManager::LoadTexture(const RpgString& path) noexcept
 {
-	RPG_NotImplementedYet();
-	return RpgSharedTexture2D();
+	return RpgAssetStream::LoadFromFile<RpgTexture2D>(path, LoadedTextureData, RegisteredAssetHashes, RegisteredAssetInfos);
 }
 
 
 void RpgAssetManager::SaveMaterial(const RpgSharedMaterial& material) noexcept
 {
-	const RpgString filePath = RpgAssetStream::SaveToFile(material, RpgAssetFileType::MATERIAL, RPG_ASSET_FILE_VERSION_MATERIAL, "material");
+	const RpgString filePath = RpgAssetStream::SaveToFile<RpgMaterial>(material, "material");
 	RPG_Check(!filePath.IsEmpty());
 
 	uint64_t assetHash = 0;
@@ -230,8 +234,7 @@ void RpgAssetManager::SaveMaterial(const RpgSharedMaterial& material) noexcept
 
 RpgSharedMaterial RpgAssetManager::LoadMaterial(const RpgString& path) noexcept
 {
-	RPG_NotImplementedYet();
-	return RpgSharedMaterial();
+	return RpgAssetStream::LoadFromFile<RpgMaterial>(path, LoadedMaterialData, RegisteredAssetHashes, RegisteredAssetInfos);
 }
 
 

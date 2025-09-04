@@ -191,12 +191,15 @@ typedef RpgSharedPtr<class RpgMaterial> RpgSharedMaterial;
 
 class RpgMaterial : public RpgAssetInterface
 {
+	RPG_ASSET_FILE(RpgAssetFileType::MATERIAL, 1)
+
 public:
+	RpgMaterial() noexcept;
 	RpgMaterial(const RpgName& in_Name, const RpgRenderPipelineState& in_RenderState, const RpgMaterialParameterLayout& in_ParameterLayout) noexcept;
 	RpgMaterial(const RpgName& in_Name, const RpgSharedMaterial& in_ParentMaterial) noexcept;
 	~RpgMaterial() noexcept;
 
-	virtual uint32_t CalculateDataSizeBytes() const noexcept override;
+	virtual uint32_t CalculateAssetDataSizeBytes() const noexcept override;
 	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
 	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
 

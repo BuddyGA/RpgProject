@@ -20,7 +20,7 @@ void RpgShadowViewport_PointLight::PreRender(RpgRenderFrameContext& frameContext
 
 	if (!depthTexture)
 	{
-		depthTexture = RpgTextureDepthCube::s_CreateShared(RpgName::Format("TEXDC_SdwVprt_PL_%i", lightId), RpgTextureFormat::TEX_DS_16, shadowTextureDimension, shadowTextureDimension);
+		depthTexture = RpgPointer::MakeShared<RpgTextureDepthCube>(RpgName::Format("texdc_shdw_vprt_pl_%i", lightId), RpgTextureFormat::TEX_DS_16, shadowTextureDimension, shadowTextureDimension);
 	}
 
 	depthTexture->Resize(shadowTextureDimension, shadowTextureDimension);

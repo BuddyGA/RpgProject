@@ -53,7 +53,7 @@ RpgFont::RpgFont(const RpgName& in_Name, const RpgString& ttfFilePath, float in_
 	Metric.Descent = static_cast<float>(tempDescent) * Metric.ScalePx;
 	Metric.LineSpace = (Metric.Ascent - Metric.Descent) + static_cast<float>(tempLineGap) * Metric.ScalePx;
 
-	Texture = RpgTexture2D::s_CreateShared2D(RpgName::Format("TEX2D_%s", *Name), RpgTextureFormat::TEX_2D_R, textureDimension.X, textureDimension.Y, 1);
+	Texture = RpgPointer::MakeShared<RpgTexture2D>(RpgName::Format("tex2d_%s", *Name), RpgTextureFormat::TEX_2D_R, textureDimension.X, textureDimension.Y, 1);
 	{
 		RpgTexture2D::FMipData mipData;
 		uint8_t* pixelData = Texture->MipWriteLock(0, mipData);

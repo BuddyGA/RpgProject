@@ -2,6 +2,12 @@
 
 
 
+RpgMesh::RpgMesh() noexcept
+{
+	Flags = FLAG_None;
+}
+
+
 RpgMesh::RpgMesh(const RpgName& name) noexcept
 {
 	Name = name;
@@ -14,7 +20,7 @@ RpgMesh::RpgMesh(const RpgName& name) noexcept
 }
 
 
-uint32_t RpgMesh::CalculateDataSizeBytes() const noexcept
+uint32_t RpgMesh::CalculateAssetDataSizeBytes() const noexcept
 {
 	// name
 	uint32_t sizeBytes = sizeof(RpgName);
@@ -192,10 +198,4 @@ void RpgMesh::UpdateBound() noexcept
 		Bound.Min = RpgVector3::Min(Bound.Min, vec);
 		Bound.Max = RpgVector3::Max(Bound.Max, vec);
 	}
-}
-
-
-RpgSharedMesh RpgMesh::s_CreateShared(const RpgName& name) noexcept
-{
-	return RpgSharedMesh(new RpgMesh(name));
 }

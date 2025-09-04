@@ -478,7 +478,7 @@ void RpgAssetTask_ImportModel::ExtractMeshesFromNode(const aiScene* assimpScene,
 
 		for (uint32_t m = 0; m < assimpNode->mNumMeshes; ++m)
 		{
-			RpgSharedMesh meshModel = RpgMesh::s_CreateShared(RpgName::Format("%s_mesh%i_lod0", *model.Name, m));
+			RpgSharedMesh meshModel = RpgPointer::MakeShared<RpgMesh>(RpgName::Format("%s_mesh%i_lod0", *model.Name, m));
 
 			const uint32_t meshIndex = assimpNode->mMeshes[m];
 			const aiMesh* assimpMesh = assimpScene->mMeshes[meshIndex];

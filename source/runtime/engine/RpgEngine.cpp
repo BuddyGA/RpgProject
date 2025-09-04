@@ -289,7 +289,7 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 			MainRenderer->RegisterWorld(MainWorld);
 
 			// Setup renderer default final texture
-			MainRenderer->SetFinalTexture(frameIndex, SceneViewport.GetTextureRenderTarget(frameIndex));
+			MainRenderer->SetFinalTexture(frameIndex, SceneViewport.GetTextureRenderTarget(frameIndex).Cast<RpgTexture2D>());
 
 			// Dispatch render
 			MainWorld->DispatchRender(frameIndex, MainRenderer.Get());

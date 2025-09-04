@@ -224,6 +224,11 @@ public:
 		return Bytes.GetCount();
 	}
 
+	inline size_t GetOffset() const noexcept
+	{
+		return Offset;
+	}
+
 
 private:
 	RpgArray<uint8_t> Bytes;
