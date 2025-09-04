@@ -75,7 +75,7 @@ namespace RpgAssimp
 			BoneInverseBindPoseTransforms.Clear(bFreeMemory);
 		}
 
-		[[nodiscard]] inline int GetBoneIndex(const RpgName& boneName) const noexcept
+		inline int GetBoneIndex(const RpgName& boneName) const noexcept
 		{
 			const int index = BoneNames.FindIndexByValue(boneName);
 			return (index == RPG_INDEX_INVALID) ? RPG_SKELETON_BONE_INDEX_INVALID : index;

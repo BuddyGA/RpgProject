@@ -1,6 +1,6 @@
 #include "RpgAssetManager.h"
+#include "RpgAssetStream.h"
 #include "core/RpgConsoleSystem.h"
-#include "core/RpgStream.h"
 
 
 
@@ -19,21 +19,29 @@ namespace RpgAssetStream
 			return RpgString();
 		}
 
+		RpgAssetStreamWriter writer;
+
+		// header
 		RpgAssetFileHeader header;
 		header.Magix = RPG_ASSET_FILE_MAGIX;
 		header.Type = static_cast<uint16_t>(TAsset::FILE_TYPE);
 		header.Version = TAsset::FILE_VERSION;
-		header.SizeBytes = asset->CalculateAssetDataSizeBytes();
-
-		RpgBinaryStreamWriter writer;
+		header.DataSizeBytes = asset->AssetStreamDataSizeBytes(writer);
 		writer.Write(header);
-		asset->StreamWrite(writer);
+
+		// data
+		asset->AssetStreamWrite(writer);
+
+		// eof
 		writer.Write(RPG_ASSET_FILE_MAGIX);
 
-		const char* name = *asset->GetName();
-		const RpgString filePath = RpgString::Format("%s%s/%s.rpga", *RpgFileSystem::GetAssetDirPath(), directory, name);
+		const RpgString dirPath = RpgString::Format("%s%s/", *RpgFileSystem::GetAssetDirPath(), directory);
+		RpgFileSystem::CreateFolder(dirPath);
 
-		if (!RpgFileSystem::WriteToFile(filePath, writer.GetByteData(), writer.GetByteSize()))
+		const char* name = *asset->GetName();
+		const RpgString filePath = RpgString::Format("%s%s.rpga", *dirPath, name);
+
+		if (!RpgFileSystem::WriteToFile(filePath, writer.GetByteArrayData(), writer.GetByteArraySize()))
 		{
 			RPG_CONSOLE_Error(RpgLogAsset, "Fail to save asset (%s) to file (%s)", name, *filePath);
 			return RpgString();
@@ -80,18 +88,20 @@ namespace RpgAssetStream
 			return RpgSharedPtr<TAsset>();
 		}
 
-		RpgBinaryStreamReader reader(data);
+		RpgAssetStreamReader reader(data);
 
+		// header
 		RpgAssetFileHeader header;
 		reader.Read(header);
 		RPG_Check(header.Magix == RPG_ASSET_FILE_MAGIX);
 		RPG_Check(header.Type == static_cast<uint16_t>(TAsset::FILE_TYPE));
 		RPG_Check(header.Version == TAsset::FILE_VERSION);
 
+		// data
 		RpgSharedPtr<TAsset> asset = RpgPointer::MakeShared<TAsset>();
-		asset->StreamRead(reader);
-		RPG_Check(header.SizeBytes == asset->CalculateAssetDataSizeBytes());
+		asset->AssetStreamRead(reader);
 
+		// eof
 		int eof = 0;
 		reader.Read(eof);
 		RPG_Check(eof == RPG_ASSET_FILE_MAGIX);
@@ -109,6 +119,33 @@ namespace RpgAssetStream
 
 RpgAssetManager::RpgAssetManager() noexcept
 {
+}
+
+
+void RpgAssetManager::Initialize() noexcept
+{
+	RPG_CONSOLE_Log(RpgLogAsset, "Initialize asset manager");
+
+
+#ifndef RPG_BUILD_SHIPPING
+
+	RpgFilePath assetDirPath = RpgFileSystem::GetAssetDirPath();
+	RpgFileSystem::CreateFolder(assetDirPath);
+	RpgFileSystem::CreateFolder(assetDirPath + "engine/");
+	RpgFileSystem::CreateFolder(assetDirPath + "game/");
+
+	SaveTexture(RpgTexture2D::s_GetDefault_White(), "engine/texture");
+
+	for (int i = 0; i < RpgMaterialDefault::MAX_COUNT; ++i)
+	{
+		const RpgSharedMaterial& material = RpgMaterial::s_GetDefault(static_cast<RpgMaterialDefault::EType>(i));
+		SaveMaterial(material, "engine/material");
+	}
+
+	ScanAssetFiles();
+
+#endif // !RPG_BUILD_SHIPPING
+
 }
 
 
@@ -164,12 +201,6 @@ bool RpgAssetManager::IsValidAssetFile(const RpgFilePath& filePath, RpgAssetInfo
 
 void RpgAssetManager::ScanAssetFiles() noexcept
 {
-	// Add engine asset files
-#ifndef RPG_BUILD_SHIPPING
-	SaveTexture(RpgTexture2D::s_GetDefault_White());
-#endif // !RPG_BUILD_SHIPPING
-
-
 	RPG_CONSOLE_Log(RpgLogAsset, "Scanning asset files...");
 
 	RpgArray<RpgFilePath> filePaths;
@@ -184,9 +215,9 @@ void RpgAssetManager::ScanAssetFiles() noexcept
 
 
 
-void RpgAssetManager::SaveMesh(const RpgSharedMesh& mesh) noexcept
+void RpgAssetManager::SaveMesh(const RpgSharedMesh& mesh, const char* directory) noexcept
 {
-	const RpgString filePath = RpgAssetStream::SaveToFile<RpgMesh>(mesh, "mesh");
+	const RpgString filePath = RpgAssetStream::SaveToFile<RpgMesh>(mesh, directory);
 	RPG_Check(!filePath.IsEmpty());
 
 	uint64_t assetHash = 0;
@@ -202,9 +233,9 @@ RpgSharedMesh RpgAssetManager::LoadMesh(const RpgString& path) noexcept
 }
 
 
-void RpgAssetManager::SaveTexture(const RpgSharedTexture2D& texture) noexcept
+void RpgAssetManager::SaveTexture(const RpgSharedTexture2D& texture, const char* directory) noexcept
 {
-	const RpgString filePath = RpgAssetStream::SaveToFile<RpgTexture2D>(texture, "texture");
+	const RpgString filePath = RpgAssetStream::SaveToFile<RpgTexture2D>(texture, directory);
 	RPG_Check(!filePath.IsEmpty());
 
 	uint64_t assetHash = 0;
@@ -220,9 +251,9 @@ RpgSharedTexture2D RpgAssetManager::LoadTexture(const RpgString& path) noexcept
 }
 
 
-void RpgAssetManager::SaveMaterial(const RpgSharedMaterial& material) noexcept
+void RpgAssetManager::SaveMaterial(const RpgSharedMaterial& material, const char* directory) noexcept
 {
-	const RpgString filePath = RpgAssetStream::SaveToFile<RpgMaterial>(material, "material");
+	const RpgString filePath = RpgAssetStream::SaveToFile<RpgMaterial>(material, directory);
 	RPG_Check(!filePath.IsEmpty());
 
 	uint64_t assetHash = 0;

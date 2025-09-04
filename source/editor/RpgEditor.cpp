@@ -81,7 +81,7 @@ void RpgEditor::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 						for (const auto& mdl : models)
 						{
 							RPG_Check(mdl->GetMeshCount() == 1);
-							g_AssetManager->SaveMesh(mdl->GetMeshLod(0, 0));
+							g_AssetManager->SaveMesh(mdl->GetMeshLod(0, 0), "game/mesh");
 						}
 					}
 					else if (RpgAssetFileImage::IsFileSupported(sourceFilePath))

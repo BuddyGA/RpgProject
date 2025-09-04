@@ -316,6 +316,27 @@ const RpgString& RpgFileSystem::GetAssetRawDirPath() noexcept
 }
 
 
+void RpgFileSystem::CreateFolder(const RpgFilePath& folderPath) noexcept
+{
+	const int err = SHCreateDirectoryExA(NULL, *folderPath, NULL);
+	
+	if (err == ERROR_BAD_PATHNAME)
+	{
+		RPG_LogError(RpgLogSystem, "Create folder error: Bad path!");
+	}
+	else if (err == ERROR_FILENAME_EXCED_RANGE)
+	{
+		RPG_LogError(RpgLogSystem, "Create folder error: Exceed range!");
+	}
+	else if (err == ERROR_PATH_NOT_FOUND)
+	{
+		RPG_LogError(RpgLogSystem, "Create folder error: Path not found!");
+	}
+
+	RPG_Check(err == ERROR_SUCCESS || err == ERROR_FILE_EXISTS || err == ERROR_ALREADY_EXISTS);
+}
+
+
 void RpgFileSystem::IterateFolders(RpgArray<RpgFilePath>& out_FolderPaths, const RpgString& folderPath, bool bIncludeSubfolder) noexcept
 {
 	const RpgString searchPath = RpgString::Format("%s*", *folderPath);

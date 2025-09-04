@@ -291,6 +291,9 @@
     <ClCompile Include="source\runtime\render\world\RpgRenderComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\runtime\asset\RpgAssetStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\runtime\core\dsa\RpgAlgorithm.h">
@@ -567,6 +570,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\test\engine\RpgTestEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\asset\RpgAssetStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

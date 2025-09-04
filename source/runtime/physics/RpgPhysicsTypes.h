@@ -31,15 +31,18 @@ namespace RpgPhysicsCollision
 		SHAPE_MAX_COUNT
 	};
 
-	constexpr const char* SHAPE_NAMES[SHAPE_MAX_COUNT] =
+	constexpr const char* SHAPE_NAMES[] =
 	{
 		"<None>",
 		"Sphere",
 		"Box",
 		"Capsule",
-		"Mesh Convex",
-		"Mesh Triangle"
+		"MeshConvex",
+		"MeshTriangle"
 	};
+
+	static_assert(sizeof(SHAPE_NAMES) / sizeof(const char*) == SHAPE_MAX_COUNT, "Not equals!");
+
 	
 
 	enum EChannel : uint8_t

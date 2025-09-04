@@ -195,6 +195,7 @@ namespace RpgFileSystem
 	extern const RpgString& GetAssetDirPath() noexcept;
 	extern const RpgString& GetAssetRawDirPath() noexcept;
 
+	extern void CreateFolder(const RpgFilePath& folderPath) noexcept;
 	extern void IterateFolders(RpgArray<RpgFilePath>& out_FolderPaths, const RpgString& folderPath, bool bIncludeSubfolder) noexcept;
 	extern void IterateFiles(RpgArray<RpgFilePath>& out_FilePaths, const RpgString& folderPath, bool bIncludeSubfolder, const char* filterExt = "") noexcept;
 	extern bool ReadFromFile(const RpgString& filePath, RpgArray<uint8_t>& out_Data) noexcept;

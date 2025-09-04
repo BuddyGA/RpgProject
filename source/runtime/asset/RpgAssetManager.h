@@ -1,9 +1,11 @@
 #pragma once
 
 #include "core/RpgFilePath.h"
-#include "render/RpgModel.h"
+#include "render/RpgMesh.h"
+#include "render/RpgMaterial.h"
 #include "thirdparty/xxhash/xxhash.h"
 #include "RpgAssetTypes.h"
+
 
 
 
@@ -63,7 +65,7 @@ public:
 	inline uint64_t GetHashByShared(const RpgSharedPtr<T>& ref) const noexcept
 	{
 		const int index = Shareds.FindIndexByValue(ref);
-		return Hashes[index];
+		return index == RPG_INDEX_INVALID ? 0 : Hashes[index];
 	}
 
 	inline const RpgSharedPtr<T>& GetSharedAtIndex(int index) const noexcept
@@ -90,9 +92,11 @@ class RpgAssetManager
 public:
 	RpgAssetManager() noexcept;
 
+	// Initialize asset manager
+	void Initialize() noexcept;
+
 	// Update asset loading and try to unload if no other referencing it
 	void Update() noexcept;
-
 
 	// Check if file is a valid asset file
 	// @param filePath - Absolute path to a file
@@ -100,14 +104,13 @@ public:
 	// @return TRUE if file is valid
 	bool IsValidAssetFile(const RpgFilePath& filePath, RpgAssetInfo* optOut_AssetInfo = nullptr) noexcept;
 
-
 	// Scan all asset files in filesystem asset directory and try register them
 	void ScanAssetFiles() noexcept;
 
 
 	// Save mesh to asset file
 	// @param mesh - Mesh shared ptr
-	void SaveMesh(const RpgSharedMesh& mesh) noexcept;
+	void SaveMesh(const RpgSharedMesh& mesh, const char* directory) noexcept;
 
 	// Load mesh from asset registry
 	// @param path - Path to mesh asset (relative to asset directory)
@@ -117,9 +120,13 @@ public:
 	// Get mesh asset path
 	// @param mesh - Mesh shared ptr
 	// @return Mesh asset path in registry
-	inline const RpgString& GetMeshAssetPath(const RpgSharedMesh& mesh) const noexcept
+	inline RpgString GetMeshAssetPath(const RpgSharedMesh& mesh) const noexcept
 	{
 		const uint64_t hash = LoadedMeshData.GetHashByShared(mesh);
+		if (hash == 0)
+		{
+			return RpgString();
+		}
 
 		const RpgAssetInfo* info = GetAssetInfoByHash(hash);
 		RPG_Check(info && info->Type == RpgAssetFileType::MESH);
@@ -130,7 +137,7 @@ public:
 
 	// Save texture to asset file
 	// @param texture - Texture shared ptr
-	void SaveTexture(const RpgSharedTexture2D& texture) noexcept;
+	void SaveTexture(const RpgSharedTexture2D& texture, const char* directory) noexcept;
 
 	// Load texture from asset registry
 	// @param path - Path to texture asset (relative to asset directory)
@@ -140,9 +147,13 @@ public:
 	// Get texture asset path
 	// @param texture - Texture shared ptr
 	// @return Texture asset path in registry
-	inline const RpgString& GetTextureAssetPath(const RpgSharedTexture2D& texture) const noexcept
+	inline RpgString GetTextureAssetPath(const RpgSharedTexture2D& texture) const noexcept
 	{
 		const uint64_t hash = LoadedTextureData.GetHashByShared(texture);
+		if (hash == 0)
+		{
+			return RpgString();
+		}
 
 		const RpgAssetInfo* info = GetAssetInfoByHash(hash);
 		RPG_Check(info && info->Type == RpgAssetFileType::TEXTURE);
@@ -153,7 +164,7 @@ public:
 
 	// Save material to asset file
 	// @param material - Material shared ptr
-	void SaveMaterial(const RpgSharedMaterial& material) noexcept;
+	void SaveMaterial(const RpgSharedMaterial& material, const char* directory) noexcept;
 
 	// Load material from asset registry
 	// @param path - Path to material asset (relative to asset directory)
@@ -163,9 +174,13 @@ public:
 	// Get material asset path
 	// @param material - Material shared ptr
 	// @return Material asset path in registry
-	inline const RpgString& GetMaterialAssetPath(const RpgSharedMaterial& material) const noexcept
+	inline RpgString GetMaterialAssetPath(const RpgSharedMaterial& material) const noexcept
 	{
 		const uint64_t hash = LoadedMaterialData.GetHashByShared(material);
+		if (hash == 0)
+		{
+			return RpgString();
+		}
 
 		const RpgAssetInfo* info = GetAssetInfoByHash(hash);
 		RPG_Check(info && info->Type == RpgAssetFileType::MATERIAL);

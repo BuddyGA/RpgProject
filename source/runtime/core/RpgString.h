@@ -393,6 +393,7 @@ inline uint64_t Rpg_GetHash(const RpgString& value) noexcept
 
 
 
+
 #define RPG_NAME_MAX_COUNT			48
 
 class alignas(16) RpgName

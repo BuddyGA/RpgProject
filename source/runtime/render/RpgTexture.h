@@ -51,9 +51,9 @@ public:
 	RpgTexture2D(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height, uint8_t mipCount) noexcept;
 	~RpgTexture2D() noexcept;
 
-	virtual uint32_t CalculateAssetDataSizeBytes() const noexcept override;
-	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
-	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
+	virtual uint32_t AssetStreamDataSizeBytes(const RpgAssetStreamWriter& writer) const noexcept override;
+	virtual void AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept override;
+	virtual void AssetStreamRead(RpgAssetStreamReader& reader) noexcept override;
 
 
 	inline const RpgName& GetName() const noexcept
@@ -243,7 +243,6 @@ protected:
 public:
 	static void s_CreateDefaults() noexcept;
 	static void s_DestroyDefaults() noexcept;
-
 	static const RpgSharedTexture2D& s_GetDefault_White() noexcept;
 
 };

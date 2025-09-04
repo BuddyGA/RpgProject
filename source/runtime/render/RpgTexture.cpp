@@ -1,5 +1,6 @@
 #include "RpgTexture.h"
 #include "core/RpgMath.h"
+#include "asset/RpgAssetStream.h"
 
 
 RPG_LOG_DECLARE_CATEGORY_STATIC(RpgLogTexture, VERBOSITY_DEBUG)
@@ -74,28 +75,21 @@ RpgTexture2D::~RpgTexture2D() noexcept
 }
 
 
-uint32_t RpgTexture2D::CalculateAssetDataSizeBytes() const noexcept
+uint32_t RpgTexture2D::AssetStreamDataSizeBytes(const RpgAssetStreamWriter& writer) const noexcept
 {
-	// name
-	uint32_t sizeBytes = sizeof(RpgName);
-	// flags
-	sizeBytes += sizeof(uint16_t);
-	// format
-	sizeBytes += sizeof(RpgTextureFormat::EType);
-	// width
-	sizeBytes += sizeof(uint16_t);
-	// height
-	sizeBytes += sizeof(uint16_t);
-	// mip count
-	sizeBytes += sizeof(uint8_t);
-	// pixels
-	sizeBytes += static_cast<uint32_t>(PixelSizeBytes);
+	uint32_t sizeBytes = writer.GetSizeBytes(Name);
+	sizeBytes += writer.GetSizeBytes(Flags);
+	sizeBytes += writer.GetSizeBytes(Format);
+	sizeBytes += writer.GetSizeBytes(Width);
+	sizeBytes += writer.GetSizeBytes(Height);
+	sizeBytes += writer.GetSizeBytes(MipCount);
+	sizeBytes += writer.GetSizeBytes(PixelSizeBytes);
 
 	return sizeBytes;
 }
 
 
-void RpgTexture2D::StreamWrite(RpgStreamWriter& writer) const noexcept
+void RpgTexture2D::AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept
 {
 	writer.Write(Name);
 
@@ -112,7 +106,7 @@ void RpgTexture2D::StreamWrite(RpgStreamWriter& writer) const noexcept
 }
 
 
-void RpgTexture2D::StreamRead(RpgStreamReader& reader) noexcept
+void RpgTexture2D::AssetStreamRead(RpgAssetStreamReader& reader) noexcept
 {
 	reader.Read(Name);
 	reader.Read(Flags);
@@ -123,10 +117,7 @@ void RpgTexture2D::StreamRead(RpgStreamReader& reader) noexcept
 	reader.Read(PixelSizeBytes);
 
 	InitializeMips();
-
 	reader.ReadData(PixelData, static_cast<uint32_t>(PixelSizeBytes));
-
-	RPG_Check(GpuState == D3D12_RESOURCE_STATE_COMMON);
 
 	Flags |= FLAG_Runtime_Dirty;
 }

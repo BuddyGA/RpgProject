@@ -16,6 +16,14 @@ public:
 
 
 	template<typename T>
+	inline uint32_t GetSizeBytes(const T& data) const noexcept
+	{
+		static_assert(std::is_trivially_copyable<T>::value, "RpgStreamWriter::GetSizeBytes type of <T> must trivially copyable!");
+		return sizeof(T);
+	}
+
+
+	template<typename T>
 	inline void Write(const T& rhs) noexcept
 	{
 		static_assert(std::is_trivially_copyable<T>::value, "RpgStreamWriter::Write type of <T> must trivially copyable!");
@@ -24,35 +32,74 @@ public:
 
 
 	template<typename T, int N>
-	inline void WriteArray(const RpgArray<T, N>& dataArray) noexcept
+	inline uint32_t GetSizeBytes(const RpgArray<T, N>& data) const noexcept
 	{
-		int count = dataArray.GetCount();
-		WriteData(&count, sizeof(int));
+		// count
+		uint32_t sizeBytes = sizeof(int);
+
+		// data
+		for (int i = 0; i < data.GetCount(); ++i)
+		{
+			sizeBytes += GetSizeBytes(data[i]);
+		}
+
+		return sizeBytes;
+	}
+
+	template<typename T, int N>
+	inline void Write(const RpgArray<T, N>& dataArray) noexcept
+	{
+		Write(dataArray.GetCount());
 
 		for (int i = 0; i < dataArray.GetCount(); ++i)
 		{
-			WriteData(&dataArray[i], sizeof(T));
+			Write(dataArray[i]);
 		}
 	}
 
 
 	template<typename T, int N>
-	inline void WriteArray(const RpgArrayInline<T, N>& dataArray) noexcept
+	inline uint32_t GetSizeBytes(const RpgArrayInline<T, N>& data) const noexcept
 	{
-		int count = dataArray.GetCount();
-		WriteData(&count, sizeof(int));
+		// count
+		uint32_t sizeBytes = sizeof(int);
+
+		// data
+		for (int i = 0; i < data.GetCount(); ++i)
+		{
+			sizeBytes += GetSizeBytes(data[i]);
+		}
+
+		return sizeBytes;
+	}
+
+	template<typename T, int N>
+	inline void Write(const RpgArrayInline<T, N>& dataArray) noexcept
+	{
+		Write(dataArray.GetCount());
 
 		for (int i = 0; i < dataArray.GetCount(); ++i)
 		{
-			WriteData(&dataArray[i], sizeof(T));
+			Write(dataArray[i]);
 		}
 	}
 
 
-	inline void WriteString(const RpgString& str) noexcept
+	inline uint32_t GetSizeBytes(const RpgString& data) const noexcept
+	{
+		// length
+		uint32_t sizeBytes = sizeof(int);
+		
+		// data
+		sizeBytes += data.GetLength();
+
+		return sizeBytes;
+	}
+
+	inline void Write(const RpgString& str) noexcept
 	{
 		int length = str.GetLength();
-		WriteData(&length, sizeof(int));
+		Write(length);
 
 		if (length > 0)
 		{
@@ -84,10 +131,10 @@ public:
 
 
 	template<typename T, int N>
-	inline void ReadArray(RpgArray<T, N>& dataArray) noexcept
+	inline void Read(RpgArray<T, N>& dataArray) noexcept
 	{
 		int count = 0;
-		ReadData(&count, sizeof(int));
+		Read(count);
 
 		if (count > 0)
 		{
@@ -96,17 +143,17 @@ public:
 
 			for (int i = 0; i < count; ++i)
 			{
-				ReadData(&dataArray[index + i], sizeof(T));
+				Read(dataArray[index + i]);
 			}
 		}
 	}
 
 
 	template<typename T, int N>
-	inline void ReadArray(RpgArrayInline<T, N>& dataArray) noexcept
+	inline void Read(RpgArrayInline<T, N>& dataArray) noexcept
 	{
 		int count = 0;
-		ReadData(&count, sizeof(int));
+		Read(count);
 
 		if (count > 0)
 		{
@@ -115,27 +162,22 @@ public:
 
 			for (int i = 0; i < count; ++i)
 			{
-				ReadData(&dataArray[index + i], sizeof(T));
+				Read(dataArray[index + i]);
 			}
 		}
 	}
 
 
-	inline void ReadString(RpgString& str) noexcept
+	inline void Read(RpgString& str) noexcept
 	{
 		int length = 0;
-		ReadData(&length, sizeof(int));
+		Read(length);
 
 		if (length > 0)
 		{
 			RPG_Check(length < RPG_STRING_FORMAT_BUFFER_COUNT);
-
-			char temp[RPG_STRING_FORMAT_BUFFER_COUNT];
-			RpgPlatformMemory::MemZero(temp, RPG_STRING_FORMAT_BUFFER_COUNT);
-			ReadData(temp, length);
-			temp[length] = '\0';
-
-			str = temp;
+			str.Resize(length);
+			ReadData(str.GetData(), length);
 		}
 	}
 
@@ -166,12 +208,12 @@ public:
 	}
 
 
-	inline const uint8_t* GetByteData() const noexcept
+	inline const uint8_t* GetByteArrayData() const noexcept
 	{
 		return Bytes.GetData();
 	}
 
-	inline size_t GetByteSize() const noexcept
+	inline size_t GetByteArraySize() const noexcept
 	{
 		return Bytes.GetCount();
 	}
@@ -186,10 +228,9 @@ private:
 
 class RpgBinaryStreamReader : public RpgStreamReader
 {
-
 public:
-	RpgBinaryStreamReader(RpgArray<uint8_t>& inBytes) noexcept
-		: Bytes(std::move(inBytes))
+	RpgBinaryStreamReader(RpgArray<uint8_t>& in_Bytes) noexcept
+		: Bytes(std::move(in_Bytes))
 		, Offset(0)
 	{
 	}
@@ -214,12 +255,12 @@ public:
 	}
 
 
-	inline const uint8_t* GetByteData() const noexcept
+	inline const uint8_t* GetByteArrayData() const noexcept
 	{
 		return Bytes.GetData();
 	}
 
-	inline size_t GetByteSize() const noexcept
+	inline size_t GetByteArraySize() const noexcept
 	{
 		return Bytes.GetCount();
 	}

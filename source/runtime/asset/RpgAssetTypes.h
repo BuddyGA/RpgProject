@@ -16,6 +16,11 @@ RPG_LOG_DECLARE_CATEGORY_EXTERN(RpgLogAsset)
 
 
 
+class RpgAssetStreamWriter;
+class RpgAssetStreamReader;
+
+
+
 enum class RpgAssetFileType : uint16_t
 {
 	NONE = 0,
@@ -25,20 +30,23 @@ enum class RpgAssetFileType : uint16_t
 	FONT,
 	MATERIAL,
 	AUDIO,
+	LEVEL,
 
 	MAX_COUNT
 };
 
-
-constexpr const char* RPG_ASSET_FILE_TYPE_NAMES[static_cast<uint16_t>(RpgAssetFileType::MAX_COUNT)] =
+constexpr const char* RPG_ASSET_FILE_TYPE_NAMES[] =
 {
 	"None",
 	"Mesh",
 	"Texture",
 	"Font",
 	"Material",
-	"Audio"
+	"Audio",
+	"Level"
 };
+
+static_assert(sizeof(RPG_ASSET_FILE_TYPE_NAMES) / sizeof(const char*) == static_cast<uint16_t>(RpgAssetFileType::MAX_COUNT), "Not equals!");
 
 
 
@@ -47,7 +55,7 @@ struct RpgAssetFileHeader
 	uint32_t Magix{ 0 };
 	uint16_t Type{ 0 };
 	uint16_t Version{ 0 };
-	uint32_t SizeBytes{ 0 };
+	uint32_t DataSizeBytes{ 0 };
 };
 static_assert(std::is_trivially_copyable<RpgAssetFileHeader>::value, "RpgAssetFileHeader must be POD!");
 
@@ -141,13 +149,11 @@ class RpgAssetInterface
 public:
 	RpgAssetInterface() noexcept = default;
 	virtual ~RpgAssetInterface() noexcept = default;
-	virtual uint32_t CalculateAssetDataSizeBytes() const noexcept = 0;
-	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept = 0;
-	virtual void StreamRead(RpgStreamReader& reader) noexcept = 0;
+	virtual uint32_t AssetStreamDataSizeBytes(const RpgAssetStreamWriter& writer) const noexcept = 0;
+	virtual void AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept = 0;
+	virtual void AssetStreamRead(RpgAssetStreamReader& reader) noexcept = 0;
 
 };
-
-typedef RpgSharedPtr<RpgAssetInterface> RpgSharedAsset;
 
 
 

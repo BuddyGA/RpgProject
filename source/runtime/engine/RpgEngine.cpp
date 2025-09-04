@@ -61,7 +61,7 @@ void RpgEngine::Initialize() noexcept
 
 	// asset manager
 	g_AssetManager = new RpgAssetManager();
-	g_AssetManager->ScanAssetFiles();
+	g_AssetManager->Initialize();
 
 
 	// main world

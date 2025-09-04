@@ -1,6 +1,6 @@
 #include "RpgMaterial.h"
 #include "shader/RpgShaderTypes.h"
-#include "asset/RpgAssetManager.h"
+#include "asset/RpgAssetStream.h"
 
 
 RPG_LOG_DECLARE_CATEGORY_STATIC(RpgLogMaterial, VERBOSITY_DEBUG)
@@ -44,84 +44,61 @@ RpgMaterial::~RpgMaterial() noexcept
 }
 
 
-uint32_t RpgMaterial::CalculateAssetDataSizeBytes() const noexcept
+uint32_t RpgMaterial::AssetStreamDataSizeBytes(const RpgAssetStreamWriter& writer) const noexcept
 {
-	RPG_NotImplementedYet();
-	return 0;
+	uint32_t sizeBytes = writer.GetSizeBytes(Name);
+	sizeBytes += writer.GetSizeBytes(Flags);
+	sizeBytes += writer.GetMaterialSizeBytes(ParentMaterial);
+	sizeBytes += writer.GetSizeBytes(RenderState);
+	
+	const RpgMaterialParameterTextureArray& paramTextures = ParameterLayout.GetTextures();
+	for (int i = 0; i < paramTextures.GetCount(); ++i)
+	{
+		sizeBytes += writer.GetTextureSizeBytes(paramTextures[i]);
+	}
+
+	sizeBytes += writer.GetSizeBytes(ParameterLayout.GetVectors());
+	sizeBytes += writer.GetSizeBytes(ParameterLayout.GetScalars());
+
+	return sizeBytes;
 }
 
 
-void RpgMaterial::StreamWrite(RpgStreamWriter& writer) const noexcept
+void RpgMaterial::AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept
 {
 	writer.Write(Name);
 
 	const uint16_t savedFlags = (Flags & ~RUNTIME_FLAGS);
 	writer.Write(savedFlags);
-
-	if (savedFlags & FLAG_Instance)
-	{
-		RPG_Check(ParentMaterial);
-		
-		const RpgString& materialAssetPath = g_AssetManager->GetMaterialAssetPath(ParentMaterial);
-		writer.WriteString(materialAssetPath);
-	}
-
+	writer.WriteMaterial(ParentMaterial);
 	writer.Write(RenderState);
-
 
 	const RpgMaterialParameterTextureArray& paramTextures = ParameterLayout.GetTextures();
 	for (int i = 0; i < paramTextures.GetCount(); ++i)
 	{
-		const RpgSharedTexture2D& value = paramTextures[i];
-		if (!value)
-		{
-			const RpgString empty;
-			writer.WriteString(empty);
-
-			continue;
-		}
-
-		const RpgString& textureAssetPath = g_AssetManager->GetTextureAssetPath(value);
-		writer.WriteString(textureAssetPath);
+		writer.WriteTexture(paramTextures[i]);
 	}
 
-	writer.WriteArray(ParameterLayout.GetVectors());
-	writer.WriteArray(ParameterLayout.GetScalars());
+	writer.Write(ParameterLayout.GetVectors());
+	writer.Write(ParameterLayout.GetScalars());
 }
 
 
-void RpgMaterial::StreamRead(RpgStreamReader& reader) noexcept
+void RpgMaterial::AssetStreamRead(RpgAssetStreamReader& reader) noexcept
 {
 	reader.Read(Name);
 	reader.Read(Flags);
-
-	if (Flags & FLAG_Instance)
-	{
-		RpgString materialAssetPath;
-		reader.ReadString(materialAssetPath);
-
-		ParentMaterial = g_AssetManager->LoadMaterial(materialAssetPath);
-	}
-
+	reader.ReadMaterial(ParentMaterial);
 	reader.Read(RenderState);
 
 	RpgMaterialParameterTextureArray& paramTextures = ParameterLayout.GetTextures();
 	for (int i = 0; i < paramTextures.GetCount(); ++i)
 	{
-		RpgString textureAssetPath;
-		reader.ReadString(textureAssetPath);
-
-		if (!textureAssetPath.IsEmpty())
-		{
-			paramTextures[i] = g_AssetManager->LoadTexture(textureAssetPath);
-		}
+		reader.ReadTexture(paramTextures[i]);
 	}
 
-	RpgMaterialParameterVectorArray& paramVectors = ParameterLayout.GetVectors();
-	reader.ReadArray(paramVectors);
-
-	RpgMaterialParameterScalarArray& paramScalars = ParameterLayout.GetScalars();
-	reader.ReadArray(paramScalars);
+	reader.Read(ParameterLayout.GetVectors());
+	reader.Read(ParameterLayout.GetScalars());
 }
 
 
@@ -281,6 +258,7 @@ void RpgMaterial::s_DestroyDefaults() noexcept
 {
 	DefaultMaterials.Clear(true);
 }
+
 
 const RpgSharedMaterial& RpgMaterial::s_GetDefault(RpgMaterialDefault::EType type) noexcept
 {

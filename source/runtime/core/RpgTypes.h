@@ -114,13 +114,13 @@ namespace RpgType
 
 
 
-[[nodiscard]] inline uint64_t Rpg_GetHash(int value) noexcept
+inline uint64_t Rpg_GetHash(int value) noexcept
 {
 	return static_cast<uint64_t>(value);
 }
 
 template<typename T>
-[[nodiscard]] inline uint64_t Rpg_GetHash(T* value) noexcept
+inline uint64_t Rpg_GetHash(T* value) noexcept
 {
 	return reinterpret_cast<uint64_t>(value);
 }

@@ -38,9 +38,9 @@ public:
 	RpgMesh() noexcept;
 	RpgMesh(const RpgName& name) noexcept;
 
-	virtual uint32_t CalculateAssetDataSizeBytes() const noexcept override;
-	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
-	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
+	virtual uint32_t AssetStreamDataSizeBytes(const RpgAssetStreamWriter& writer) const noexcept override;
+	virtual void AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept override;
+	virtual void AssetStreamRead(RpgAssetStreamReader& reader) noexcept override;
 
 
 	// Free memory and overwrite existing vertex data 

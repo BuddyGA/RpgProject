@@ -648,6 +648,7 @@ private:
 
 
 
+
 template<typename T, int CAPACITY = 2>
 class RpgArrayInline
 {

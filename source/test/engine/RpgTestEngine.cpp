@@ -49,7 +49,7 @@ static void TestLevel_AddCube(RpgWorld* world, const RpgTransform& transform) no
 	{
 		// Add render component
 		RpgRenderComponent_Mesh* meshComp = world->GameObject_AddComponent<RpgRenderComponent_Mesh>(box);
-		meshComp->Mesh = g_AssetManager->LoadMesh(RpgString("mesh/cube_x100_y100_z100"));
+		meshComp->Mesh = g_AssetManager->LoadMesh(RpgString("game/mesh/cube_x100_y100_z100"));
 		meshComp->Material = RpgMaterial::s_GetDefault(RpgMaterialDefault::MESH_PHONG);
 		meshComp->bIsVisible = true;
 	}

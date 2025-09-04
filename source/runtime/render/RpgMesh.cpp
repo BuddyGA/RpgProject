@@ -1,4 +1,5 @@
 #include "RpgMesh.h"
+#include "asset/RpgAssetStream.h"
 
 
 
@@ -20,51 +21,43 @@ RpgMesh::RpgMesh(const RpgName& name) noexcept
 }
 
 
-uint32_t RpgMesh::CalculateAssetDataSizeBytes() const noexcept
+uint32_t RpgMesh::AssetStreamDataSizeBytes(const RpgAssetStreamWriter& writer) const noexcept
 {
-	// name
-	uint32_t sizeBytes = sizeof(RpgName);
-	// flags
-	sizeBytes += sizeof(uint16_t);
-	// vertex position
-	sizeBytes += static_cast<uint32_t>(Positions.GetMemorySizeBytes_Allocated());
-	// vertex normal-tangent
-	sizeBytes += static_cast<uint32_t>(NormalTangents.GetMemorySizeBytes_Allocated());
-	// vertex texcoord
-	sizeBytes += static_cast<uint32_t>(TexCoords.GetMemorySizeBytes_Allocated());
-	// vertex skin
-	sizeBytes += static_cast<uint32_t>(Skins.GetMemorySizeBytes_Allocated());
-	// vertex index
-	sizeBytes += static_cast<uint32_t>(Indices.GetMemorySizeBytes_Allocated());
-	// bound
-	sizeBytes += sizeof(RpgBoundingAABB);
+	uint32_t sizeBytes = writer.GetSizeBytes(Name);
+	sizeBytes += writer.GetSizeBytes(Flags);
+	sizeBytes += writer.GetSizeBytes(Positions);
+	sizeBytes += writer.GetSizeBytes(NormalTangents);
+	sizeBytes += writer.GetSizeBytes(TexCoords);
+	sizeBytes += writer.GetSizeBytes(Skins);
+	sizeBytes += writer.GetSizeBytes(Indices);
+	sizeBytes += writer.GetSizeBytes(Bound);
 
 	return sizeBytes;
 }
 
 
-void RpgMesh::StreamWrite(RpgStreamWriter& writer) const noexcept
+void RpgMesh::AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept
 {
 	writer.Write(Name);
 	writer.Write(Flags);
-	writer.WriteArray(Positions);
-	writer.WriteArray(NormalTangents);
-	writer.WriteArray(TexCoords);
-	writer.WriteArray(Skins);
-	writer.WriteArray(Indices);
+	writer.Write(Positions);
+	writer.Write(NormalTangents);
+	writer.Write(TexCoords);
+	writer.Write(Skins);
+	writer.Write(Indices);
 	writer.Write(Bound);
 }
 
 
-void RpgMesh::StreamRead(RpgStreamReader& reader) noexcept
+void RpgMesh::AssetStreamRead(RpgAssetStreamReader& reader) noexcept
 {
 	reader.Read(Name);
 	reader.Read(Flags);
-	reader.ReadArray(Positions);
-	reader.ReadArray(NormalTangents);
-	reader.ReadArray(TexCoords);
-	reader.ReadArray(Skins);
-	reader.ReadArray(Indices);
+	reader.Read(Positions);
+	reader.Read(NormalTangents);
+	reader.Read(TexCoords);
+	reader.Read(Skins);
+	reader.Read(Indices);
 	reader.Read(Bound);
 }
 
