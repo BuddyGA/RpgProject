@@ -1,7 +1,6 @@
 #pragma once
 
-#include "core/RpgString.h"
-#include "core/RpgPointer.h"
+#include "asset/RpgAssetTypes.h"
 #include "RpgRenderTypes.h"
 
 
@@ -18,10 +17,8 @@
 
 typedef RpgSharedPtr<class RpgTexture2D> RpgSharedTexture2D;
 
-class RpgTexture2D
+class RpgTexture2D : public RpgAssetInterface
 {
-	RPG_NOCOPY(RpgTexture2D)
-
 public:
 	struct FMipData
 	{
@@ -37,6 +34,11 @@ public:
 public:
 	RpgTexture2D(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height, uint8_t mipCount, uint16_t flags) noexcept;
 	~RpgTexture2D() noexcept;
+
+
+	virtual uint32_t CalculateDataSizeBytes() const noexcept override;
+	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
+	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
 
 
 	inline const RpgName& GetName() const noexcept
@@ -59,9 +61,9 @@ public:
 		return MipCount;
 	}
 
-	inline size_t GetTotalSizeBytes() const noexcept
+	inline size_t GetPixelSizeBytes() const noexcept
 	{
-		return TotalSizeBytes;
+		return PixelSizeBytes;
 	}
 
 
@@ -103,7 +105,7 @@ public:
 
 		AcquireSRWLockExclusive(&MipLocks[mipLevel]);
 		out_MipData = MipDatas[mipLevel];
-		Flags |= FLAG_Dirty;
+		Flags |= FLAG_Runtime_Dirty;
 
 		return PixelData + out_MipData.Subresource.Offset;
 	}
@@ -119,7 +121,7 @@ public:
 
 	inline bool IsDirty() const noexcept
 	{
-		return (Flags & FLAG_Dirty);
+		return (Flags & FLAG_Runtime_Dirty);
 	}
 
 	inline bool IsRenderTarget() const noexcept
@@ -155,27 +157,27 @@ public:
 	inline void GPU_SetLoading() noexcept
 	{
 		RPG_Check(!IsRenderTarget() && !IsDepthStencil());
-		RPG_Check(Flags & FLAG_Dirty);
+		RPG_Check(Flags & FLAG_Runtime_Dirty);
 
-		Flags = (Flags & ~FLAG_GPU_Loaded) | FLAG_GPU_Loading;
+		Flags = (Flags & ~FLAG_Runtime_GPU_Loaded) | FLAG_Runtime_GPU_Loading;
 	}
 
 	inline bool GPU_IsLoading() const noexcept
 	{
-		return (Flags & FLAG_GPU_Loading);
+		return (Flags & FLAG_Runtime_GPU_Loading);
 	}
 
 	inline void GPU_SetLoaded() noexcept
 	{
 		RPG_Check(!IsRenderTarget() && !IsDepthStencil());
-		RPG_Check(Flags & FLAG_GPU_Loading);
+		RPG_Check(Flags & FLAG_Runtime_GPU_Loading);
 
-		Flags = (Flags & ~(FLAG_Dirty | FLAG_GPU_Loading)) | FLAG_GPU_Loaded;
+		Flags = (Flags & ~(FLAG_Runtime_Dirty | FLAG_Runtime_GPU_Loading)) | FLAG_Runtime_GPU_Loaded;
 	}
 
 	inline bool GPU_IsLoaded() const noexcept
 	{
-		return (Flags & FLAG_GPU_Loaded);
+		return (Flags & FLAG_Runtime_GPU_Loaded);
 	}
 
 
@@ -185,31 +187,40 @@ private:
 
 protected:
 	RpgName Name;
-	RpgTextureFormat::EType Format;
-	uint16_t Width;
-	uint16_t Height;
-	uint8_t MipCount;
-	size_t TotalSizeBytes;
-	RpgArrayInline<FMipData, RPG_TEXTURE_MAX_MIP> MipDatas;
-	mutable RpgArrayInline<SRWLOCK, RPG_TEXTURE_MAX_MIP> MipLocks;
-	ComPtr<D3D12MA::Allocation> PixelStagingBuffer;
-	uint8_t* PixelData;
 
 
 	enum EFlag : uint16_t
 	{
-		FLAG_None				= (0),
-		FLAG_Loading			= (1 << 0),
-		FLAG_Loaded				= (1 << 1),
-		FLAG_PendingDestroy		= (1 << 2),
-		FLAG_Dirty				= (1 << 3),
-		FLAG_IsRenderTarget		= (1 << 4),
-		FLAG_IsDepthStencil		= (1 << 5),
-		FLAG_GPU_Loading		= (1 << 6),
-		FLAG_GPU_Loaded			= (1 << 7),
+		FLAG_None						= (0),
+		FLAG_IsRenderTarget				= (1 << 0),
+		FLAG_IsDepthStencil				= (1 << 1),
+		FLAG_Runtime_Loading			= (1 << 2),
+		FLAG_Runtime_Loaded				= (1 << 3),
+		FLAG_Runtime_PendingDestroy		= (1 << 4),
+		FLAG_Runtime_Dirty				= (1 << 5),
+		FLAG_Runtime_GPU_Loading		= (1 << 6),
+		FLAG_Runtime_GPU_Loaded			= (1 << 7),
 	};
 	uint16_t Flags;
 
+	inline static constexpr uint16_t RUNTIME_FLAGS =
+		FLAG_Runtime_Loading |
+		FLAG_Runtime_Loaded |
+		FLAG_Runtime_PendingDestroy |
+		FLAG_Runtime_Dirty |
+		FLAG_Runtime_GPU_Loading |
+		FLAG_Runtime_GPU_Loaded;
+
+
+	RpgTextureFormat::EType Format;
+	uint16_t Width;
+	uint16_t Height;
+	uint8_t MipCount;
+	size_t PixelSizeBytes;
+	uint8_t* PixelData;
+	RpgArrayInline<FMipData, RPG_TEXTURE_MAX_MIP> MipDatas;
+	mutable RpgArrayInline<SRWLOCK, RPG_TEXTURE_MAX_MIP> MipLocks;
+	ComPtr<D3D12MA::Allocation> PixelStagingBuffer;
 	ComPtr<D3D12MA::Allocation> GpuAlloc;
 	D3D12_RESOURCE_STATES GpuState;
 

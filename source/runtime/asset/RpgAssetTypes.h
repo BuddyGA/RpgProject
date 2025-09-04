@@ -1,7 +1,8 @@
 #pragma once
 
-#include "core/RpgStream.h"
 #include "core/RpgFilePath.h"
+#include "core/RpgPointer.h"
+#include "core/RpgStream.h"
 
 
 // Asset file extension
@@ -152,3 +153,20 @@ namespace RpgAssetFileModel
 	}
 
 };
+
+
+
+class RpgAssetInterface
+{
+	RPG_NOCOPY(RpgAssetInterface)
+
+public:
+	RpgAssetInterface() noexcept = default;
+	virtual ~RpgAssetInterface() noexcept = default;
+	virtual uint32_t CalculateDataSizeBytes() const noexcept = 0;
+	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept = 0;
+	virtual void StreamRead(RpgStreamReader& reader) noexcept = 0;
+
+};
+
+typedef RpgSharedPtr<RpgAssetInterface> RpgSharedAsset;

@@ -1,5 +1,6 @@
 #include "RpgMaterial.h"
 #include "shader/RpgShaderTypes.h"
+#include "asset/RpgAssetManager.h"
 
 
 RPG_LOG_DECLARE_CATEGORY_STATIC(RpgLogMaterial, VERBOSITY_DEBUG)
@@ -9,25 +10,25 @@ RPG_LOG_DECLARE_CATEGORY_STATIC(RpgLogMaterial, VERBOSITY_DEBUG)
 RpgMaterial::RpgMaterial(const RpgName& in_Name, const RpgRenderPipelineState& in_RenderState, const RpgMaterialParameterLayout& in_ParameterLayout) noexcept
 {
 	Name = in_Name;
+	Flags = FLAG_None;
 	RenderState = in_RenderState;
 	ParameterLayout = in_ParameterLayout;
 	InitializeSRWLock(&ParameterTextureLock);
 	InitializeSRWLock(&ParameterVectorLock);
 	InitializeSRWLock(&ParameterScalarLock);
-	Flags = FLAG_None;
 }
 
 
 RpgMaterial::RpgMaterial(const RpgName& in_Name, const RpgSharedMaterial& in_ParentMaterial) noexcept
 {
 	Name = in_Name;
+	Flags = FLAG_Instance;
 	ParentMaterial = in_ParentMaterial;
 	RenderState = ParentMaterial->RenderState;
 	ParameterLayout = ParentMaterial->ParameterLayout;
 	InitializeSRWLock(&ParameterTextureLock);
 	InitializeSRWLock(&ParameterVectorLock);
 	InitializeSRWLock(&ParameterScalarLock);
-	Flags = FLAG_None;
 }
 
 
@@ -37,6 +38,84 @@ RpgMaterial::~RpgMaterial() noexcept
 }
 
 
+uint32_t RpgMaterial::CalculateDataSizeBytes() const noexcept
+{
+	return 0;
+}
+
+
+void RpgMaterial::StreamWrite(RpgStreamWriter& writer) const noexcept
+{
+	writer.Write(Name);
+
+	const uint16_t savedFlags = (Flags & ~RUNTIME_FLAGS);
+	writer.Write(savedFlags);
+
+	if (savedFlags & FLAG_Instance)
+	{
+		RPG_Check(ParentMaterial);
+		
+		const RpgString& materialAssetPath = g_AssetManager->GetMaterialAssetPath(ParentMaterial);
+		writer.WriteString(materialAssetPath);
+	}
+
+	writer.Write(RenderState);
+
+
+	const RpgMaterialParameterTextureArray& paramTextures = ParameterLayout.GetTextures();
+	for (int i = 0; i < paramTextures.GetCount(); ++i)
+	{
+		const RpgSharedTexture2D& value = paramTextures[i];
+		if (!value)
+		{
+			const RpgString empty;
+			writer.WriteString(empty);
+
+			continue;
+		}
+
+		const RpgString& textureAssetPath = g_AssetManager->GetTextureAssetPath(value);
+		writer.WriteString(textureAssetPath);
+	}
+
+	writer.WriteArray(ParameterLayout.GetVectors());
+	writer.WriteArray(ParameterLayout.GetScalars());
+}
+
+
+void RpgMaterial::StreamRead(RpgStreamReader& reader) noexcept
+{
+	reader.Read(Name);
+	reader.Read(Flags);
+
+	if (Flags & FLAG_Instance)
+	{
+		RpgString materialAssetPath;
+		reader.ReadString(materialAssetPath);
+
+		ParentMaterial = g_AssetManager->LoadMaterial(materialAssetPath);
+	}
+
+	reader.Read(RenderState);
+
+	RpgMaterialParameterTextureArray& paramTextures = ParameterLayout.GetTextures();
+	for (int i = 0; i < paramTextures.GetCount(); ++i)
+	{
+		RpgString textureAssetPath;
+		reader.ReadString(textureAssetPath);
+
+		if (!textureAssetPath.IsEmpty())
+		{
+			paramTextures[i] = g_AssetManager->LoadTexture(textureAssetPath);
+		}
+	}
+
+	RpgMaterialParameterVectorArray& paramVectors = ParameterLayout.GetVectors();
+	reader.ReadArray(paramVectors);
+
+	RpgMaterialParameterScalarArray& paramScalars = ParameterLayout.GetScalars();
+	reader.ReadArray(paramScalars);
+}
 
 
 RpgSharedMaterial RpgMaterial::s_CreateShared(const RpgName& name, const RpgRenderPipelineState& renderState, const RpgMaterialParameterLayout& parameterLayout) noexcept
@@ -69,7 +148,8 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.BlendMode = RpgRenderColorBlendMode::TRANSPARENCY;
 		renderState.RasterMode = RpgRenderRasterMode::SOLID;
 
-		DefaultMaterials[RpgMaterialDefault::GUI] = s_CreateShared("MAT_DEF_GUI", renderState);
+		DefaultMaterials[RpgMaterialDefault::GUI] = s_CreateShared("mat_def_gui", renderState);
+		DefaultMaterials[RpgMaterialDefault::GUI]->Flags |= FLAG_Default;
 	}
 
 	// font2d
@@ -80,7 +160,8 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.BlendMode = RpgRenderColorBlendMode::TRANSPARENCY;
 		renderState.RasterMode = RpgRenderRasterMode::SOLID;
 
-		DefaultMaterials[RpgMaterialDefault::FONT] = s_CreateShared("MAT_DEF_Font", renderState);
+		DefaultMaterials[RpgMaterialDefault::FONT] = s_CreateShared("mat_def_font", renderState);
+		DefaultMaterials[RpgMaterialDefault::FONT]->Flags |= FLAG_Default;
 	}
 
 	// mesh phong
@@ -99,7 +180,8 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		paramLayout.AddScalar("shininess", 32.0f);
 		paramLayout.AddScalar("opacity", 1.0f);
 
-		DefaultMaterials[RpgMaterialDefault::MESH_PHONG] = s_CreateShared("MAT_DEF_MeshPhong", renderState, paramLayout);
+		DefaultMaterials[RpgMaterialDefault::MESH_PHONG] = s_CreateShared("mat_def_mesh_phong", renderState, paramLayout);
+		DefaultMaterials[RpgMaterialDefault::MESH_PHONG]->Flags |= FLAG_Default;
 	}
 
 
@@ -115,7 +197,8 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		RpgMaterialParameterLayout paramLayout{};
 		paramLayout.AddScalar("gamma", 2.2f);
 
-		DefaultMaterials[RpgMaterialDefault::FULLSCREEN] = s_CreateShared("MAT_DEF_Fullscreen", renderState, paramLayout);
+		DefaultMaterials[RpgMaterialDefault::POSTPROCESS_FULLSCREEN] = s_CreateShared("mat_def_postprocess_fullscreen", renderState, paramLayout);
+		DefaultMaterials[RpgMaterialDefault::POSTPROCESS_FULLSCREEN]->Flags |= FLAG_Default;
 	}
 
 
@@ -127,7 +210,8 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.BlendMode = RpgRenderColorBlendMode::NONE;
 		renderState.RasterMode = RpgRenderRasterMode::LINE;
 
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_2D_LINE] = s_CreateShared("MAT_DEF_DebugPrimitive2dLine", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_2D] = s_CreateShared("mat_def_dbg_prim_line_2d", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_2D]->Flags |= FLAG_Default;
 	}
 
 	// Debug primitive2d mesh
@@ -138,7 +222,8 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.BlendMode = RpgRenderColorBlendMode::NONE;
 		renderState.RasterMode = RpgRenderRasterMode::SOLID;
 
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_2D_MESH] = s_CreateShared("MAT_DEF_DebugPrimitive2dMesh", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_2D] = s_CreateShared("mat_def_dbg_prim_mesh_2d", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_2D]->Flags |= FLAG_Default;
 	}
 
 	// Debug primitive line
@@ -151,13 +236,15 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.bDepthTest = true;
 		renderState.bDepthWrite = false;
 
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE] = s_CreateShared("MAT_DEF_DebugPrimitiveLine", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE] = s_CreateShared("mat_def_dbg_prim_line", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE]->Flags |= FLAG_Default;
 
 		// no-depth
 		renderState.BlendMode = RpgRenderColorBlendMode::FADE;
 		renderState.bDepthTest = false;
 
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_NO_DEPTH] = s_CreateShared("MAT_DEF_DebugPrimitiveLineNoDepth", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_NO_DEPTH] = s_CreateShared("mat_def_dbg_prim_line_no_depth", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_NO_DEPTH]->Flags |= FLAG_Default;
 	}
 
 	// Debug primitive mesh
@@ -170,13 +257,15 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.bDepthTest = true;
 		renderState.bDepthWrite = false;
 
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH] = s_CreateShared("MAT_DEF_DebugPrimitiveMesh", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH] = s_CreateShared("mat_def_dbg_prim_mesh", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH]->Flags |= FLAG_Default;
 
 		// no-depth
 		renderState.BlendMode = RpgRenderColorBlendMode::FADE;
 		renderState.bDepthTest = false;
 
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_NO_DEPTH] = s_CreateShared("MAT_DEF_DebugPrimitiveMesh_NoDepth", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_NO_DEPTH] = s_CreateShared("mat_def_dbg_prim_mesh_no_depth", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_NO_DEPTH]->Flags |= FLAG_Default;
 	}
 }
 

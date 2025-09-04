@@ -1,17 +1,14 @@
 #pragma once
 
-#include "core/RpgStream.h"
-#include "core/RpgPointer.h"
 #include "core/RpgVertex.h"
+#include "asset/RpgAssetTypes.h"
 
 
 
 typedef RpgSharedPtr<class RpgMesh> RpgSharedMesh;
 
-class RpgMesh
+class RpgMesh : public RpgAssetInterface
 {
-	RPG_NOCOPY(RpgMesh)
-
 public:
 	struct FVertexData
 	{
@@ -38,8 +35,9 @@ public:
 public:
 	RpgMesh(const RpgName& name) noexcept;
 
-	void StreamWrite(RpgStreamWriter& writer) const noexcept;
-	void StreamRead(RpgStreamReader& reader) noexcept;
+	virtual uint32_t CalculateDataSizeBytes() const noexcept override;
+	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
+	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
 
 
 	// Free memory and overwrite existing vertex data 
@@ -261,6 +259,20 @@ private:
 	// Name
 	RpgName Name;
 
+
+	// Vertex attribute flags
+	enum EFlag : uint16_t
+	{
+		FLAG_None						= (0),
+		FLAG_Attribute_Position			= (1 << 0),
+		FLAG_Attribute_NormalTangent	= (1 << 1),
+		FLAG_Attribute_TexCoord			= (1 << 2),
+		FLAG_Attribute_Skin				= (1 << 3),
+		FLAG_Attribute_Index			= (1 << 4),
+	};
+	uint16_t Flags;
+
+
 	// Vertex position data
 	RpgVertexMeshPositionArray Positions;
 
@@ -275,19 +287,6 @@ private:
 
 	// Index data
 	RpgVertexIndexArray Indices;
-
-
-	// Vertex attribute flags
-	enum EFlag : uint8_t
-	{
-		FLAG_None = (0),
-		FLAG_Attribute_Position			= (1 << 0),
-		FLAG_Attribute_NormalTangent	= (1 << 1),
-		FLAG_Attribute_TexCoord			= (1 << 2),
-		FLAG_Attribute_Skin				= (1 << 3),
-		FLAG_Attribute_Index			= (1 << 4),
-	};
-	uint8_t Flags;
 
 
 	// Bounding AABB
@@ -315,11 +314,5 @@ public:
 	// @param name - Mesh name
 	// @return Shared pointer of type <RpgMesh>
 	[[nodiscard]] static RpgSharedMesh s_CreateShared(const RpgName& name) noexcept;
-
-
-	// Calculate asset size bytes
-	// @param mesh - Shared pointer of type <RpgMesh>
-	// @return Total data size bytes as asset file
-	static size_t s_CalculateAssetSizeBytes(const RpgSharedMesh& mesh) noexcept;
 
 };

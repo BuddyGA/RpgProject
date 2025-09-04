@@ -89,7 +89,10 @@ class RpgAssetManager
 
 public:
 	RpgAssetManager() noexcept;
+
+	// Update asset loading and try to unload if no other referencing it
 	void Update() noexcept;
+
 
 	// Check if file is a valid asset file
 	// @param filePath - Absolute path to a file
@@ -97,21 +100,82 @@ public:
 	// @return TRUE if file is valid
 	bool IsValidAssetFile(const RpgFilePath& filePath, RpgAssetInfo* optOut_AssetInfo = nullptr) noexcept;
 
+
 	// Scan all asset files in filesystem asset directory and try register them
 	void ScanAssetFiles() noexcept;
 
+
 	// Save mesh to asset file
-	// @param mesh - Shared ptr to a mesh asset
+	// @param mesh - Mesh shared ptr
 	void SaveMesh(const RpgSharedMesh& mesh) noexcept;
 
-	// Load mesh from asset file
-	// @param path - Path to a mesh asset file (relative to asset directory)
-	// @return SharedPtr to a mesh asset, NULL SharedPtr if file is not a valid mesh asset file
+	// Load mesh from asset registry
+	// @param path - Path to mesh asset (relative to asset directory)
+	// @return SharedPtr to mesh, NULL SharedPtr if asset not found
 	RpgSharedMesh LoadMesh(const RpgString& path) noexcept;
+
+	// Get mesh asset path
+	// @param mesh - Mesh shared ptr
+	// @return Mesh asset path in registry
+	inline const RpgString& GetMeshAssetPath(const RpgSharedMesh& mesh) const noexcept
+	{
+		const uint64_t hash = LoadedMeshData.GetHashByShared(mesh);
+
+		const RpgAssetInfo* info = GetAssetInfoByHash(hash);
+		RPG_Check(info && info->Type == RpgAssetFileType::MESH);
+
+		return info->Path;
+	}
+
+
+	// Save texture to asset file
+	// @param texture - Texture shared ptr
+	void SaveTexture(const RpgSharedTexture2D& texture) noexcept;
+
+	// Load texture from asset registry
+	// @param path - Path to texture asset (relative to asset directory)
+	// @return SharedPtr to texture, NULL SharedPtr if asset not found
+	RpgSharedTexture2D LoadTexture(const RpgString& path) noexcept;
+
+	// Get texture asset path
+	// @param texture - Texture shared ptr
+	// @return Texture asset path in registry
+	inline const RpgString& GetTextureAssetPath(const RpgSharedTexture2D& texture) const noexcept
+	{
+		const uint64_t hash = LoadedTextureData.GetHashByShared(texture);
+
+		const RpgAssetInfo* info = GetAssetInfoByHash(hash);
+		RPG_Check(info && info->Type == RpgAssetFileType::TEXTURE);
+
+		return info->Path;
+	}
+
+
+	// Save material to asset file
+	// @param material - Material shared ptr
+	void SaveMaterial(const RpgSharedMaterial& material) noexcept;
+
+	// Load material from asset registry
+	// @param path - Path to material asset (relative to asset directory)
+	// @return SharedPtr to material, NULL SharedPtr if asset not found
+	RpgSharedMaterial LoadMaterial(const RpgString& path) noexcept;
+
+	// Get material asset path
+	// @param material - Material shared ptr
+	// @return Material asset path in registry
+	inline const RpgString& GetMaterialAssetPath(const RpgSharedMaterial& material) const noexcept
+	{
+		const uint64_t hash = LoadedMaterialData.GetHashByShared(material);
+
+		const RpgAssetInfo* info = GetAssetInfoByHash(hash);
+		RPG_Check(info && info->Type == RpgAssetFileType::MATERIAL);
+
+		return info->Path;
+	}
 
 
 	// Get asset info from registry
-	// @param filePath - Path to a file
+	// @param filePath - Absolute path to a file
 	// @return Pointer to asset info, nullptr if file not found in registry
 	inline const RpgAssetInfo* GetAssetInfoByFilePath(const RpgFilePath& filePath) const noexcept
 	{
@@ -126,9 +190,16 @@ private:
 	// @return TRUE if file is valid asset file and added to registry
 	bool RegisterAssetFile(const RpgFilePath& filePath, uint64_t* optOut_Hash = nullptr) noexcept;
 
+
+	// Get asset path 
+	// @param filePath - Absolute path to an asset file
+	// @return Relative asset path
 	RpgString GetAssetPath(const RpgFilePath& filePath) const noexcept;
 
 
+	// Get asset info by asset hash from registry
+	// @param hash - Asset path hash
+	// @return Pointer to RpgAssetInfo if found in registry or NULL if not found
 	inline const RpgAssetInfo* GetAssetInfoByHash(uint64_t hash) const noexcept
 	{
 		const int index = RegisteredAssetHashes.FindIndexByValue(hash);
@@ -137,7 +208,10 @@ private:
 
 
 private:
+	// Asset hash registry
 	RpgArray<uint64_t> RegisteredAssetHashes;
+
+	// Asset info registry
 	RpgArray<RpgAssetInfo> RegisteredAssetInfos;
 	
 	// Loaded mesh data

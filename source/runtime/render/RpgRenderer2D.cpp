@@ -396,7 +396,7 @@ void RpgRenderer2D::PreRender(RpgRenderFrameContext& frameContext) noexcept
 		RPG_D3D12_SetDebugNameAllocation(frame.LineIndexBuffer, "RES_R2D_LineIdxBuffer");
 
 		FDrawBatchLine& batchDrawLine = frame.BatchDrawLine;
-		batchDrawLine.MaterialId = frameContext.MaterialResource->AddMaterial(RpgMaterial::s_GetDefault(RpgMaterialDefault::DEBUG_PRIMITIVE_2D_LINE));
+		batchDrawLine.MaterialId = frameContext.MaterialResource->AddMaterial(RpgMaterial::s_GetDefault(RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_2D));
 		batchDrawLine.IndexCount = frame.LineIndices.GetCount();
 		batchDrawLine.IndexStart = 0;
 		batchDrawLine.IndexVertexOffset = 0;

@@ -27,16 +27,7 @@ const DXGI_FORMAT RPG_TEXTURE_FORMAT_TO_DXGI_FORMAT[static_cast<uint8_t>(RpgText
 
 
 RpgTexture2D::RpgTexture2D(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height, uint8_t mipCount, uint16_t flags) noexcept
-	: Format(RpgTextureFormat::NONE)
-	, Width(0)
-	, Height(0)
-	, MipCount(0)
-	, Flags(FLAG_None)
-	, GpuState(D3D12_RESOURCE_STATE_COMMON)
 {
-	RPG_LogDebug(RpgLogTexture, "Create texture (%s)", *name);
-
-	RPG_Check(!name.IsEmpty());
 	Name = name;
 
 	if (flags & FLAG_IsRenderTarget)
@@ -52,6 +43,8 @@ RpgTexture2D::RpgTexture2D(const RpgName& name, RpgTextureFormat::EType format, 
 		RPG_Check(format >= RpgTextureFormat::TEX_2D_R && format <= RpgTextureFormat::TEX_2D_BC7U);
 	}
 
+	Flags = flags;
+
 	Format = format;
 
 	//RPG_PLATFORM_Check(width >= RPG_TEXTURE_MIN_DIM && width <= RPG_TEXTURE_MAX_DIM);
@@ -63,15 +56,13 @@ RpgTexture2D::RpgTexture2D(const RpgName& name, RpgTextureFormat::EType format, 
 	RPG_Check(mipCount > 0 && mipCount <= RPG_TEXTURE_MAX_MIP);
 	MipCount = mipCount;
 
-	TotalSizeBytes = 0;
-	Flags = flags;
+	PixelSizeBytes = 0;
 
 	PixelData = nullptr;
 
-	if (!(Flags & (FLAG_IsRenderTarget | FLAG_IsDepthStencil)))
-	{
-		InitializeMips();
-	}
+	InitializeMips();
+
+	GpuState = D3D12_RESOURCE_STATE_COMMON;
 }
 
 
@@ -84,6 +75,64 @@ RpgTexture2D::~RpgTexture2D() noexcept
 		RpgD3D12::UnmapBuffer(PixelStagingBuffer.Get());
 		PixelData = nullptr;
 	}
+}
+
+
+uint32_t RpgTexture2D::CalculateDataSizeBytes() const noexcept
+{
+	// name
+	uint32_t sizeBytes = sizeof(RpgName);
+	// flags
+	sizeBytes += sizeof(uint16_t);
+	// format
+	sizeBytes += sizeof(RpgTextureFormat::EType);
+	// width
+	sizeBytes += sizeof(uint16_t);
+	// height
+	sizeBytes += sizeof(uint16_t);
+	// mip count
+	sizeBytes += sizeof(uint8_t);
+	// pixels
+	sizeBytes += static_cast<uint32_t>(PixelSizeBytes);
+
+	return sizeBytes;
+}
+
+
+void RpgTexture2D::StreamWrite(RpgStreamWriter& writer) const noexcept
+{
+	writer.Write(Name);
+
+	const uint16_t savedFlags = (Flags & ~RUNTIME_FLAGS);
+	RPG_Check(!(savedFlags & (FLAG_IsRenderTarget | FLAG_IsDepthStencil)));
+	writer.Write(savedFlags);
+
+	writer.Write(Format);
+	writer.Write(Width);
+	writer.Write(Height);
+	writer.Write(MipCount);
+	writer.Write(PixelSizeBytes);
+	writer.WriteData(PixelData, static_cast<uint32_t>(PixelSizeBytes));
+}
+
+
+void RpgTexture2D::StreamRead(RpgStreamReader& reader) noexcept
+{
+	reader.Read(Name);
+	reader.Read(Flags);
+	reader.Read(Format);
+	reader.Read(Width);
+	reader.Read(Height);
+	reader.Read(MipCount);
+	reader.Read(PixelSizeBytes);
+
+	InitializeMips();
+
+	reader.ReadData(PixelData, static_cast<uint32_t>(PixelSizeBytes));
+
+	RPG_Check(GpuState == D3D12_RESOURCE_STATE_COMMON);
+
+	Flags |= FLAG_Runtime_Dirty;
 }
 
 
@@ -155,6 +204,11 @@ void RpgTexture2D::GPU_CommandCopy(ID3D12GraphicsCommandList* cmdList) const noe
 
 void RpgTexture2D::InitializeMips() noexcept
 {
+	if (Flags & (FLAG_IsRenderTarget | FLAG_IsDepthStencil))
+	{
+		return;
+	}
+
 	RPG_Check(MipCount > 0 && MipCount <= RPG_TEXTURE_MAX_MIP);
 
 	const D3D12_RESOURCE_DESC textureDesc = RpgD3D12::CreateResourceDesc_Texture(RPG_TEXTURE_FORMAT_TO_DXGI_FORMAT[static_cast<uint8_t>(Format)], Width, Height, MipCount);
@@ -162,9 +216,8 @@ void RpgTexture2D::InitializeMips() noexcept
 	D3D12_PLACED_SUBRESOURCE_FOOTPRINT subresources[RPG_TEXTURE_MAX_MIP];
 	uint32_t numRows[RPG_TEXTURE_MAX_MIP];
 	uint64_t rowBytes[RPG_TEXTURE_MAX_MIP];
-	RpgD3D12::GetDevice()->GetCopyableFootprints(&textureDesc, 0, MipCount, 0, subresources, numRows, rowBytes, &TotalSizeBytes);
-	RPG_Check(TotalSizeBytes <= RPG_MAX_COUNT);
-	//PixelData.Resize(static_cast<int>(totalSizeBytes));
+	RpgD3D12::GetDevice()->GetCopyableFootprints(&textureDesc, 0, MipCount, 0, subresources, numRows, rowBytes, &PixelSizeBytes);
+	RPG_Check(PixelSizeBytes <= RPG_MAX_COUNT);
 
 	if (PixelData && PixelStagingBuffer)
 	{
@@ -172,7 +225,7 @@ void RpgTexture2D::InitializeMips() noexcept
 		PixelData = nullptr;
 	}
 
-	RpgD3D12::ResizeBuffer(PixelStagingBuffer, TotalSizeBytes, true);
+	RpgD3D12::ResizeBuffer(PixelStagingBuffer, PixelSizeBytes, true);
 	RPG_D3D12_SetDebugNameAllocation(PixelStagingBuffer, "STG_%s", *Name);
 
 	PixelData = RpgD3D12::MapBuffer<uint8_t>(PixelStagingBuffer.Get());
@@ -223,7 +276,7 @@ void RpgTexture2D::s_CreateDefaults() noexcept
 
 	// texture2d-white
 	{
-		RpgSharedTexture2D defWhite = s_CreateShared2D("TEX2D_DEF_White", RpgTextureFormat::TEX_2D_RGBA, RPG_TEXTURE_MIN_DIM, RPG_TEXTURE_MIN_DIM, 1);
+		RpgSharedTexture2D defWhite = s_CreateShared2D("tex2d_def_white", RpgTextureFormat::TEX_2D_RGBA, RPG_TEXTURE_MIN_DIM, RPG_TEXTURE_MIN_DIM, 1);
 		
 		FMipData mipData;
 		uint8_t* pixelData = defWhite->MipWriteLock(0, mipData);

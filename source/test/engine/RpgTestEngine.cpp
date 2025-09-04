@@ -122,6 +122,8 @@ static void TestLevel_Import(RpgWorld* world, const RpgFilePath& sourceFilePath,
 		meshComp->Material = model->GetMaterial(0);
 		meshComp->bIsVisible = true;
 
+		world->GameObject_Spawn(gameObject);
+
 		/*
 		if (model->HasSkin())
 		{
@@ -315,5 +317,5 @@ void RpgTest::Engine::Create(RpgWorld* world) noexcept
 
 	TestLevel_PrimitiveShapes(world);
 
-	//TestLevel_Import(world, RpgFileSystem::GetAssetRawDirPath() + "default_wall.fbx", 1.0f);
+	//TestLevel_Import(world, RpgFileSystem::GetAssetRawDirPath() + "default_cube.fbx", 1.0f);
 }

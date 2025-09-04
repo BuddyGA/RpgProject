@@ -46,6 +46,9 @@ RpgEngine::RpgEngine() noexcept
 RpgEngine::~RpgEngine() noexcept
 {
 	RpgRenderThread::Shutdown();
+
+	delete g_AssetManager;
+	delete g_InputManager;
 }
 
 

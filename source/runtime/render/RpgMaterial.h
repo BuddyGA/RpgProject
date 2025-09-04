@@ -172,10 +172,10 @@ namespace RpgMaterialDefault
 		FONT,
 
 		MESH_PHONG,
-		FULLSCREEN,
+		POSTPROCESS_FULLSCREEN,
 
-		DEBUG_PRIMITIVE_2D_LINE,
-		DEBUG_PRIMITIVE_2D_MESH,
+		DEBUG_PRIMITIVE_LINE_2D,
+		DEBUG_PRIMITIVE_MESH_2D,
 		DEBUG_PRIMITIVE_LINE,
 		DEBUG_PRIMITIVE_LINE_NO_DEPTH,
 		DEBUG_PRIMITIVE_MESH,
@@ -189,14 +189,16 @@ namespace RpgMaterialDefault
 
 typedef RpgSharedPtr<class RpgMaterial> RpgSharedMaterial;
 
-class RpgMaterial
+class RpgMaterial : public RpgAssetInterface
 {
-	RPG_NOCOPY(RpgMaterial)
-
 public:
 	RpgMaterial(const RpgName& in_Name, const RpgRenderPipelineState& in_RenderState, const RpgMaterialParameterLayout& in_ParameterLayout) noexcept;
 	RpgMaterial(const RpgName& in_Name, const RpgSharedMaterial& in_ParentMaterial) noexcept;
 	~RpgMaterial() noexcept;
+
+	virtual uint32_t CalculateDataSizeBytes() const noexcept override;
+	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
+	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
 
 
 	inline const RpgName& GetName() const noexcept
@@ -212,6 +214,11 @@ public:
 	inline const RpgRenderPipelineState& GetRenderState() const noexcept
 	{
 		return RenderState;
+	}
+
+	inline bool IsDefault() const noexcept
+	{
+		return (Flags & FLAG_Default);
 	}
 
 	inline bool IsInstance() const noexcept
@@ -312,61 +319,72 @@ public:
 
 	inline void MarkPipelinePending() noexcept
 	{
-		RPG_Assert((Flags & (FLAG_PSO_Compiling | FLAG_PSO_Compiled)) == 0);
-		Flags |= FLAG_PSO_Pending;
+		RPG_Assert((Flags & (FLAG_Runtime_PSO_Compiling | FLAG_Runtime_PSO_Compiled)) == 0);
+		Flags |= FLAG_Runtime_PSO_Pending;
 	}
 
 	inline void MarkPipelineCompiling() noexcept
 	{
-		RPG_Assert((Flags & FLAG_PSO_Pending) && (Flags & FLAG_PSO_Compiled) == 0);
-		Flags &= ~FLAG_PSO_Pending;
-		Flags |= FLAG_PSO_Compiling;
+		RPG_Assert((Flags & FLAG_Runtime_PSO_Pending) && (Flags & FLAG_Runtime_PSO_Compiled) == 0);
+		Flags &= ~FLAG_Runtime_PSO_Pending;
+		Flags |= FLAG_Runtime_PSO_Compiling;
 	}
 
 	inline void MarkPipelineCompiled() noexcept
 	{
-		RPG_Assert((Flags & FLAG_PSO_Compiling) && (Flags & FLAG_PSO_Pending) == 0);
-		Flags &= ~FLAG_PSO_Compiling;
-		Flags |= FLAG_PSO_Compiled;
+		RPG_Assert((Flags & FLAG_Runtime_PSO_Compiling) && (Flags & FLAG_Runtime_PSO_Pending) == 0);
+		Flags &= ~FLAG_Runtime_PSO_Compiling;
+		Flags |= FLAG_Runtime_PSO_Compiled;
 	}
 
 	inline bool IsPipelinePending() const noexcept
 	{
-		return (Flags & FLAG_PSO_Pending);
+		return (Flags & FLAG_Runtime_PSO_Pending);
 	}
 
 	inline bool IsPipelineCompiling() const noexcept
 	{
-		return (Flags & FLAG_PSO_Compiling);
+		return (Flags & FLAG_Runtime_PSO_Compiling);
 	}
 
 	inline bool IsPipelineCompiled() const noexcept
 	{
-		return (Flags & FLAG_PSO_Compiled);
+		return (Flags & FLAG_Runtime_PSO_Compiled);
 	}
 
 
 private:
 	RpgName Name;
+
+	enum EFlag : uint16_t
+	{
+		FLAG_None					= (0),
+		FLAG_Default				= (1 << 0),
+		FLAG_Instance				= (1 << 1),
+		FLAG_Runtime_Loading		= (1 << 2),
+		FLAG_Runtime_Loaded			= (1 << 4),
+		FLAG_Runtime_PendingDestroy = (1 << 5),
+		FLAG_Runtime_PSO_Pending	= (1 << 6),
+		FLAG_Runtime_PSO_Compiling	= (1 << 7),
+		FLAG_Runtime_PSO_Compiled	= (1 << 8),
+	};
+	uint16_t Flags;
+
+	inline static constexpr uint16_t RUNTIME_FLAGS = 
+		FLAG_Runtime_Loading |
+		FLAG_Runtime_Loaded |
+		FLAG_Runtime_PendingDestroy |
+		FLAG_Runtime_PSO_Pending |
+		FLAG_Runtime_PSO_Compiling |
+		FLAG_Runtime_PSO_Compiled;
+
+
 	RpgSharedMaterial ParentMaterial;
 	RpgRenderPipelineState RenderState;
 	RpgMaterialParameterLayout ParameterLayout;
 	mutable SRWLOCK ParameterTextureLock;
 	mutable SRWLOCK ParameterVectorLock;
 	mutable SRWLOCK ParameterScalarLock;
-
-
-	enum EFlag : uint8_t
-	{
-		FLAG_None			= (0),
-		FLAG_Loading		= (1 << 0),
-		FLAG_Loaded			= (1 << 1),
-		FLAG_PendingDestroy = (1 << 2),
-		FLAG_PSO_Pending	= (1 << 3),
-		FLAG_PSO_Compiling	= (1 << 4),
-		FLAG_PSO_Compiled	= (1 << 5),
-	};
-	uint8_t Flags;
 
 
 public:

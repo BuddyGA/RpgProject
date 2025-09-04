@@ -14,15 +14,38 @@ RpgMesh::RpgMesh(const RpgName& name) noexcept
 }
 
 
+uint32_t RpgMesh::CalculateDataSizeBytes() const noexcept
+{
+	// name
+	uint32_t sizeBytes = sizeof(RpgName);
+	// flags
+	sizeBytes += sizeof(uint16_t);
+	// vertex position
+	sizeBytes += static_cast<uint32_t>(Positions.GetMemorySizeBytes_Allocated());
+	// vertex normal-tangent
+	sizeBytes += static_cast<uint32_t>(NormalTangents.GetMemorySizeBytes_Allocated());
+	// vertex texcoord
+	sizeBytes += static_cast<uint32_t>(TexCoords.GetMemorySizeBytes_Allocated());
+	// vertex skin
+	sizeBytes += static_cast<uint32_t>(Skins.GetMemorySizeBytes_Allocated());
+	// vertex index
+	sizeBytes += static_cast<uint32_t>(Indices.GetMemorySizeBytes_Allocated());
+	// bound
+	sizeBytes += sizeof(RpgBoundingAABB);
+
+	return sizeBytes;
+}
+
+
 void RpgMesh::StreamWrite(RpgStreamWriter& writer) const noexcept
 {
 	writer.Write(Name);
+	writer.Write(Flags);
 	writer.WriteArray(Positions);
 	writer.WriteArray(NormalTangents);
 	writer.WriteArray(TexCoords);
 	writer.WriteArray(Skins);
 	writer.WriteArray(Indices);
-	writer.Write(Flags);
 	writer.Write(Bound);
 }
 
@@ -30,12 +53,12 @@ void RpgMesh::StreamWrite(RpgStreamWriter& writer) const noexcept
 void RpgMesh::StreamRead(RpgStreamReader& reader) noexcept
 {
 	reader.Read(Name);
+	reader.Read(Flags);
 	reader.ReadArray(Positions);
 	reader.ReadArray(NormalTangents);
 	reader.ReadArray(TexCoords);
 	reader.ReadArray(Skins);
 	reader.ReadArray(Indices);
-	reader.Read(Flags);
 	reader.Read(Bound);
 }
 
@@ -175,36 +198,4 @@ void RpgMesh::UpdateBound() noexcept
 RpgSharedMesh RpgMesh::s_CreateShared(const RpgName& name) noexcept
 {
 	return RpgSharedMesh(new RpgMesh(name));
-}
-
-
-size_t RpgMesh::s_CalculateAssetSizeBytes(const RpgSharedMesh& mesh) noexcept
-{
-	size_t totalSizeBytes = 0;
-
-	// name
-	totalSizeBytes += sizeof(RpgName);
-
-	// vertex position
-	totalSizeBytes += mesh->Positions.GetMemorySizeBytes_Allocated();
-
-	// vertex normal-tangent
-	totalSizeBytes += mesh->NormalTangents.GetMemorySizeBytes_Allocated();
-
-	// vertex texcoord
-	totalSizeBytes += mesh->TexCoords.GetMemorySizeBytes_Allocated();
-
-	// vertex skin
-	totalSizeBytes += mesh->Skins.GetMemorySizeBytes_Allocated();
-
-	// vertex index
-	totalSizeBytes += mesh->Indices.GetMemorySizeBytes_Allocated();
-
-	// flags
-	totalSizeBytes += sizeof(uint8_t);
-
-	// bound
-	totalSizeBytes += sizeof(RpgBoundingAABB);
-
-	return totalSizeBytes;
 }
