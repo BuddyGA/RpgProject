@@ -12,7 +12,6 @@ RpgEditor* g_Editor = nullptr;
 
 RpgEditor::RpgEditor() noexcept
 {
-
 }
 
 
@@ -97,6 +96,12 @@ void RpgEditor::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 			}
 		}
 	}
+}
+
+
+void RpgEditor::TickUpdate(float deltaTime) noexcept
+{
+
 }
 
 

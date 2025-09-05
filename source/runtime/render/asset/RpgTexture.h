@@ -1,7 +1,7 @@
 #pragma once
 
 #include "asset/RpgAssetTypes.h"
-#include "RpgRenderTypes.h"
+#include "../RpgRenderTypes.h"
 
 
 // Minimum texture dimension
@@ -47,19 +47,13 @@ public:
 
 
 public:
-	RpgTexture2D() noexcept;
-	RpgTexture2D(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height, uint8_t mipCount) noexcept;
+	RpgTexture2D(const RpgName& in_Name) noexcept;
+	RpgTexture2D(const RpgName& in_Name, RpgTextureFormat::EType in_Format, uint16_t in_Width, uint16_t in_Height, uint8_t in_MipCount) noexcept;
 	~RpgTexture2D() noexcept;
 
-	virtual uint32_t AssetStreamDataSizeBytes(const RpgAssetStreamWriter& writer) const noexcept override;
-	virtual void AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept override;
-	virtual void AssetStreamRead(RpgAssetStreamReader& reader) noexcept override;
+	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
+	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
 
-
-	inline const RpgName& GetName() const noexcept
-	{
-		return Name;
-	}
 
 	inline RpgTextureFormat::EType GetFormat() const noexcept
 	{
@@ -201,9 +195,6 @@ private:
 
 
 protected:
-	RpgName Name;
-
-
 	enum EFlag : uint16_t
 	{
 		FLAG_None						= (0),

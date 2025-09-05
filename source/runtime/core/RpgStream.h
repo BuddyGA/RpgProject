@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RpgString.h"
+#include "RpgPointer.h"
 
 
 
@@ -15,12 +16,14 @@ public:
 	virtual void WriteData(const void* data, uint32_t dataSizeBytes) noexcept = 0;
 
 
+	/*
 	template<typename T>
 	inline uint32_t GetSizeBytes(const T& data) const noexcept
 	{
 		static_assert(std::is_trivially_copyable<T>::value, "RpgStreamWriter::GetSizeBytes type of <T> must trivially copyable!");
 		return sizeof(T);
 	}
+	*/
 
 
 	template<typename T>
@@ -31,6 +34,7 @@ public:
 	}
 
 
+	/*
 	template<typename T, int N>
 	inline uint32_t GetSizeBytes(const RpgArray<T, N>& data) const noexcept
 	{
@@ -45,6 +49,7 @@ public:
 
 		return sizeBytes;
 	}
+	*/
 
 	template<typename T, int N>
 	inline void Write(const RpgArray<T, N>& dataArray) noexcept
@@ -58,6 +63,7 @@ public:
 	}
 
 
+	/*
 	template<typename T, int N>
 	inline uint32_t GetSizeBytes(const RpgArrayInline<T, N>& data) const noexcept
 	{
@@ -72,6 +78,7 @@ public:
 
 		return sizeBytes;
 	}
+	*/
 
 	template<typename T, int N>
 	inline void Write(const RpgArrayInline<T, N>& dataArray) noexcept
@@ -85,6 +92,7 @@ public:
 	}
 
 
+	/*
 	inline uint32_t GetSizeBytes(const RpgString& data) const noexcept
 	{
 		// length
@@ -95,6 +103,7 @@ public:
 
 		return sizeBytes;
 	}
+	*/
 
 	inline void Write(const RpgString& str) noexcept
 	{
@@ -170,6 +179,8 @@ public:
 
 	inline void Read(RpgString& str) noexcept
 	{
+		str.Clear();
+
 		int length = 0;
 		Read(length);
 

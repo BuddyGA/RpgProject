@@ -2,8 +2,8 @@
 
 #include "core/world/RpgGameObject.h"
 #include "shader/RpgShaderTypes.h"
-#include "RpgMesh.h"
-#include "RpgMaterial.h"
+#include "asset/RpgMesh.h"
+#include "asset/RpgMaterial.h"
 
 
 

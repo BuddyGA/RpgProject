@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/RpgThreadPool.h"
-#include "../RpgMaterial.h"
+#include "../RpgRenderTypes.h"
 
 
 

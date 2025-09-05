@@ -73,6 +73,7 @@ public:
 	void StreamWrite(RpgStreamWriter& writer) const noexcept;
 	void StreamRead(RpgStreamReader& reader) noexcept;
 
+	void ClearFast() noexcept;
 	void BeginFrame(int frameIndex) noexcept;
 	void EndFrame(int frameIndex) noexcept;
 
@@ -230,10 +231,22 @@ private:
 // --------------------------------------------------------------------------------------------------------------------------------------------- //
 public:
 	[[nodiscard]] RpgGameObjectID GameObject_Create(const RpgName& name, const RpgTransform& worldTransform = RpgTransform()) noexcept;
+
+	[[nodiscard]] inline RpgGameObjectID GameObject_CreateTransient(const RpgName& name, const RpgTransform& worldTransform = RpgTransform()) noexcept
+	{
+		const RpgGameObjectID gameObject = GameObject_Create(name, worldTransform);
+		GameObjectInfos[gameObject.Index].Flags |= FLAG_Transient;
+
+		return gameObject;
+	}
+
+
 	void GameObject_Destroy(RpgGameObjectID& gameObject) noexcept;
-	void GameObject_Spawn(RpgGameObjectID gameObject, RpgLevel* opt_Level = nullptr) noexcept;
 	void GameObject_StreamWrite(RpgGameObjectID gameObject, RpgStreamWriter& writer) const noexcept;
 	void GameObject_StreamRead(RpgGameObjectID gameObject, RpgStreamReader& reader) noexcept;
+	void GameObject_AttachScript(RpgGameObjectID gameObject, RpgGameObjectScript* script) noexcept;
+	void GameObject_DetachScript(RpgGameObjectID gameObject, RpgGameObjectScript* script) noexcept;
+	void GameObject_Spawn(RpgGameObjectID gameObject, RpgLevel* opt_Level = nullptr) noexcept;
 
 
 	inline bool GameObject_IsValid(RpgGameObjectID gameObject) const noexcept
@@ -323,7 +336,6 @@ public:
 		{
 			TComponent& data = storage->Get(index);
 			RPG_Check(data.GameObject == gameObject);
-			data.Destroy();
 		}
 		storage->Remove(index);
 
@@ -371,98 +383,26 @@ public:
 	}
 
 
-	inline void GameObject_AttachScript(RpgGameObjectID gameObject, RpgGameObjectScript* script) noexcept
-	{
-		RPG_Check(GameObject_IsValid(gameObject));
-		
-		RPG_Check(script);
-		const char* scriptTypeName = script->GetTypeName();
-
-		FGameObjectInfo& info = GameObjectInfos[gameObject.Index];
-
-		int emptyIndex = RPG_INDEX_INVALID;
-
-		for (int i = 0; i < RPG_GAMEOBJECT_MAX_SCRIPT; ++i)
-		{
-			const int scriptIndex = info.ScriptIndices[i];
-
-			if (scriptIndex != RPG_INDEX_INVALID)
-			{
-				if (GameObjectScripts[scriptIndex]->GetTypeName() == scriptTypeName)
-				{
-					RPG_LogWarn(RpgLogWorld, "Script of type (%s) already exists! Ignore attach script to game object (%s)", scriptTypeName, *GameObjectNames[gameObject.Index]);
-				}
-			}
-			else
-			{
-				emptyIndex = i;
-			}
-		}
-
-		RPG_CheckV(emptyIndex != RPG_INDEX_INVALID, "Cannot add script into game object (%s). Exceeds maximum limit (%i) of scripts per game object!", 
-			scriptTypeName, RPG_GAMEOBJECT_MAX_SCRIPT
-		);
-
-		info.ScriptIndices[emptyIndex] = GameObjectScripts.GetCount();
-		GameObjectScripts.AddValue(script);
-
-		script->World = this;
-		script->GameObject = gameObject;
-		script->AttachedToGameObject();
-
-		RPG_Log(RpgLogWorld, "Attached script of type (%s) to game object (%s)", scriptTypeName, *GameObjectNames[gameObject.Index]);
-
-		if (bHasStartedPlay && !script->bStartedPlay)
-		{
-			script->StartPlay();
-			script->bStartedPlay;
-		}
-	}
-
-
-	inline void GameObject_DetachScript(RpgGameObjectID gameObject, RpgGameObjectScript* script) noexcept
-	{
-		RPG_Check(GameObject_IsValid(gameObject));
-
-		RPG_Check(script);
-		const char* scriptTypeName = script->GetTypeName();
-
-		RPG_Check(GameObject_IsValid(gameObject));
-		FGameObjectInfo& info = GameObjectInfos[gameObject.Index];
-
-		for (int i = 0; i < RPG_GAMEOBJECT_MAX_SCRIPT; ++i)
-		{
-			const int scriptIndex = info.ScriptIndices[i];
-			if (scriptIndex == RPG_INDEX_INVALID)
-			{
-				continue;
-			}
-
-			if (GameObjectScripts[scriptIndex] == script)
-			{
-				RPG_Check(GameObjectScripts[scriptIndex]->GetTypeName() == scriptTypeName);
-				GameObject_RemoveScriptAtIndex(scriptIndex);
-				info.ScriptIndices[i] = RPG_INDEX_INVALID;
-				RPG_Log(RpgLogWorld, "Detached script of type (%s) from game object (%s)", scriptTypeName, *GameObjectNames[gameObject.Index]);
-
-				return;
-			}
-		}
-
-		RPG_LogWarn(RpgLogWorld, "Script of type (%s) not found! Ignore remove script from game object (%s)", scriptTypeName, *GameObjectNames[gameObject.Index]);
-	}
-
-
 	inline int GameObject_GetCount() const noexcept
 	{
 		return GameObjectInfos.GetCount();
 	}
 
-	inline bool GameObject_IsSpawned(RpgGameObjectID gameObject) const noexcept
+	inline bool GameObject_IsTransient(RpgGameObjectID gameObject) const noexcept
 	{
 		RPG_Check(GameObject_IsValid(gameObject));
-		return GameObjectInfos[gameObject.Index].Flags & FLAG_Spawned;
+		return GameObjectInfos[gameObject.Index].Flags & FLAG_Transient;
 	}
+
+
+	// Check if gameobject is spawned
+	// @param gameObject - Gameobject to check
+	// @return TRUE if spawned
+	inline bool GameObject_IsSpawned(RpgGameObjectID gameObject) const noexcept
+	{
+		return GameObject_IsValid(gameObject) && (GameObjectInfos[gameObject.Index].Flags & FLAG_Spawned);
+	}
+
 
 	inline bool GameObject_IsTransformUpdated(RpgGameObjectID gameObject) const noexcept
 	{
@@ -472,7 +412,33 @@ public:
 
 
 private:
-	inline void GameObject_RemoveScriptAtIndex(int index) noexcept
+	inline void GameObjectScript_StartPlay(int index) noexcept
+	{
+		RpgGameObjectScript* script = GameObjectScripts[index];
+		RPG_Check(script);
+
+		if (bHasStartedPlay && !script->bStartedPlay)
+		{
+			script->StartPlay();
+			script->bStartedPlay = true;
+		}
+	}
+
+
+	inline void GameObjectScript_StopPlay(int index) noexcept
+	{
+		RpgGameObjectScript* script = GameObjectScripts[index];
+		RPG_Check(script);
+
+		if (script->bStartedPlay)
+		{
+			script->StopPlay();
+			script->bStartedPlay = false;
+		}
+	}
+
+
+	inline void GameObjectScript_Remove(int index) noexcept
 	{
 		RpgGameObjectScript* script = GameObjectScripts[index];
 		RPG_Check(script);
@@ -480,11 +446,8 @@ private:
 		script->DetachedFromGameObject();
 		script->World = nullptr;
 		script->GameObject = RpgGameObjectID();
-
-		if (script->bStartedPlay)
-		{
-			script->StopPlay();
-		}
+		script->CachedWorldScriptIndex = RPG_INDEX_INVALID;
+		script->CachedObjectScriptIndex = RPG_INDEX_INVALID;
 
 		GameObjectScripts.RemoveAt(index);
 	}
@@ -495,15 +458,19 @@ private:
 	{
 		FLAG_None				= (0),
 		FLAG_Allocated			= (1 << 0),
-		FLAG_Loading			= (1 << 1),
-		FLAG_Loaded				= (1 << 2),
-		FLAG_Spawned			= (1 << 3),
-		FLAG_PendingDestroy		= (1 << 4),
-		FLAG_TransformUpdated	= (1 << 5),
+		FLAG_Transient			= (1 << 1),
+		FLAG_Loading			= (1 << 2),
+		FLAG_Loaded				= (1 << 3),
+		FLAG_Spawned			= (1 << 4),
+		FLAG_PendingDestroy		= (1 << 5),
+		FLAG_TransformUpdated	= (1 << 6),
 	};
 
 	struct FGameObjectInfo
 	{
+		// Level where the gameobject spawned on
+		RpgLevel* Level{ nullptr };
+
 		// Component index for each type
 		uint16_t ComponentIndices[RPG_COMPONENT_TYPE_MAX_COUNT]{};
 

@@ -90,7 +90,7 @@ void RpgRenderWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) noex
 	for (auto it = world->Component_CreateIterator<RpgRenderComponent_Camera>(); it; ++it)
 	{
 		RpgRenderComponent_Camera& comp = it.GetValue();
-		if (!comp.bActivated)
+		if (!comp.bActivated || !world->GameObject_IsSpawned(comp.GameObject))
 		{
 			continue;
 		}

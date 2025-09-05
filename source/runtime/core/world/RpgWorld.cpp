@@ -1,4 +1,5 @@
 #include "RpgWorld.h"
+#include "../RpgConsoleSystem.h"
 
 
 RPG_LOG_DEFINE_CATEGORY(RpgLogWorld, VERBOSITY_DEBUG)
@@ -49,15 +50,24 @@ void RpgWorld::StreamWrite(RpgStreamWriter& writer) const noexcept
 {
     writer.Write(Name);
 
+    // counting non transient and alive object
+    int objectCount = 0;
+    for (auto it = GameObjectInfos.CreateConstIterator(); it; ++it)
+    {
+        const FGameObjectInfo& info = it.GetValue();
+
+        if (info.Flags & (FLAG_Transient | FLAG_PendingDestroy))
+        {
+            continue;
+        }
+
+        ++objectCount;
+    }
+
+    writer.Write(objectCount);
+
     const int levelCount = Levels.GetCount();
     writer.Write(levelCount);
-
-    const int objectCount = GameObjectNames.GetCount();
-
-    for (int i = 0; i < ComponentStorages.GetCount(); ++i)
-    {
-        ComponentStorages[i]->StreamWrite(writer);
-    }
 
     for (int i = 0; i < levelCount; ++i)
     {
@@ -68,36 +78,48 @@ void RpgWorld::StreamWrite(RpgStreamWriter& writer) const noexcept
 
 void RpgWorld::StreamRead(RpgStreamReader& reader) noexcept
 {
-    reader.Read(Name);
+    ClearFast();
 
-    int levelCount = 0;
-    reader.Read(levelCount);
+    reader.Read(Name);
 
     int objectCount = 0;
     reader.Read(objectCount);
 
-    GameObjectNames.Clear(true);
     GameObjectNames.Reserve(objectCount);
-
-    GameObjectInfos.Clear(true);
     GameObjectInfos.Reserve(objectCount);
-
-    GameObjectTransforms.Clear(true);
     GameObjectTransforms.Reserve(objectCount);
     
-
-    for (int i = 0; i < ComponentStorages.GetCount(); ++i)
-    {
-        ComponentStorages[i]->StreamRead(reader);
-    }
-    
-
-    Levels.Clear(true);
+    int levelCount = 0;
+    reader.Read(levelCount);
 
     for (int i = 0; i < levelCount; ++i)
     {
         Level_Create("")->StreamRead(reader);
     }
+}
+
+
+void RpgWorld::ClearFast() noexcept
+{
+    for (uint16_t compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+    {
+        if (ComponentStorages[compType])
+        {
+            ComponentStorages[compType]->Clear();
+        }
+    }
+
+    for (int i = 0; i < Levels.GetCount(); ++i)
+    {
+        delete Levels[i];
+        Levels[i] = nullptr;
+    }
+
+    Levels.Clear();
+
+    GameObjectNames.Clear();
+    GameObjectInfos.Clear();
+    GameObjectTransforms.Clear();
 }
 
 
@@ -120,7 +142,9 @@ void RpgWorld::BeginFrame(int frameIndex) noexcept
             }
         }
 
-        info.Flags = 0;
+        GameObjectNames.RemoveAt(index);
+        GameObjectInfos.RemoveAt(index);
+        GameObjectTransforms.RemoveAt(index);
     }
 }
 
@@ -149,14 +173,7 @@ void RpgWorld::DispatchStartPlay() noexcept
 
     for (int i = 0; i < GameObjectScripts.GetCount(); ++i)
     {
-        RpgGameObjectScript* script = GameObjectScripts[i];
-        RPG_Check(script);
-
-        if (!script->bStartedPlay)
-        {
-            script->StartPlay();
-            script->bStartedPlay = true;
-        }
+        GameObjectScript_StartPlay(i);
     }
 
     bHasStartedPlay = true;
@@ -177,14 +194,7 @@ void RpgWorld::DispatchStopPlay() noexcept
 
     for (int i = 0; i < GameObjectScripts.GetCount(); ++i)
     {
-        RpgGameObjectScript* script = GameObjectScripts[i];
-        RPG_Check(script);
-
-        if (script->bStartedPlay)
-        {
-            script->StopPlay();
-            script->bStartedPlay = false;
-        }
+        GameObjectScript_StopPlay(i);
     }
 
     bHasStartedPlay = false;
@@ -200,10 +210,7 @@ void RpgWorld::DispatchTickUpdate(float deltaTime) noexcept
 
     for (int i = 0; i < GameObjectScripts.GetCount(); ++i)
     {
-        RpgGameObjectScript* script = GameObjectScripts[i];
-        RPG_Check(script);
-
-        script->TickUpdate(deltaTime);
+        GameObjectScripts[i]->TickUpdate(deltaTime);
     }
 }
 
@@ -275,8 +282,8 @@ RpgGameObjectID RpgWorld::GameObject_Create(const RpgName& name, const RpgTransf
     RpgPlatformMemory::MemSet(info.ComponentIndices, RPG_COMPONENT_ID_INVALID, sizeof(uint16_t) * RPG_COMPONENT_TYPE_MAX_COUNT);
 
     ++info.Gen;
-    info.Flags = FLAG_Allocated | FLAG_TransformUpdated;
     RPG_Check(info.Gen < UINT16_MAX);
+    info.Flags = FLAG_Allocated | FLAG_TransformUpdated;
 
     RpgPlatformMemory::MemSet(info.ScriptIndices, RPG_INDEX_INVALID, sizeof(int16_t) * RPG_GAMEOBJECT_MAX_SCRIPT);
 
@@ -296,15 +303,22 @@ void RpgWorld::GameObject_Destroy(RpgGameObjectID& gameObject) noexcept
     if (GameObject_IsValid(gameObject))
     {
         FGameObjectInfo& info = GameObjectInfos[gameObject.Index];
-        info.Flags |= FLAG_PendingDestroy;
+
+        // Remove from level
+        info.Level->RemoveGameObject(gameObject);
+
+        // FLAG_Spawned off, FLAG_PendingDestroy ON
+        info.Flags = (info.Flags & ~FLAG_Spawned) | FLAG_PendingDestroy;
 
         // remove scripts
         for (int i = 0; i < RPG_GAMEOBJECT_MAX_SCRIPT; ++i)
         {
             const int scriptIndex = info.ScriptIndices[i];
+
             if (scriptIndex != RPG_INDEX_INVALID)
             {
-                GameObject_RemoveScriptAtIndex(scriptIndex);
+                GameObjectScript_StopPlay(scriptIndex);
+                GameObjectScript_Remove(scriptIndex);
                 info.ScriptIndices[i] = RPG_INDEX_INVALID;
             }
         }
@@ -318,27 +332,31 @@ void RpgWorld::GameObject_Destroy(RpgGameObjectID& gameObject) noexcept
 }
 
 
-void RpgWorld::GameObject_Spawn(RpgGameObjectID gameObject, RpgLevel* opt_Level) noexcept
-{
-    RPG_Check(GameObject_IsValid(gameObject));
-
-    RpgLevel* level = opt_Level == nullptr ? Levels[0] : opt_Level;
-    RPG_Check(level);
-    level->AddGameObject(gameObject);
-
-    FGameObjectInfo& info = GameObjectInfos[gameObject.Index];
-    info.Flags |= FLAG_Spawned;
-}
-
-
 void RpgWorld::GameObject_StreamWrite(RpgGameObjectID gameObject, RpgStreamWriter& writer) const noexcept
 {
     RPG_Check(GameObject_IsValid(gameObject));
 
     const int id = gameObject.Index;
+    const FGameObjectInfo& info = GameObjectInfos[id];
+    RPG_Check(!(info.Flags & (FLAG_Transient | FLAG_PendingDestroy)));
+
     writer.Write(GameObjectNames[id]);
-    writer.Write(GameObjectInfos[id]);
     writer.Write(GameObjectTransforms[id]);
+
+    // components
+    writer.Write(RPG_COMPONENT_TYPE_MAX_COUNT);
+    writer.WriteData(info.ComponentIndices, sizeof(uint16_t) * RPG_COMPONENT_TYPE_MAX_COUNT);
+
+    for (uint16_t compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+    {
+        const int compId = info.ComponentIndices[compType];
+        if (compId == RPG_COMPONENT_ID_INVALID)
+        {
+            continue;
+        }
+
+        ComponentStorages[compType]->StreamWrite(writer, compId);
+    }
 }
 
 
@@ -347,7 +365,140 @@ void RpgWorld::GameObject_StreamRead(RpgGameObjectID gameObject, RpgStreamReader
     RPG_Check(GameObject_IsValid(gameObject));
 
     const int id = gameObject.Index;
+    FGameObjectInfo& info = GameObjectInfos[id];
+
     reader.Read(GameObjectNames[id]);
-    reader.Read(GameObjectInfos[id]);
     reader.Read(GameObjectTransforms[id]);
+
+    // components
+    int compTypeCount = 0;
+    reader.Read(compTypeCount);
+    reader.ReadData(info.ComponentIndices, sizeof(uint16_t) * compTypeCount);
+
+    for (uint16_t compType = 0; compType < compTypeCount; ++compType)
+    {
+        if (info.ComponentIndices[compType] == RPG_COMPONENT_ID_INVALID)
+        {
+            continue;
+        }
+
+        const int compId = ComponentStorages[compType]->Add();
+        ComponentStorages[compType]->StreamRead(reader, compId, gameObject);
+    }
+}
+
+
+void RpgWorld::GameObject_AttachScript(RpgGameObjectID gameObject, RpgGameObjectScript* script) noexcept
+{
+    RPG_Check(GameObject_IsValid(gameObject));
+    RPG_Check(script);
+
+    const char* scriptTypeName = script->GetTypeName();
+
+    // check if script already attached to any gameobject
+    const int checkIndex = GameObjectScripts.FindIndexByValue(script);
+    if (checkIndex != RPG_INDEX_INVALID)
+    {
+        RPG_CONSOLE_Warn(RpgLogWorld, "Script (%s) has been attached to gameobject (%s). Ignore attach script!", scriptTypeName, *GameObjectNames[script->GameObject.Index]);
+        return;
+    }
+
+
+    FGameObjectInfo& info = GameObjectInfos[gameObject.Index];
+
+    int objectScriptIndex = RPG_INDEX_INVALID;
+
+    for (int i = 0; i < RPG_GAMEOBJECT_MAX_SCRIPT; ++i)
+    {
+        const int checkWorldScriptIndex = info.ScriptIndices[i];
+
+        if (checkWorldScriptIndex != RPG_INDEX_INVALID)
+        {
+            if (GameObjectScripts[checkWorldScriptIndex]->GetTypeName() == scriptTypeName)
+            {
+                RPG_CONSOLE_Warn(RpgLogWorld, "Script (%s) has been attached to gameobject (%s). Ignore attach script!", scriptTypeName, *GameObjectNames[gameObject.Index]);
+            }
+        }
+        else
+        {
+            objectScriptIndex = i;
+        }
+    }
+
+    RPG_CheckV(objectScriptIndex != RPG_INDEX_INVALID, "Cannot add script into game object (%s). Exceeds maximum limit (%i) of scripts per game object!", scriptTypeName, RPG_GAMEOBJECT_MAX_SCRIPT);
+
+    const int worldScriptIndex = GameObjectScripts.GetCount();
+    info.ScriptIndices[objectScriptIndex] = worldScriptIndex;
+    GameObjectScripts.AddValue(script);
+
+    script->World = this;
+    script->GameObject = gameObject;
+    script->CachedWorldScriptIndex = worldScriptIndex;
+    script->CachedObjectScriptIndex = objectScriptIndex;
+    script->AttachedToGameObject();
+
+    RPG_CONSOLE_Log(RpgLogWorld, "Attached script (%s) to game object (%s)", scriptTypeName, *GameObjectNames[gameObject.Index]);
+}
+
+
+void RpgWorld::GameObject_DetachScript(RpgGameObjectID gameObject, RpgGameObjectScript* script) noexcept
+{
+    if (script == nullptr)
+    {
+        return;
+    }
+
+    RPG_Check(GameObject_IsValid(gameObject));
+
+    const char* scriptTypeName = script->GetTypeName();
+
+    const RpgGameObjectID scriptGameObject = script->GameObject;
+    if (gameObject != scriptGameObject)
+    {
+        RPG_Check(GameObject_IsValid(scriptGameObject));
+
+        RPG_CONSOLE_Warn(RpgLogWorld, "Cannot detach script (%s) from gameobject (%s) because script is attached to gameobject (%s)", 
+            scriptTypeName, 
+            *GameObjectNames[gameObject.Index],
+            *GameObjectNames[scriptGameObject.Index]
+        );
+
+        return;
+    }
+
+    const int worldScriptIndex = script->CachedWorldScriptIndex;
+    const int objectScriptIndex = script->CachedObjectScriptIndex;
+    FGameObjectInfo& info = GameObjectInfos[gameObject.Index];
+
+    RPG_Check(script && script->GameObject == gameObject);
+    RPG_Check(worldScriptIndex != RPG_INDEX_INVALID && script == GameObjectScripts[worldScriptIndex]);
+    RPG_Check(objectScriptIndex != RPG_INDEX_INVALID && worldScriptIndex == info.ScriptIndices[objectScriptIndex]);
+
+    GameObjectScript_StopPlay(worldScriptIndex);
+    GameObjectScript_Remove(worldScriptIndex);
+    info.ScriptIndices[objectScriptIndex] = RPG_INDEX_INVALID;
+
+    RPG_CONSOLE_Log(RpgLogWorld, "Detached script (%s) from game object (%s)", script->GetTypeName(), *GameObjectNames[gameObject.Index]);
+}
+
+
+void RpgWorld::GameObject_Spawn(RpgGameObjectID gameObject, RpgLevel* opt_Level) noexcept
+{
+    RPG_Check(GameObject_IsValid(gameObject));
+
+    FGameObjectInfo& info = GameObjectInfos[gameObject.Index];
+    info.Level = opt_Level == nullptr ? Levels[0] : opt_Level;
+    RPG_Check(info.Level);
+    info.Level->AddGameObject(gameObject);
+    info.Flags |= FLAG_Spawned;
+
+    for (int i = 0; i < RPG_GAMEOBJECT_MAX_SCRIPT; ++i)
+    {
+        const int scriptIndex = info.ScriptIndices[i];
+
+        if (scriptIndex != RPG_INDEX_INVALID)
+        {
+            GameObjectScript_StartPlay(scriptIndex);
+        }
+    }
 }

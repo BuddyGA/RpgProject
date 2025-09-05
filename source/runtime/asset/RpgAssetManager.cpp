@@ -1,6 +1,6 @@
 #include "RpgAssetManager.h"
-#include "RpgAssetStream.h"
 #include "core/RpgConsoleSystem.h"
+#include "core/world/RpgWorld.h"
 
 
 
@@ -19,33 +19,37 @@ namespace RpgAssetStream
 			return RpgString();
 		}
 
-		RpgAssetStreamWriter writer;
+		// Serialize
+		RpgBinaryStreamWriter writer;
+		asset->StreamWrite(writer);
 
-		// header
-		RpgAssetFileHeader header;
-		header.Magix = RPG_ASSET_FILE_MAGIX;
-		header.Type = static_cast<uint16_t>(TAsset::FILE_TYPE);
-		header.Version = TAsset::FILE_VERSION;
-		header.DataSizeBytes = asset->AssetStreamDataSizeBytes(writer);
-		writer.Write(header);
-
-		// data
-		asset->AssetStreamWrite(writer);
-
-		// eof
-		writer.Write(RPG_ASSET_FILE_MAGIX);
-
+		// create folder
 		const RpgString dirPath = RpgString::Format("%s%s/", *RpgFileSystem::GetAssetDirPath(), directory);
 		RpgFileSystem::CreateFolder(dirPath);
 
 		const char* name = *asset->GetName();
 		const RpgString filePath = RpgString::Format("%s%s.rpga", *dirPath, name);
 
-		if (!RpgFileSystem::WriteToFile(filePath, writer.GetByteArrayData(), writer.GetByteArraySize()))
+		// open file
+		HANDLE fileHandle = RpgPlatformFile::FileOpen(*filePath, RpgPlatformFile::OPEN_MODE_WRITE_OVERWRITE);
+		RPG_Check(fileHandle && fileHandle != INVALID_HANDLE_VALUE);
 		{
-			RPG_CONSOLE_Error(RpgLogAsset, "Fail to save asset (%s) to file (%s)", name, *filePath);
-			return RpgString();
+			// header
+			RpgAssetFileHeader header;
+			header.Magix = RPG_ASSET_FILE_MAGIX;
+			header.Type = static_cast<uint16_t>(TAsset::FILE_TYPE);
+			header.Version = TAsset::FILE_VERSION;
+			header.DataSizeBytes = static_cast<uint32_t>(writer.GetByteArraySize());
+			RpgPlatformFile::FileWrite(fileHandle, &header, sizeof(RpgAssetFileHeader));
+
+			// data
+			RpgPlatformFile::FileWrite(fileHandle, writer.GetByteArrayData(), writer.GetByteArraySize());
+
+			// eof
+			const int eof = RPG_ASSET_FILE_MAGIX;
+			RpgPlatformFile::FileWrite(fileHandle, &eof, sizeof(int));
 		}
+		RpgPlatformFile::FileClose(fileHandle);
 
 		RPG_CONSOLE_Log(RpgLogAsset, "Saved asset (%s) to file (%s)", name, *filePath);
 
@@ -79,16 +83,16 @@ namespace RpgAssetStream
 		// load asset
 		RPG_CONSOLE_Log(RpgLogAsset, "Load asset (%s)", *path);
 
-		const RpgString filePath = RpgString::Format("%s/%s.rpga", *RpgFileSystem::GetAssetDirPath(), *path);
+		const RpgFilePath filePath = RpgString::Format("%s/%s.rpga", *RpgFileSystem::GetAssetDirPath(), *path);
 
 		RpgArray<uint8_t> data;
-		if (!RpgFileSystem::ReadFromFile(filePath, data))
+		if (!RpgFileSystem::ReadFromFile(filePath.ToString(), data))
 		{
 			RPG_CONSOLE_Error(RpgLogAsset, "Fail to load asset (%s). Reading file data failed! (FilePath: %s)", *path, *filePath);
 			return RpgSharedPtr<TAsset>();
 		}
 
-		RpgAssetStreamReader reader(data);
+		RpgBinaryStreamReader reader(data);
 
 		// header
 		RpgAssetFileHeader header;
@@ -98,8 +102,9 @@ namespace RpgAssetStream
 		RPG_Check(header.Version == TAsset::FILE_VERSION);
 
 		// data
-		RpgSharedPtr<TAsset> asset = RpgPointer::MakeShared<TAsset>();
-		asset->AssetStreamRead(reader);
+		RpgSharedPtr<TAsset> asset = RpgPointer::MakeShared<TAsset>(filePath.GetFileName());
+		asset->StreamRead(reader);
+		RPG_Check(header.DataSizeBytes == reader.GetOffset() - sizeof(RpgAssetFileHeader));
 
 		// eof
 		int eof = 0;
@@ -229,6 +234,11 @@ void RpgAssetManager::SaveMesh(const RpgSharedMesh& mesh, const char* directory)
 
 RpgSharedMesh RpgAssetManager::LoadMesh(const RpgString& path) noexcept
 {
+	if (path.IsEmpty())
+	{
+		return RpgSharedMesh();
+	}
+
 	return RpgAssetStream::LoadFromFile<RpgMesh>(path, LoadedMeshData, RegisteredAssetHashes, RegisteredAssetInfos);
 }
 
@@ -247,6 +257,11 @@ void RpgAssetManager::SaveTexture(const RpgSharedTexture2D& texture, const char*
 
 RpgSharedTexture2D RpgAssetManager::LoadTexture(const RpgString& path) noexcept
 {
+	if (path.IsEmpty())
+	{
+		return RpgSharedTexture2D();
+	}
+
 	return RpgAssetStream::LoadFromFile<RpgTexture2D>(path, LoadedTextureData, RegisteredAssetHashes, RegisteredAssetInfos);
 }
 
@@ -265,7 +280,98 @@ void RpgAssetManager::SaveMaterial(const RpgSharedMaterial& material, const char
 
 RpgSharedMaterial RpgAssetManager::LoadMaterial(const RpgString& path) noexcept
 {
+	if (path.IsEmpty())
+	{
+		return RpgSharedMaterial();
+	}
+
 	return RpgAssetStream::LoadFromFile<RpgMaterial>(path, LoadedMaterialData, RegisteredAssetHashes, RegisteredAssetInfos);
+}
+
+
+void RpgAssetManager::SaveLevel(const RpgWorld* world, const char* directory) noexcept
+{
+	RPG_Check(world);
+
+	RpgBinaryStreamWriter writer;
+	world->StreamWrite(writer);
+
+	// create folder
+	const RpgString dirPath = RpgString::Format("%s%s/", *RpgFileSystem::GetAssetDirPath(), directory);
+	RpgFileSystem::CreateFolder(dirPath);
+
+	const RpgName& name = world->GetName();
+	const RpgString filePath = RpgString::Format("%s%s.rpga", *dirPath, *name);
+
+	// open file
+	HANDLE fileHandle = RpgPlatformFile::FileOpen(*filePath, RpgPlatformFile::OPEN_MODE_WRITE_OVERWRITE);
+	RPG_Check(fileHandle && fileHandle != INVALID_HANDLE_VALUE);
+	{
+		// header
+		RpgAssetFileHeader header;
+		header.Magix = RPG_ASSET_FILE_MAGIX;
+		header.Type = static_cast<uint16_t>(RpgAssetFileType::LEVEL);
+		header.Version = 1;
+		header.DataSizeBytes = static_cast<uint32_t>(writer.GetByteArraySize());
+		RpgPlatformFile::FileWrite(fileHandle, &header, sizeof(RpgAssetFileHeader));
+
+		// data
+		RpgPlatformFile::FileWrite(fileHandle, writer.GetByteArrayData(), writer.GetByteArraySize());
+
+		// eof
+		const int eof = RPG_ASSET_FILE_MAGIX;
+		RpgPlatformFile::FileWrite(fileHandle, &eof, sizeof(int));
+	}
+	RpgPlatformFile::FileClose(fileHandle);
+
+	RPG_CONSOLE_Log(RpgLogAsset, "Saved level (%s) to file (%s)", name, *filePath);
+
+	RegisterAssetFile(filePath);
+}
+
+
+void RpgAssetManager::LoadLevel(const RpgString& path, RpgWorld* out_World) noexcept
+{
+	const uint64_t hash = XXH3_64bits(*path, path.GetLength());
+
+	const int regIndex = RegisteredAssetHashes.FindIndexByValue(hash);
+	if (regIndex == RPG_INDEX_INVALID)
+	{
+		RPG_CONSOLE_Error(RpgLogAsset, "Fail to load level (%s). Level not found in registry!", *path);
+		return;
+	}
+
+	const RpgAssetInfo& info = RegisteredAssetInfos[regIndex];
+	RPG_Check(info.Type == RpgAssetFileType::LEVEL);
+
+	const RpgString filePath = RpgString::Format("%s/%s.rpga", *RpgFileSystem::GetAssetDirPath(), *path);
+
+	RpgArray<uint8_t> data;
+	if (!RpgFileSystem::ReadFromFile(filePath, data))
+	{
+		RPG_CONSOLE_Error(RpgLogAsset, "Fail to load level (%s). Reading file data failed! (FilePath: %s)", *path, *filePath);
+		return;
+	}
+
+	RpgBinaryStreamReader reader(data);
+
+	// header
+	RpgAssetFileHeader header;
+	reader.Read(header);
+	RPG_Check(header.Magix == RPG_ASSET_FILE_MAGIX);
+	RPG_Check(header.Type == static_cast<uint16_t>(RpgAssetFileType::LEVEL));
+	RPG_Check(header.Version == 1);
+
+	// data
+	out_World->StreamRead(reader);
+	RPG_Check(header.DataSizeBytes == reader.GetOffset() - sizeof(RpgAssetFileHeader));
+
+	// eof
+	int eof = 0;
+	reader.Read(eof);
+	RPG_Check(eof == RPG_ASSET_FILE_MAGIX);
+
+	RPG_CONSOLE_Log(RpgLogAsset, "Loaded level (%s)", *path);
 }
 
 

@@ -44,9 +44,11 @@ public:
 	RpgComponentStorageInterface() noexcept = default;
 	virtual ~RpgComponentStorageInterface() noexcept = default;
 
-	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept = 0;
-	virtual void StreamRead(RpgStreamReader& reader) noexcept = 0;
+	virtual void StreamWrite(RpgStreamWriter& writer, int id) const noexcept = 0;
+	virtual void StreamRead(RpgStreamReader& reader, int id, RpgGameObjectID gameObject) noexcept = 0;
+	virtual int Add() noexcept = 0;
 	virtual void Remove(int index) noexcept = 0;
+	virtual void Clear(bool bFreeMemory = false) noexcept = 0;
 
 };
 
@@ -54,7 +56,6 @@ public:
 template<typename TComponent>
 class RpgComponentStorage : public RpgComponentStorageInterface
 {
-
 public:
 	RpgComponentStorage() noexcept = default;
 	
@@ -63,36 +64,32 @@ public:
 		RPG_LogDebug(RpgLogTemp, "Destroy component storage (%s)", TComponent::TYPE_NAME);
 	}
 
-	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override
+	virtual void StreamWrite(RpgStreamWriter& writer, int id) const noexcept override
 	{
-		const int count = Components.GetCount();
-		writer.Write(count);
-
-		for (auto it = Components.CreateConstIterator(); it; ++it)
-		{
-			const TComponent& comp = it.GetValue();
-			TComponent::StreamWrite(writer, comp);
-		}
+		TComponent::StreamWrite(writer, Components[id]);
 	}
 
-	virtual void StreamRead(RpgStreamReader& reader) noexcept override
+	virtual void StreamRead(RpgStreamReader& reader, int id, RpgGameObjectID gameObject) noexcept override
 	{
-		int count = 0;
-		reader.Read(count);
+		TComponent& data = Components[id];
+		data.GameObject = gameObject;
+		TComponent::StreamRead(reader, data);
+	}
 
-		Components.Clear(true);
-		Components.Reserve(count);
-
-		for (int i = 0; i < count; ++i)
-		{
-			const int index = Components.Add();
-			TComponent::StreamRead(reader, Components[index]);
-		}
+	virtual int Add() noexcept override
+	{
+		return Components.Add();
 	}
 
 	virtual void Remove(int id) noexcept override
 	{
+		Components[id].Destroy();
 		Components.RemoveAt(id);
+	}
+
+	virtual void Clear(bool bFreeMemory = false) noexcept override
+	{
+		Components.Clear(bFreeMemory);
 	}
 
 
@@ -100,11 +97,7 @@ public:
 	{
 		return Components.IsValid(id);
 	}
-
-	[[nodiscard]] inline int Add() noexcept 
-	{
-		return Components.Add();
-	}
+	
 
 	inline TComponent& Get(int id) noexcept
 	{

@@ -2,7 +2,7 @@
 
 #include "core/RpgThreadPool.h"
 #include "core/RpgFilePath.h"
-#include "render/RpgTexture.h"
+#include "render/asset/RpgTexture.h"
 #include "RpgAssimpTypes.h"
 
 

@@ -194,14 +194,13 @@ class RpgMaterial : public RpgAssetInterface
 	RPG_ASSET_FILE(RpgAssetFileType::MATERIAL, 1)
 
 public:
-	RpgMaterial() noexcept;
+	RpgMaterial(const RpgName& in_Name) noexcept;
 	RpgMaterial(const RpgName& in_Name, const RpgRenderPipelineState& in_RenderState, const RpgMaterialParameterLayout& in_ParameterLayout) noexcept;
 	RpgMaterial(const RpgName& in_Name, const RpgSharedMaterial& in_ParentMaterial) noexcept;
 	~RpgMaterial() noexcept;
 
-	virtual uint32_t AssetStreamDataSizeBytes(const RpgAssetStreamWriter& writer) const noexcept override;
-	virtual void AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept override;
-	virtual void AssetStreamRead(RpgAssetStreamReader& reader) noexcept override;
+	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
+	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
 
 
 	inline const RpgName& GetName() const noexcept

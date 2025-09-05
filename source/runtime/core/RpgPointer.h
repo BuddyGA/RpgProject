@@ -143,7 +143,7 @@ private:
 
 struct RpgPointerRefCount
 {
-	void* Pointer{ nullptr };
+	void* Object{ nullptr };
 	RpgAtomicInt SharedCount;
 	RpgAtomicInt WeakCount;
 };
@@ -162,7 +162,7 @@ public:
 		if (in_Obj)
 		{
 			Ref = new RpgPointerRefCount();
-			Ref->Pointer = in_Obj;
+			Ref->Object = in_Obj;
 			Ref->SharedCount = 1;
 			Ref->WeakCount = 0;
 		}
@@ -237,25 +237,25 @@ public:
 
 	inline T* operator->() noexcept
 	{
-		return Ref ? static_cast<T*>(Ref->Pointer) : nullptr;
+		return Ref ? static_cast<T*>(Ref->Object) : nullptr;
 	}
 
 	inline const T* operator->() const noexcept
 	{
-		return Ref ? static_cast<const T*>(Ref->Pointer) : nullptr;
+		return Ref ? static_cast<const T*>(Ref->Object) : nullptr;
 	}
 
 
 	inline operator bool() const noexcept
 	{
-		return Ref && Ref->Pointer;
+		return Ref && Ref->Object;
 	}
 
 
 public:
 	inline bool IsValid() const noexcept
 	{
-		return Ref && Ref->Pointer;
+		return Ref && Ref->Object;
 	}
 
 
@@ -265,8 +265,8 @@ public:
 		{
 			if (InterlockedAdd(&Ref->SharedCount, -1) == 0)
 			{
-				delete static_cast<T*>(Ref->Pointer);
-				Ref->Pointer = nullptr;
+				delete static_cast<T*>(Ref->Object);
+				Ref->Object = nullptr;
 
 				if (Ref->WeakCount == 0)
 				{
@@ -281,12 +281,12 @@ public:
 
 	inline T* Get() noexcept
 	{
-		return Ref ? static_cast<T*>(Ref->Pointer) : nullptr;
+		return Ref ? static_cast<T*>(Ref->Object) : nullptr;
 	}
 
 	inline const T* Get() const noexcept
 	{
-		return Ref ? static_cast<const T*>(Ref->Pointer) : nullptr;
+		return Ref ? static_cast<const T*>(Ref->Object) : nullptr;
 	}
 
 	inline int GetRefCount() const noexcept
@@ -443,7 +443,7 @@ public:
 		{
 			if ( (InterlockedAdd(&Ref->WeakCount, -1) == 0) && (Ref->SharedCount == 0) )
 			{
-				RPG_Check(Ref->Pointer == nullptr);
+				RPG_Check(Ref->Object == nullptr);
 				delete Ref;
 			}
 		}
@@ -477,7 +477,7 @@ public:
 		while (InterlockedCompareExchange(&Ref->SharedCount, exchange, expected) != expected);
 
 		shared.Ref = Ref;
-		RPG_Check(shared.Ref && shared.Ref->Pointer);
+		RPG_Check(shared.Ref && shared.Ref->Object);
 
 		return shared;
 	}

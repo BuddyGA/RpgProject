@@ -2,8 +2,8 @@
 
 #include "core/RpgDelegate.h"
 #include "input/RpgInputTypes.h"
-#include "render/RpgFont.h"
-#include "render/RpgMaterial.h"
+#include "render/asset/RpgFont.h"
+#include "render/asset/RpgMaterial.h"
 
 
 RPG_LOG_DECLARE_CATEGORY_EXTERN(RpgLogGui)

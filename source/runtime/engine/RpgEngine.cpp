@@ -30,8 +30,6 @@ RpgEngine::RpgEngine() noexcept
 {
 	WindowState = RpgPlatformWindowSizeState::DEFAULT;
 
-	//GuiConsole = nullptr;
-
 	// fps info
 	FpsLimit = 60;
 	FpsSampleTimer = 0.0f;
@@ -98,16 +96,16 @@ void RpgEngine::Initialize() noexcept
 	g_Editor->SetupGUI(GuiCanvas);
 
 	// test gui
-	RpgTest::Gui::Create(GuiCanvas);
+	//RpgTest::Gui::Create(GuiCanvas);
 
 	// test level
-	RpgTest::Engine::Create(MainWorld);
+	if (RpgTest::Engine::Create(MainWorld))
+	{
+		SpawnMainCamera();
+	}
+
 #endif // !RPG_BUILD_SHIPPING
 
-
-	// create main camera object
-	SetMainCamera(MainWorld->GameObject_Create("camera_main"));
-	MainWorld->GameObject_AttachScript(MainCameraObject, &ScriptDebugCamera);
 }
 
 
@@ -182,7 +180,16 @@ void RpgEngine::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 			RpgRenderWorldSubsystem* subsystem = MainWorld->Subsystem_Get<RpgRenderWorldSubsystem>();
 			subsystem->bDebugDrawMeshBound = !subsystem->bDebugDrawMeshBound;
 		}
+		else if (e.Button == RpgInputKey::KEYBOARD_F8)
+		{
+			g_AssetManager->SaveLevel(MainWorld, "game");
+		}
 		else if (e.Button == RpgInputKey::KEYBOARD_F9)
+		{
+			g_AssetManager->LoadLevel(RpgString("game/world_main"), MainWorld);
+			SpawnMainCamera();
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_F10)
 		{
 			if (MainWorld->HasStartedPlay())
 			{
@@ -406,16 +413,16 @@ void RpgEngine::DestroyWorld(RpgWorld*& world) noexcept
 }
 
 
-void RpgEngine::SetMainCamera(RpgGameObjectID cameraObject) noexcept
+void RpgEngine::SpawnMainCamera() noexcept
 {
-	if (MainCameraObject == cameraObject)
-	{
-		return;
-	}
+	RPG_Check(!MainWorld->GameObject_IsValid(MainCameraObject));
 
-	MainCameraObject = cameraObject;
+	MainCameraObject = MainWorld->GameObject_CreateTransient("camera_main");
 
 	RpgRenderComponent_Camera* cameraComp = MainWorld->GameObject_AddComponent<RpgRenderComponent_Camera>(MainCameraObject);
 	cameraComp->Viewport = &SceneViewport;
 	cameraComp->bActivated = true;
+
+	MainWorld->GameObject_AttachScript(MainCameraObject, &ScriptDebugCamera);
+	MainWorld->GameObject_Spawn(MainCameraObject);
 }

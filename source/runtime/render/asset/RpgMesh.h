@@ -35,12 +35,10 @@ public:
 
 
 public:
-	RpgMesh() noexcept;
-	RpgMesh(const RpgName& name) noexcept;
+	RpgMesh(const RpgName& in_Name) noexcept;
 
-	virtual uint32_t AssetStreamDataSizeBytes(const RpgAssetStreamWriter& writer) const noexcept override;
-	virtual void AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept override;
-	virtual void AssetStreamRead(RpgAssetStreamReader& reader) noexcept override;
+	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
+	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
 
 
 	// Free memory and overwrite existing vertex data 
@@ -140,12 +138,6 @@ public:
 		return CopyVertexData<RpgVertex::FIndex>(LockIndex, dst, out_DstOffset, Indices.GetData(), Indices.GetCount());
 	}
 
-
-	// Get mesh name
-	inline const RpgName& GetName() const noexcept
-	{
-		return Name;
-	}
 
 	// Get vertex count
 	inline int GetVertexCount() const noexcept
@@ -259,10 +251,6 @@ private:
 
 
 private:
-	// Name
-	RpgName Name;
-
-
 	// Vertex attribute flags
 	enum EFlag : uint16_t
 	{

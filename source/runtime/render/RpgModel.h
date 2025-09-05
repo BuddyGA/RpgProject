@@ -1,7 +1,7 @@
 #pragma once
 
-#include "RpgMesh.h"
-#include "RpgMaterial.h"
+#include "asset/RpgMesh.h"
+#include "asset/RpgMaterial.h"
 
 
 // Maximum model meshes/materials 

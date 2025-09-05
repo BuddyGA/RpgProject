@@ -71,6 +71,8 @@ static void TestLevel_AddLight_Point(RpgWorld* world, const RpgTransform& transf
 		lightComp->bIsVisible = true;
 		lightComp->bCastShadow = bCastShadow;
 	}
+
+	world->GameObject_Spawn(pointLight);
 }
 
 
@@ -78,9 +80,9 @@ static void TestLevel_AddLight_Spot(RpgWorld* world, const RpgTransform& transfo
 {
 	static int Counter = 0;
 
-	RpgGameObjectID pointLight = world->GameObject_Create(RpgName::Format("test_spotlight_%i", Counter++), transform);
+	RpgGameObjectID spotLight = world->GameObject_Create(RpgName::Format("test_spotlight_%i", Counter++), transform);
 	{
-		RpgRenderComponent_Light* lightComp = world->GameObject_AddComponent<RpgRenderComponent_Light>(pointLight);
+		RpgRenderComponent_Light* lightComp = world->GameObject_AddComponent<RpgRenderComponent_Light>(spotLight);
 		lightComp->Type = RpgRenderLight::TYPE_SPOT_LIGHT;
 		lightComp->ColorIntensity = colorIntensity;
 		lightComp->AttenuationRadius = radius;
@@ -89,6 +91,8 @@ static void TestLevel_AddLight_Spot(RpgWorld* world, const RpgTransform& transfo
 		lightComp->bIsVisible = true;
 		lightComp->bCastShadow = bCastShadow;
 	}
+
+	world->GameObject_Spawn(spotLight);
 }
 
 
@@ -162,9 +166,9 @@ static void TestLevel_Sponza(RpgWorld* world) noexcept
 }
 
 
-static void TestLevel_PrimitiveShapes(RpgWorld* world) noexcept
+static bool TestLevel_PrimitiveShapes(RpgWorld* world) noexcept
 {
-	TestLevel_AddBlocker(world, RpgVector3::ZERO, RpgVector3(2048.0f, 16.0f, 2048.0f), 4.0f);
+	//TestLevel_AddBlocker(world, RpgVector3::ZERO, RpgVector3(2048.0f, 16.0f, 2048.0f), 4.0f);
 
 	RpgTransform transform;
 
@@ -182,17 +186,17 @@ static void TestLevel_PrimitiveShapes(RpgWorld* world) noexcept
 		// +X
 		transform.Position = RpgVector3(300.0f, 500.0f, 0.0f);
 		TestLevel_AddCube(world, transform);
-		TestLevel_AddBlocker(world, RpgVector3(500.0f, 500.0f, 0.0f), RpgVector3(16, 200.0f, 200.0f), 1.0f);
+		//TestLevel_AddBlocker(world, RpgVector3(500.0f, 500.0f, 0.0f), RpgVector3(16, 200.0f, 200.0f), 1.0f);
 
 		// -X
 		transform.Position = RpgVector3(-300.0f, 500.0f, 0.0f);
 		TestLevel_AddCube(world, transform);
-		TestLevel_AddBlocker(world, RpgVector3(-500.0f, 500.0f, 0.0f), RpgVector3(16, 200.0f, 200.0f), 1.0f);
+		//TestLevel_AddBlocker(world, RpgVector3(-500.0f, 500.0f, 0.0f), RpgVector3(16, 200.0f, 200.0f), 1.0f);
 
 		// +Y
 		transform.Position = RpgVector3(0.0f, 800.0f, 0.0f);
 		TestLevel_AddCube(world, transform);
-		TestLevel_AddBlocker(world, RpgVector3(0.0f, 1000.0f, 0.0f), RpgVector3(200.0f, 16.0f, 200.0f), 1.0f);
+		//TestLevel_AddBlocker(world, RpgVector3(0.0f, 1000.0f, 0.0f), RpgVector3(200.0f, 16.0f, 200.0f), 1.0f);
 
 		// -Y
 		transform.Position = RpgVector3(0.0f, 280.0f, 0.0f);
@@ -201,12 +205,12 @@ static void TestLevel_PrimitiveShapes(RpgWorld* world) noexcept
 		// +Z
 		transform.Position = RpgVector3(0.0f, 500.0f, 300.0f);
 		TestLevel_AddCube(world, transform);
-		TestLevel_AddBlocker(world, RpgVector3(0.0f, 500.0f, 500.0f), RpgVector3(200.0f, 200.0f, 16.0f), 1.0f);
+		//TestLevel_AddBlocker(world, RpgVector3(0.0f, 500.0f, 500.0f), RpgVector3(200.0f, 200.0f, 16.0f), 1.0f);
 
 		// -Z
 		transform.Position = RpgVector3(0.0f, 500.0f, -300.0f);
 		TestLevel_AddCube(world, transform);
-		TestLevel_AddBlocker(world, RpgVector3(0.0f, 500.0f, -500.0f), RpgVector3(200.0f, 200.0f, 16.0f), 1.0f);
+		//TestLevel_AddBlocker(world, RpgVector3(0.0f, 500.0f, -500.0f), RpgVector3(200.0f, 200.0f, 16.0f), 1.0f);
 	}
 
 	// test spot light
@@ -231,6 +235,8 @@ static void TestLevel_PrimitiveShapes(RpgWorld* world) noexcept
 		transform.Rotation = RpgQuaternion::FromPitchYawRollDegree(45.25f, 48.0f, 0.0f);
 		TestLevel_AddLight_Spot(world, transform, RpgColorLinear(1.0f, 1.0f, 1.0f, 1.0f), 3200.0f, 20.0f, 40.0f, true);
 	}
+
+	return true;
 }
 
 
@@ -304,7 +310,7 @@ static void TestLevel_Animations(RpgWorld* world) noexcept
 
 
 
-void RpgTest::Engine::Create(RpgWorld* world) noexcept
+bool RpgTest::Engine::Create(RpgWorld* world) noexcept
 {
 	//TestLevel_Sponza(world);
 
@@ -315,7 +321,9 @@ void RpgTest::Engine::Create(RpgWorld* world) noexcept
 
 	//TestLevel_Animations(world);
 
-	TestLevel_PrimitiveShapes(world);
+	//return TestLevel_PrimitiveShapes(world);
 
 	//TestLevel_Import(world, RpgFileSystem::GetAssetRawDirPath() + "default_cube.fbx", 1.0f);
+
+	return false;
 }

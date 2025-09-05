@@ -42,6 +42,7 @@ namespace RpgAttribute
 		EL_RES_WATER,		// Elemental resistance (water)
 		EL_RES_WIND,		// Elemental resistance (wind)
 		EL_RES_EARTH,		// Elemental resistance (earth)
+		EL_RES_THUNDER,		// Elemental resistance (thunder)
 		EL_RES_LIGHT,		// Elemental resistance (light)
 		EL_RES_SHADOW,		// Elemental resistance (shadow)
 

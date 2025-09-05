@@ -37,7 +37,10 @@ void RpgRenderTask_CaptureLight::Execute() noexcept
 	for (auto it = World->Component_CreateIterator<RpgRenderComponent_Light>(); it; ++it)
 	{
 		RpgRenderComponent_Light& comp = it.GetValue();
-		if (!comp.bIsVisible)
+
+		// check if visible
+		// check if spawned
+		if (!comp.bIsVisible || !World->GameObject_IsSpawned(comp.GameObject))
 		{
 			continue;
 		}

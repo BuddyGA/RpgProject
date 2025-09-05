@@ -1,7 +1,7 @@
 #include "RpgRenderTask_RenderPass.h"
 #include "../RpgRenderPipeline.h"
 #include "../RpgRenderResource.h"
-#include "../RpgTexture.h"
+#include "../asset/RpgTexture.h"
 
 
 

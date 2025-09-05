@@ -17,6 +17,7 @@ public:
 	void MouseWheel(const RpgPlatformMouseWheelEvent& e) noexcept;
 	void MouseButton(const RpgPlatformMouseButtonEvent& e) noexcept;
 	void KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept;
+	void TickUpdate(float deltaTime) noexcept;
 
 
 private:

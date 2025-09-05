@@ -37,7 +37,7 @@ public:
 	[[nodiscard]] RpgWorld* CreateWorld(const RpgName& name) noexcept;
 	void DestroyWorld(RpgWorld*& world) noexcept;
 
-	void SetMainCamera(RpgGameObjectID cameraObject) noexcept;
+	void SpawnMainCamera() noexcept;
 
 
 	inline bool IsWindowMinimized() const noexcept
@@ -54,6 +54,26 @@ public:
 	inline const RpgWorld* GetMainWorld() const noexcept
 	{
 		return MainWorld;
+	}
+
+	inline RpgRenderer* GetMainRenderer() noexcept
+	{
+		return MainRenderer.Get();
+	}
+
+	inline const RpgRenderer* GetMainRenderer() const noexcept
+	{
+		return MainRenderer.Get();
+	}
+
+	inline RpgSceneViewport& GetMainSceneViewport() noexcept
+	{
+		return SceneViewport;
+	}
+
+	inline const RpgSceneViewport& GetMainSceneViewport() const noexcept
+	{
+		return SceneViewport;
 	}
 
 

@@ -1,6 +1,5 @@
 #include "RpgTexture.h"
 #include "core/RpgMath.h"
-#include "asset/RpgAssetStream.h"
 
 
 RPG_LOG_DECLARE_CATEGORY_STATIC(RpgLogTexture, VERBOSITY_DEBUG)
@@ -27,8 +26,9 @@ const DXGI_FORMAT RPG_TEXTURE_FORMAT_TO_DXGI_FORMAT[static_cast<uint8_t>(RpgText
 
 
 
-RpgTexture2D::RpgTexture2D() noexcept
-	: MipDatas()
+RpgTexture2D::RpgTexture2D(const RpgName& in_Name) noexcept
+	: RpgAssetInterface(in_Name)
+	, MipDatas()
 	, MipLocks()
 {
 	Flags = FLAG_None;
@@ -42,22 +42,20 @@ RpgTexture2D::RpgTexture2D() noexcept
 }
 
 
-RpgTexture2D::RpgTexture2D(const RpgName& name, RpgTextureFormat::EType format, uint16_t width, uint16_t height, uint8_t mipCount) noexcept
-	: RpgTexture2D()
+RpgTexture2D::RpgTexture2D(const RpgName& in_Name, RpgTextureFormat::EType in_Format, uint16_t in_Width, uint16_t in_Height, uint8_t in_MipCount) noexcept
+	: RpgTexture2D(in_Name)
 {
-	RPG_Check(format >= RpgTextureFormat::TEX_2D_R && format <= RpgTextureFormat::TEX_2D_BC7U);
+	RPG_Check(in_Format >= RpgTextureFormat::TEX_2D_R && in_Format <= RpgTextureFormat::TEX_2D_BC7U);
+	Format = in_Format;
 
-	Name = name;
-	Format = format;
+	RPG_Check(in_Width >= RPG_TEXTURE_MIN_DIM && in_Width <= RPG_TEXTURE_MAX_DIM);
+	Width = in_Width;
 
-	RPG_Check(width >= RPG_TEXTURE_MIN_DIM && width <= RPG_TEXTURE_MAX_DIM);
-	Width = width;
+	RPG_Check(in_Height >= RPG_TEXTURE_MIN_DIM && in_Height <= RPG_TEXTURE_MAX_DIM);
+	Height = in_Height;
 
-	RPG_Check(height >= RPG_TEXTURE_MIN_DIM && height <= RPG_TEXTURE_MAX_DIM);
-	Height = height;
-
-	RPG_Check(mipCount > 0 && mipCount <= RPG_TEXTURE_MAX_MIP);
-	MipCount = mipCount;
+	RPG_Check(in_MipCount > 0 && in_MipCount <= RPG_TEXTURE_MAX_MIP);
+	MipCount = in_MipCount;
 
 	InitializeMips();
 }
@@ -65,7 +63,7 @@ RpgTexture2D::RpgTexture2D(const RpgName& name, RpgTextureFormat::EType format, 
 
 RpgTexture2D::~RpgTexture2D() noexcept
 {
-	RPG_LogDebug(RpgLogTexture, "Destroy texture (%s)", *Name);
+	RPG_LogDebug(RpgLogTexture, "Destroy texture (%s)", *GetName());
 
 	if (PixelStagingBuffer && PixelData)
 	{
@@ -75,24 +73,8 @@ RpgTexture2D::~RpgTexture2D() noexcept
 }
 
 
-uint32_t RpgTexture2D::AssetStreamDataSizeBytes(const RpgAssetStreamWriter& writer) const noexcept
+void RpgTexture2D::StreamWrite(RpgStreamWriter& writer) const noexcept
 {
-	uint32_t sizeBytes = writer.GetSizeBytes(Name);
-	sizeBytes += writer.GetSizeBytes(Flags);
-	sizeBytes += writer.GetSizeBytes(Format);
-	sizeBytes += writer.GetSizeBytes(Width);
-	sizeBytes += writer.GetSizeBytes(Height);
-	sizeBytes += writer.GetSizeBytes(MipCount);
-	sizeBytes += writer.GetSizeBytes(PixelSizeBytes);
-
-	return sizeBytes;
-}
-
-
-void RpgTexture2D::AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept
-{
-	writer.Write(Name);
-
 	const uint16_t savedFlags = (Flags & ~RUNTIME_FLAGS);
 	RPG_Check(!(savedFlags & (FLAG_RenderTarget | FLAG_DepthStencil)));
 	writer.Write(savedFlags);
@@ -106,9 +88,8 @@ void RpgTexture2D::AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept
 }
 
 
-void RpgTexture2D::AssetStreamRead(RpgAssetStreamReader& reader) noexcept
+void RpgTexture2D::StreamRead(RpgStreamReader& reader) noexcept
 {
-	reader.Read(Name);
 	reader.Read(Flags);
 	reader.Read(Format);
 	reader.Read(Width);
@@ -155,7 +136,7 @@ void RpgTexture2D::GPU_UpdateResource() noexcept
 			GpuAlloc = RpgD3D12::CreateTexture2D(dxgiFormat, GpuState, Width, Height, MipCount);
 		}
 
-		RPG_D3D12_SetDebugNameAllocation(GpuAlloc, "RES_%s", *Name);
+		RPG_D3D12_SetDebugNameAllocation(GpuAlloc, "RES_%s", *GetName());
 	}
 }
 
@@ -209,7 +190,7 @@ void RpgTexture2D::InitializeMips() noexcept
 	}
 
 	RpgD3D12::ResizeBuffer(PixelStagingBuffer, PixelSizeBytes, true);
-	RPG_D3D12_SetDebugNameAllocation(PixelStagingBuffer, "STG_%s", *Name);
+	RPG_D3D12_SetDebugNameAllocation(PixelStagingBuffer, "STG_%s", *GetName());
 
 	PixelData = RpgD3D12::MapBuffer<uint8_t>(PixelStagingBuffer.Get());
 
@@ -267,29 +248,28 @@ const RpgSharedTexture2D& RpgTexture2D::s_GetDefault_White() noexcept
 
 
 RpgTextureRenderTarget::RpgTextureRenderTarget(const RpgName& in_Name, RpgTextureFormat::EType in_Format, uint16_t in_Width, uint16_t in_Height) noexcept
-	: RpgTexture2D()
+	: RpgTexture2D(in_Name)
 {
-	RPG_Check(in_Format >= RpgTextureFormat::TEX_RT_RGBA && in_Format <= RpgTextureFormat::TEX_RT_BGRA);
-
-	Name = in_Name;
 	Flags = FLAG_RenderTarget;
+
+	RPG_Check(in_Format >= RpgTextureFormat::TEX_RT_RGBA && in_Format <= RpgTextureFormat::TEX_RT_BGRA);
 	Format = in_Format;
+
 	Width = in_Width;
 	Height = in_Height;
-
 }
 
 
 
 
 RpgTextureDepthStencil::RpgTextureDepthStencil(const RpgName& in_Name, RpgTextureFormat::EType in_Format, uint16_t in_Width, uint16_t in_Height) noexcept
-	: RpgTexture2D()
+	: RpgTexture2D(in_Name)
 {
-	RPG_Check(in_Format >= RpgTextureFormat::TEX_DS_16 && in_Format <= RpgTextureFormat::TEX_DS_32);
-
-	Name = in_Name;
 	Flags = FLAG_DepthStencil;
+
+	RPG_Check(in_Format >= RpgTextureFormat::TEX_DS_16 && in_Format <= RpgTextureFormat::TEX_DS_32);
 	Format = in_Format;
+
 	Width = in_Width;
 	Height = in_Height;
 }
@@ -320,6 +300,6 @@ void RpgTextureDepthCube::GPU_UpdateResource() noexcept
 		GpuState = D3D12_RESOURCE_STATE_COMMON;
 		GpuAlloc = RpgD3D12::CreateDepthCube(dxgiFormat, GpuState, Width, Height);
 
-		RPG_D3D12_SetDebugNameAllocation(GpuAlloc, "RES_%s", *Name);
+		RPG_D3D12_SetDebugNameAllocation(GpuAlloc, "RES_%s", *GetName());
 	}
 }

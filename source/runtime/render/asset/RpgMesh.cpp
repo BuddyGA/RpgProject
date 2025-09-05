@@ -1,17 +1,10 @@
 #include "RpgMesh.h"
-#include "asset/RpgAssetStream.h"
 
 
 
-RpgMesh::RpgMesh() noexcept
+RpgMesh::RpgMesh(const RpgName& in_Name) noexcept
+	: RpgAssetInterface(in_Name)
 {
-	Flags = FLAG_None;
-}
-
-
-RpgMesh::RpgMesh(const RpgName& name) noexcept
-{
-	Name = name;
 	Flags = FLAG_None;
 	InitializeSRWLock(&LockPosition);
 	InitializeSRWLock(&LockNormalTangent);
@@ -21,24 +14,8 @@ RpgMesh::RpgMesh(const RpgName& name) noexcept
 }
 
 
-uint32_t RpgMesh::AssetStreamDataSizeBytes(const RpgAssetStreamWriter& writer) const noexcept
+void RpgMesh::StreamWrite(RpgStreamWriter& writer) const noexcept
 {
-	uint32_t sizeBytes = writer.GetSizeBytes(Name);
-	sizeBytes += writer.GetSizeBytes(Flags);
-	sizeBytes += writer.GetSizeBytes(Positions);
-	sizeBytes += writer.GetSizeBytes(NormalTangents);
-	sizeBytes += writer.GetSizeBytes(TexCoords);
-	sizeBytes += writer.GetSizeBytes(Skins);
-	sizeBytes += writer.GetSizeBytes(Indices);
-	sizeBytes += writer.GetSizeBytes(Bound);
-
-	return sizeBytes;
-}
-
-
-void RpgMesh::AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept
-{
-	writer.Write(Name);
 	writer.Write(Flags);
 	writer.Write(Positions);
 	writer.Write(NormalTangents);
@@ -49,9 +26,8 @@ void RpgMesh::AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept
 }
 
 
-void RpgMesh::AssetStreamRead(RpgAssetStreamReader& reader) noexcept
+void RpgMesh::StreamRead(RpgStreamReader& reader) noexcept
 {
-	reader.Read(Name);
 	reader.Read(Flags);
 	reader.Read(Positions);
 	reader.Read(NormalTangents);

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/RpgFilePath.h"
-#include "render/RpgMesh.h"
-#include "render/RpgMaterial.h"
+#include "render/asset/RpgMesh.h"
+#include "render/asset/RpgMaterial.h"
 #include "thirdparty/xxhash/xxhash.h"
 #include "RpgAssetTypes.h"
 
@@ -110,6 +110,7 @@ public:
 
 	// Save mesh to asset file
 	// @param mesh - Mesh shared ptr
+	// @param directory - Path relative to asset directory
 	void SaveMesh(const RpgSharedMesh& mesh, const char* directory) noexcept;
 
 	// Load mesh from asset registry
@@ -137,6 +138,7 @@ public:
 
 	// Save texture to asset file
 	// @param texture - Texture shared ptr
+	// @param directory - Path relative to asset directory
 	void SaveTexture(const RpgSharedTexture2D& texture, const char* directory) noexcept;
 
 	// Load texture from asset registry
@@ -164,6 +166,7 @@ public:
 
 	// Save material to asset file
 	// @param material - Material shared ptr
+	// @param directory - Path relative to asset directory
 	void SaveMaterial(const RpgSharedMaterial& material, const char* directory) noexcept;
 
 	// Load material from asset registry
@@ -187,6 +190,14 @@ public:
 
 		return info->Path;
 	}
+
+
+	// Save world into level asset
+	// @param world - World object
+	// @param directory - Path relative to asset directory
+	void SaveLevel(const RpgWorld* world, const char* directory) noexcept;
+
+	void LoadLevel(const RpgString& path, RpgWorld* out_World) noexcept;
 
 
 	// Get asset info from registry

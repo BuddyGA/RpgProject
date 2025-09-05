@@ -58,8 +58,14 @@ void RpgAnimationWorldSubsystem::TickUpdate(float deltaTime) noexcept
 
 	for (auto it = world->Component_CreateIterator<RpgAnimationComponent_AnimSkeletonPose>(); it; ++it)
 	{
+		RpgAnimationComponent_AnimSkeletonPose& comp = it.GetValue();
+		if (!world->GameObject_IsSpawned(comp.GameObject))
+		{
+			continue;
+		}
+
 		RpgAnimationTask_TickPose& task = TaskTickPoses[taskIndex];
-		task.AnimationComponents.AddValue(&it.GetValue());
+		task.AnimationComponents.AddValue(&comp);
 		taskIndex = (taskIndex + 1) % TASK_COUNT;
 	}
 
@@ -89,7 +95,7 @@ void RpgAnimationWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) n
 		for (auto it = world->Component_CreateIterator<RpgAnimationComponent_AnimSkeletonPose>(); it; ++it)
 		{
 			const RpgAnimationComponent_AnimSkeletonPose& comp = it.GetValue();
-			if (!comp.Skeleton)
+			if (!comp.Skeleton || !world->GameObject_IsSpawned(comp.GameObject))
 			{
 				continue;
 			}

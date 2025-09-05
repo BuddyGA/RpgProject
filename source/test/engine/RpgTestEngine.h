@@ -8,7 +8,7 @@ namespace RpgTest
 {
 	namespace Engine
 	{
-		extern void Create(RpgWorld* world) noexcept;
+		extern bool Create(RpgWorld* world) noexcept;
 	};
 
 };

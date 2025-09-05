@@ -81,7 +81,8 @@ protected:
 	RpgGameObjectScript() noexcept
 	{
 		World = nullptr;
-		bInitialized = false;
+		CachedWorldScriptIndex = RPG_INDEX_INVALID;
+		CachedObjectScriptIndex = RPG_INDEX_INVALID;
 		bStartedPlay = false;
 	}
 
@@ -101,7 +102,8 @@ protected:
 	RpgWorld* World;
 
 private:
-	bool bInitialized;
+	int CachedWorldScriptIndex;
+	int CachedObjectScriptIndex;
 	bool bStartedPlay;
 
 

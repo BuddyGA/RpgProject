@@ -27,12 +27,27 @@ void RpgLevel::StreamWrite(RpgStreamWriter& writer) const noexcept
 	writer.Write(WorldMatrix);
 	writer.Write(InverseWorldMatrix);
 
-	const int count = GameObjects.GetCount();
-	writer.Write(count);
 
-	for (int i = 0; i < count; ++i)
+	// only save alive and non-transient object
+	RpgArray<RpgGameObjectID> saveGameObjects;
+	saveGameObjects.Reserve(GameObjects.GetCount());
+
+	for (int i = 0; i < GameObjects.GetCount(); ++i)
 	{
-		World->GameObject_StreamWrite(GameObjects[i], writer);
+		const RpgGameObjectID gid = GameObjects[i];
+
+		if (World->GameObject_IsValid(gid) && !World->GameObject_IsTransient(gid))
+		{
+			saveGameObjects.AddValue(gid);
+		}
+	}
+
+	const int saveCount = saveGameObjects.GetCount();
+	writer.Write(saveCount);
+
+	for (int i = 0; i < saveCount; ++i)
+	{
+		World->GameObject_StreamWrite(saveGameObjects[i], writer);
 	}
 }
 
@@ -53,7 +68,7 @@ void RpgLevel::StreamRead(RpgStreamReader& reader) noexcept
 
 	for (int i = 0; i < count; ++i)
 	{
-		const RpgGameObjectID gameObject = World->GameObject_Create("");
+		const RpgGameObjectID gameObject = World->GameObject_Create("temp_stream_read");
 		World->GameObject_StreamRead(gameObject, reader);
 		World->GameObject_Spawn(gameObject, this);
 	}
@@ -69,17 +84,16 @@ void RpgLevel::AddGameObject(RpgGameObjectID gameObject) noexcept
 	GameObjects.AddValue(gameObject);
 #endif // !RPG_BUILD_SHIPPING
 
-
 	UpdateBound();
 }
 
 
 void RpgLevel::RemoveGameObject(RpgGameObjectID gameObject) noexcept
 {
-	if (GameObjects.RemoveByValue(gameObject, false))
-	{
-		UpdateBound();
-	}
+	const bool bRemoved = GameObjects.RemoveByValue(gameObject, false);
+	RPG_Check(bRemoved);
+
+	UpdateBound();
 }
 
 

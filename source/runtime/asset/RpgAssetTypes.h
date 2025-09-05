@@ -16,11 +16,6 @@ RPG_LOG_DECLARE_CATEGORY_EXTERN(RpgLogAsset)
 
 
 
-class RpgAssetStreamWriter;
-class RpgAssetStreamReader;
-
-
-
 enum class RpgAssetFileType : uint16_t
 {
 	NONE = 0,
@@ -147,14 +142,27 @@ class RpgAssetInterface
 	RPG_NOCOPY(RpgAssetInterface)
 
 public:
-	RpgAssetInterface() noexcept = default;
+	RpgAssetInterface(const RpgName& in_Name) noexcept
+		: Name(in_Name)
+	{
+	}
+
 	virtual ~RpgAssetInterface() noexcept = default;
-	virtual uint32_t AssetStreamDataSizeBytes(const RpgAssetStreamWriter& writer) const noexcept = 0;
-	virtual void AssetStreamWrite(RpgAssetStreamWriter& writer) const noexcept = 0;
-	virtual void AssetStreamRead(RpgAssetStreamReader& reader) noexcept = 0;
+
+	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept = 0;
+	virtual void StreamRead(RpgStreamReader& reader) noexcept = 0;
+
+
+	inline const RpgName& GetName() const noexcept
+	{
+		return Name;
+	}
+
+
+private:
+	RpgName Name;
 
 };
-
 
 
 #define RPG_ASSET_FILE(type, version)				\

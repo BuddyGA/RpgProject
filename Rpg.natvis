@@ -32,7 +32,7 @@
 
 	<!-- RpgFreeList -->
 	<Type Name="RpgFreeList&lt;*&gt;">
-		<DisplayString>Alignment={$T2}, Capacity={Capacity}, Count={Count}</DisplayString>
+		<DisplayString>Capacity={Capacity}, Count={Count}</DisplayString>
 		<Expand>
 			<Item Name="Capacity">Capacity</Item>
 			<Item Name="Count">Count</Item>
@@ -72,6 +72,18 @@
 	<!-- RpgName -->
 	<Type Name="RpgName">
 		<DisplayString>{CharArray, s}</DisplayString>
+	</Type>
+	
+	
+	<!-- RpgSharedPtr -->
+	<Type Name="RpgSharedPtr&lt;*&gt;">
+		<DisplayString Condition="Ref == nullptr">null</DisplayString>
+		<DisplayString>{(($T1*)Ref->Object)->Name}</DisplayString>
+		<Expand>
+			<Item Name="Object">($T1*)Ref->Object</Item>
+			<Item Name="SharedCount">Ref->SharedCount</Item>
+			<Item Name="WeakCount">Ref->WeakCount</Item>
+		</Expand>
 	</Type>
 
 </AutoVisualizer>
