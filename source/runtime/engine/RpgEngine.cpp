@@ -1,7 +1,7 @@
 #include "RpgEngine.h"
 #include "core/RpgCommandLine.h"
-#include "core/RpgConsoleSystem.h"
-#include "input/RpgInputManager.h"
+#include "core/RpgAssetSystem.h"
+#include "core/RpgInputSystem.h"
 #include "physics/world/RpgPhysicsComponent.h"
 #include "physics/world/RpgPhysicsWorldSubsystem.h"
 #include "render/RpgRenderThread.h"
@@ -9,7 +9,6 @@
 #include "render/world/RpgRenderWorldSubsystem.h"
 #include "animation/world/RpgAnimationComponent.h"
 #include "animation/world/RpgAnimationWorldSubsystem.h"
-#include "asset/RpgAssetManager.h"
 
 
 #ifndef RPG_BUILD_SHIPPING
@@ -44,9 +43,6 @@ RpgEngine::RpgEngine() noexcept
 RpgEngine::~RpgEngine() noexcept
 {
 	RpgRenderThread::Shutdown();
-
-	delete g_AssetManager;
-	delete g_InputManager;
 }
 
 
@@ -54,12 +50,23 @@ void RpgEngine::Initialize() noexcept
 {
 	g_ConsoleSystem->RegisterObjectCommandListener(this, &RpgEngine::HandleConsoleCommand);
 
-	// input manager
-	g_InputManager = new RpgInputManager();
 
-	// asset manager
-	g_AssetManager = new RpgAssetManager();
-	g_AssetManager->Initialize();
+#ifndef RPG_BUILD_SHIPPING
+
+	// add engine assets
+	RpgSharedTexture2D texDefWhite = RpgTexture2D::s_GetDefault_White();
+	g_AssetSystem->SaveAsset<RpgTexture2D>(texDefWhite, "engine/texture");
+
+	for (int i = 0; i < RpgMaterialDefault::MAX_COUNT; ++i)
+	{
+		RpgSharedMaterial matDef = RpgMaterial::s_GetDefault(static_cast<RpgMaterialDefault::EType>(i));
+		g_AssetSystem->SaveAsset<RpgMaterial>(matDef, "engine/material");
+	}
+
+	// scanning asset files
+	g_AssetSystem->ScanAssetFiles();
+
+#endif // !RPG_BUILD_SHIPPING
 
 
 	// main world
@@ -99,11 +106,9 @@ void RpgEngine::Initialize() noexcept
 	//RpgTest::Gui::Create(GuiCanvas);
 
 	// test level
-	if (RpgTest::Engine::Create(MainWorld))
-	{
-		SpawnMainCamera();
-	}
+	RpgTest::Engine::Create(MainWorld);
 
+	g_Editor->LevelLoaded(MainWorld);
 #endif // !RPG_BUILD_SHIPPING
 
 }
@@ -128,28 +133,24 @@ void RpgEngine::WindowSizeChanged(const RpgPlatformWindowEvent& e) noexcept
 void RpgEngine::MouseMove(const RpgPlatformMouseMoveEvent& e) noexcept
 {
 	GuiContext.MouseMove(e);
-	g_InputManager->MouseMove(e);
 }
 
 
 void RpgEngine::MouseWheel(const RpgPlatformMouseWheelEvent& e) noexcept
 {
 	GuiContext.MouseWheel(e);
-	g_InputManager->MouseWheel(e);
 }
 
 
 void RpgEngine::MouseButton(const RpgPlatformMouseButtonEvent& e) noexcept
 {
 	GuiContext.MouseButton(e);
-	g_InputManager->MouseButton(e);
 }
 
 
 void RpgEngine::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 {
 	GuiContext.KeyboardButton(e);
-	g_InputManager->KeyboardButton(e);
 
 	if (e.bIsDown)
 	{
@@ -157,51 +158,7 @@ void RpgEngine::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 		{
 			GuiConsole->Toggle();
 		}
-		else if (e.Button == RpgInputKey::KEYBOARD_EQUALS)
-		{
-			MainRenderer->Gamma += 0.01f;
-		}
-		else if (e.Button == RpgInputKey::KEYBOARD_MINUS)
-		{
-			MainRenderer->Gamma -= 0.01f;
-		}
-		else if (e.Button == RpgInputKey::KEYBOARD_0)
-		{
-			RpgRenderComponent_Camera* cameraComp = MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(MainCameraObject);
-			cameraComp->bFrustumCulling = !cameraComp->bFrustumCulling;
-		}
-		else if (e.Button == RpgInputKey::KEYBOARD_9)
-		{
-			RpgAnimationWorldSubsystem* subsystem = MainWorld->Subsystem_Get<RpgAnimationWorldSubsystem>();
-			subsystem->bDebugDrawSkeletonBones = !subsystem->bDebugDrawSkeletonBones;
-		}
-		else if (e.Button == RpgInputKey::KEYBOARD_8)
-		{
-			RpgRenderWorldSubsystem* subsystem = MainWorld->Subsystem_Get<RpgRenderWorldSubsystem>();
-			subsystem->bDebugDrawMeshBound = !subsystem->bDebugDrawMeshBound;
-		}
-		else if (e.Button == RpgInputKey::KEYBOARD_F8)
-		{
-			g_AssetManager->SaveLevel(MainWorld, "game");
-		}
-		else if (e.Button == RpgInputKey::KEYBOARD_F9)
-		{
-			g_AssetManager->LoadLevel(RpgString("game/world_main"), MainWorld);
-			SpawnMainCamera();
-		}
-		else if (e.Button == RpgInputKey::KEYBOARD_F10)
-		{
-			if (MainWorld->HasStartedPlay())
-			{
-				MainWorld->DispatchStopPlay();
-			}
-			else
-			{
-				MainWorld->DispatchStartPlay();
-			}
-		}
 	}
-
 
 #ifndef RPG_BUILD_SHIPPING
 	g_Editor->KeyboardButton(e);
@@ -247,17 +204,8 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 	// Begin frame
 	{
 		MainWorld->BeginFrame(frameIndex);
-		g_AssetManager->Update();
+		g_AssetSystem->Update();
 	}
-
-
-	RpgRenderComponent_Camera* mainCameraComp = MainCameraObject.IsValid() ? MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(MainCameraObject) : nullptr;
-
-	if (mainCameraComp && WindowState != RpgPlatformWindowSizeState::MINIMIZED)
-	{
-		mainCameraComp->RenderTargetDimension = WindowDimension;
-	}
-
 
 	const RpgRectFloat windowClipRect(0.0f, 0.0f, static_cast<float>(WindowDimension.X), static_cast<float>(WindowDimension.Y));
 
@@ -276,6 +224,13 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 
 	// Tick update
 	{
+		RpgRenderComponent_Camera* mainCameraComp = MainCameraObject.IsValid() ? MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(MainCameraObject) : nullptr;
+
+		if (mainCameraComp && WindowState != RpgPlatformWindowSizeState::MINIMIZED)
+		{
+			mainCameraComp->RenderTargetDimension = WindowDimension;
+		}
+
 		MainWorld->DispatchTickUpdate(deltaTime);
 	}
 
@@ -296,45 +251,17 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 			MainRenderer->RegisterWorld(MainWorld);
 
 			// Setup renderer default final texture
-			MainRenderer->SetFinalTexture(frameIndex, SceneViewport.GetTextureRenderTarget(frameIndex).Cast<RpgTexture2D>());
+			MainRenderer->SetFinalTexture(frameIndex, SceneViewport.GetTextureRenderTarget(frameIndex).CastStatic<RpgTexture2D>());
 
 			// Dispatch render
 			MainWorld->DispatchRender(frameIndex, MainRenderer.Get());
 
 			// Render 2D
 			RpgRenderer2D& renderer2d = MainRenderer->GetRenderer2D();
-			
+
 		#ifndef RPG_BUILD_SHIPPING
-			// Debug info
-			{
-				static RpgString debugInfoText;
-
-				RpgTransform mainCameraTransform = MainCameraObject.IsValid() ? MainWorld->GameObject_GetWorldTransform(MainCameraObject) : RpgTransform();
-				float pitch, yaw;
-				ScriptDebugCamera.GetRotationPitchYaw(pitch, yaw);
-
-				debugInfoText = RpgString::Format(
-					"WindowSize: %i, %i\n"
-					"CameraPosition: %.2f, %.2f, %.2f\n"
-					"CameraPitchYaw: %.2f, %.2f\n"
-					"CameraFrustumCulling: %d\n"
-					"Gamma: %.2f\n"
-					"VSync: %d\n"
-					"\n"
-					"GameObject: %i\n"
-					, WindowDimension.X, WindowDimension.Y
-					, mainCameraTransform.Position.X, mainCameraTransform.Position.Y, mainCameraTransform.Position.Z
-					, pitch, yaw
-					, mainCameraComp ? mainCameraComp->bFrustumCulling : false
-					, MainRenderer->Gamma
-					, MainRenderer->GetVsync()
-					, MainWorld->GameObject_GetCount()
-				);
-
-				renderer2d.AddText(*debugInfoText, debugInfoText.GetLength(), RpgPointFloat(8.0f, 8.0f), RpgColor(255, 255, 255));
-			}
+			g_Editor->Render2d(renderer2d);
 		#endif // !RPG_BUILD_SHIPPING
-
 
 			// Fps info
 			{
@@ -368,7 +295,7 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 	// End frame
 	MainWorld->EndFrame(frameIndex);
 
-	g_InputManager->Flush();
+	g_InputSystem->Flush();
 }
 
 
@@ -413,16 +340,29 @@ void RpgEngine::DestroyWorld(RpgWorld*& world) noexcept
 }
 
 
-void RpgEngine::SpawnMainCamera() noexcept
+void RpgEngine::SaveLevel() noexcept
 {
-	RPG_Check(!MainWorld->GameObject_IsValid(MainCameraObject));
+	
+}
 
-	MainCameraObject = MainWorld->GameObject_CreateTransient("camera_main");
 
-	RpgRenderComponent_Camera* cameraComp = MainWorld->GameObject_AddComponent<RpgRenderComponent_Camera>(MainCameraObject);
+void RpgEngine::LoadLevel(const RpgString& levelAssetPath) noexcept
+{
+	RPG_NotImplementedYet();
+}
+
+
+void RpgEngine::SetMainCamera(RpgGameObjectID cameraObject) noexcept
+{
+	MainCameraObject = cameraObject;
+
+	if (!MainWorld->GameObject_IsValid(MainCameraObject))
+	{
+		return;
+	}
+
+	RpgRenderComponent_Camera* cameraComp = MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(MainCameraObject);
+	RPG_Check(cameraComp);
 	cameraComp->Viewport = &SceneViewport;
 	cameraComp->bActivated = true;
-
-	MainWorld->GameObject_AttachScript(MainCameraObject, &ScriptDebugCamera);
-	MainWorld->GameObject_Spawn(MainCameraObject);
 }

@@ -1,9 +1,9 @@
 #include "RpgTestEngine.h"
-#include "asset/RpgAssetImporter.h"
-#include "asset/RpgAssetManager.h"
+#include "core/RpgAssetSystem.h"
 #include "core/world/RpgWorld.h"
 #include "render/world/RpgRenderComponent.h"
 #include "animation/world/RpgAnimationComponent.h"
+#include "RpgEditor.h"
 
 
 
@@ -49,7 +49,7 @@ static void TestLevel_AddCube(RpgWorld* world, const RpgTransform& transform) no
 	{
 		// Add render component
 		RpgRenderComponent_Mesh* meshComp = world->GameObject_AddComponent<RpgRenderComponent_Mesh>(box);
-		meshComp->Mesh = g_AssetManager->LoadMesh(RpgString("game/mesh/cube_x100_y100_z100"));
+		meshComp->Mesh = g_AssetSystem->LoadAsset<RpgMesh>(RpgString("game/mesh/cube_x100_y100_z100"));
 		meshComp->Material = RpgMaterial::s_GetDefault(RpgMaterialDefault::MESH_PHONG);
 		meshComp->bIsVisible = true;
 	}
@@ -98,7 +98,7 @@ static void TestLevel_AddLight_Spot(RpgWorld* world, const RpgTransform& transfo
 
 static void TestLevel_Import(RpgWorld* world, const RpgFilePath& sourceFilePath, float scale = 1.0f, bool bGenerateTextureMipMaps = false, bool bIgnoreTextureNormals = false) noexcept
 {
-	RpgAssetImportSetting_Model setting;
+	RpgEditorImportSetting_Model setting;
 	setting.SourceFilePath = sourceFilePath;
 	setting.Scale = scale;
 	setting.bImportMaterialTexture = true;
@@ -110,7 +110,7 @@ static void TestLevel_Import(RpgWorld* world, const RpgFilePath& sourceFilePath,
 	RpgArray<RpgSharedModel> importedModels;
 	RpgSharedAnimationSkeleton importedSkeleton;
 	RpgArray<RpgSharedAnimationClip> importedAnimations;
-	g_AssetImporter->ImportModel(importedModels, importedSkeleton, importedAnimations, setting);
+	g_Editor->ImportModel(importedModels, importedSkeleton, importedAnimations, setting);
 
 	for (int i = 0; i < importedModels.GetCount(); ++i)
 	{
@@ -140,8 +140,6 @@ static void TestLevel_Import(RpgWorld* world, const RpgFilePath& sourceFilePath,
 		}
 		*/
 	}
-
-	g_AssetImporter->Reset();
 }
 
 
@@ -247,7 +245,7 @@ static void TestLevel_Animations(RpgWorld* world) noexcept
 	RpgSharedAnimationSkeleton skeletons[2];
 	RpgSharedAnimationClip animationClips[2];
 
-	RpgAssetImportSetting_Model setting;
+	RpgEditorImportSetting_Model setting;
 	setting.SourceFilePath = RpgFileSystem::GetAssetRawDirPath() + "model/CesiumMan.glb";
 	setting.Scale = 100.0f;
 	setting.bImportMaterialTexture = true;
@@ -258,13 +256,13 @@ static void TestLevel_Animations(RpgWorld* world) noexcept
 	RpgArray<RpgSharedModel> importedModels;
 	RpgSharedAnimationSkeleton importedSkeleton;
 	RpgArray<RpgSharedAnimationClip> importedAnimations;
-	g_AssetImporter->ImportModel(importedModels, importedSkeleton, importedAnimations, setting);
+	g_Editor->ImportModel(importedModels, importedSkeleton, importedAnimations, setting);
 	models[0] = importedModels[0];
 	skeletons[0] = importedSkeleton;
 	animationClips[0] = importedAnimations[0];
 
 	setting.SourceFilePath = RpgFileSystem::GetAssetRawDirPath() + "model/RiggedFigure.glb";
-	g_AssetImporter->ImportModel(importedModels, importedSkeleton, importedAnimations, setting);
+	g_Editor->ImportModel(importedModels, importedSkeleton, importedAnimations, setting);
 	models[1] = importedModels[0];
 	skeletons[1] = importedSkeleton;
 	animationClips[1] = importedAnimations[0];
@@ -321,7 +319,7 @@ bool RpgTest::Engine::Create(RpgWorld* world) noexcept
 
 	//TestLevel_Animations(world);
 
-	//return TestLevel_PrimitiveShapes(world);
+	return TestLevel_PrimitiveShapes(world);
 
 	//TestLevel_Import(world, RpgFileSystem::GetAssetRawDirPath() + "default_cube.fbx", 1.0f);
 

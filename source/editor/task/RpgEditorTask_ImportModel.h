@@ -1,15 +1,15 @@
 #pragma once
 
 #include "core/RpgThreadPool.h"
-#include "core/RpgFilePath.h"
 #include "render/RpgModel.h"
 #include "animation/RpgAnimationTypes.h"
 #include "RpgAssimpTypes.h"
+#include "../RpgEditorTypes.h"
 
 
 
 
-class RpgAssetTask_ImportModel : public RpgThreadTask
+class RpgEditorTask_ImportModel : public RpgThreadTask
 {
 public:
 	RpgFilePath SourceFilePath;
@@ -22,7 +22,7 @@ public:
 
 
 public:
-	RpgAssetTask_ImportModel() noexcept;
+	RpgEditorTask_ImportModel() noexcept;
 
 	virtual void Reset() noexcept override;
 	virtual void Execute() noexcept override;
@@ -57,7 +57,7 @@ private:
 
 
 private:
-	RpgArray<class RpgAssetTask_ImportTexture*> ImportTextureTasks;
+	RpgArray<class RpgEditorTask_ImportTexture*> ImportTextureTasks;
 	RpgArray<RpgAssimp::FMaterialPhong> IntermediateMaterialPhongs;
 	RpgArray<RpgAssimp::FModel> IntermediateModels;
 

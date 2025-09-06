@@ -1,13 +1,13 @@
 #pragma once
 
 #include "core/RpgVertex.h"
-#include "asset/RpgAssetTypes.h"
+#include "core/RpgAssetTypes.h"
 
 
 
 typedef RpgSharedPtr<class RpgMesh> RpgSharedMesh;
 
-class RpgMesh : public RpgAssetInterface
+class RpgMesh : public RpgAssetObject
 {
 	RPG_ASSET_FILE(RpgAssetFileType::MESH, 1)
 

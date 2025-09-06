@@ -3,12 +3,12 @@
 #include "RpgInputTypes.h"
 
 
-class RpgInputManager
+class RpgInputSystem
 {
-	RPG_NOCOPYMOVE(RpgInputManager)
+	RPG_NOCOPYMOVE(RpgInputSystem)
 
 public:
-	RpgInputManager() noexcept;
+	RpgInputSystem() noexcept;
 
 	void MouseMove(const RpgPlatformMouseMoveEvent& e) noexcept;
 	void MouseWheel(const RpgPlatformMouseWheelEvent& e) noexcept;
@@ -114,4 +114,4 @@ private:
 };
 
 
-extern RpgInputManager* g_InputManager;
+extern RpgInputSystem* g_InputSystem;

@@ -1,5 +1,4 @@
 #include "RpgTexture.h"
-#include "core/RpgMath.h"
 
 
 RPG_LOG_DECLARE_CATEGORY_STATIC(RpgLogTexture, VERBOSITY_DEBUG)
@@ -27,7 +26,7 @@ const DXGI_FORMAT RPG_TEXTURE_FORMAT_TO_DXGI_FORMAT[static_cast<uint8_t>(RpgText
 
 
 RpgTexture2D::RpgTexture2D(const RpgName& in_Name) noexcept
-	: RpgAssetInterface(in_Name)
+	: RpgAssetObject(in_Name)
 	, MipDatas()
 	, MipLocks()
 {
@@ -63,7 +62,7 @@ RpgTexture2D::RpgTexture2D(const RpgName& in_Name, RpgTextureFormat::EType in_Fo
 
 RpgTexture2D::~RpgTexture2D() noexcept
 {
-	RPG_LogDebug(RpgLogTexture, "Destroy texture (%s)", *GetName());
+	RPG_LogDebug(RpgLogTexture, "Destroy texture (%s)", *GetAssetName());
 
 	if (PixelStagingBuffer && PixelData)
 	{
@@ -136,7 +135,7 @@ void RpgTexture2D::GPU_UpdateResource() noexcept
 			GpuAlloc = RpgD3D12::CreateTexture2D(dxgiFormat, GpuState, Width, Height, MipCount);
 		}
 
-		RPG_D3D12_SetDebugNameAllocation(GpuAlloc, "RES_%s", *GetName());
+		RPG_D3D12_SetDebugNameAllocation(GpuAlloc, "RES_%s", *GetAssetName());
 	}
 }
 
@@ -190,7 +189,7 @@ void RpgTexture2D::InitializeMips() noexcept
 	}
 
 	RpgD3D12::ResizeBuffer(PixelStagingBuffer, PixelSizeBytes, true);
-	RPG_D3D12_SetDebugNameAllocation(PixelStagingBuffer, "STG_%s", *GetName());
+	RPG_D3D12_SetDebugNameAllocation(PixelStagingBuffer, "STG_%s", *GetAssetName());
 
 	PixelData = RpgD3D12::MapBuffer<uint8_t>(PixelStagingBuffer.Get());
 
@@ -204,8 +203,12 @@ void RpgTexture2D::InitializeMips() noexcept
 		mip.RowCount = numRows[m];
 		mip.RowBytes = static_cast<uint32_t>(rowBytes[m]);
 		mip.SizeBytes = static_cast<uint32_t>(mip.RowCount * mip.RowBytes);
-		mip.Width = RpgMath::Max(Width >> m, 1);
-		mip.Height = RpgMath::Max(Height >> m, 1);
+
+		const uint16_t checkWidth = Width >> m;
+		mip.Width = (checkWidth > 1) ? checkWidth : 1;
+
+		const uint16_t checkHeight = Height >> m;
+		mip.Height = (checkHeight > 1) ? checkHeight : 1;
 
 		InitializeSRWLock(&MipLocks[m]);
 	}
@@ -300,6 +303,6 @@ void RpgTextureDepthCube::GPU_UpdateResource() noexcept
 		GpuState = D3D12_RESOURCE_STATE_COMMON;
 		GpuAlloc = RpgD3D12::CreateDepthCube(dxgiFormat, GpuState, Width, Height);
 
-		RPG_D3D12_SetDebugNameAllocation(GpuAlloc, "RES_%s", *GetName());
+		RPG_D3D12_SetDebugNameAllocation(GpuAlloc, "RES_%s", *GetAssetName());
 	}
 }

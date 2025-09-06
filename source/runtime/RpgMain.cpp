@@ -4,17 +4,18 @@
 #include "core/RpgThreadPool.h"
 #include "core/RpgTimer.h"
 #include "core/RpgD3D12.h"
-#include "input/RpgInputWindows.h"
-#include "render/RpgTexture.h"
-#include "render/RpgFont.h"
-#include "render/RpgMaterial.h"
-#include "asset/RpgAssetImporter.h"
+#include "core/RpgAssetSystem.h"
+#include "core/RpgInputWindows.h"
+#include "core/RpgInputSystem.h"
+#include "render/asset/RpgTexture.h"
+#include "render/asset/RpgFont.h"
+#include "render/asset/RpgMaterial.h"
 #include "shader/RpgShaderManager.h"
 #include "render/RpgRenderPipeline.h"
 #include "engine/RpgEngine.h"
+
 #include <windowsx.h>
 #include <hidusage.h>
-
 
 #ifdef RPG_BUILD_DEBUG
 #include "../test/core/RpgTestCore.h"
@@ -80,7 +81,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.DeltaPosition = e.Position - MousePrevPosition;
 
 			//RPG_LogDebug(RpgLogTemp, "MouseDelta: %i, %i", e.DeltaPosition.X, e.DeltaPosition.Y);
-
+			g_InputSystem->MouseMove(e);
 			g_Engine->MouseMove(e);
 
 			MousePrevPosition = e.Position;
@@ -94,6 +95,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.Position = RpgPointInt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 			e.ScrollValue.Y = GET_WHEEL_DELTA_WPARAM(wParam) / 120;
 
+			g_InputSystem->MouseWheel(e);
 			g_Engine->MouseWheel(e);
 
 			return 0;
@@ -106,6 +108,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.Button = RpgInputKey::MOUSE_LEFT;
 			e.bIsDown = true;
 
+			g_InputSystem->MouseButton(e);
 			g_Engine->MouseButton(e);
 
 			return 0;
@@ -118,6 +121,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.Button = RpgInputKey::MOUSE_LEFT;
 			e.bIsDown = false;
 
+			g_InputSystem->MouseButton(e);
 			g_Engine->MouseButton(e);
 
 			return 0;
@@ -130,6 +134,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.Button = static_cast<uint8_t>(RpgInputKey::MOUSE_LEFT);
 			e.bIsDoubleClick = true;
 
+			g_InputSystem->MouseButton(e);
 			g_Engine->MouseButton(e);
 
 			return 0;
@@ -143,6 +148,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.Button = RpgInputKey::MOUSE_MIDDLE;
 			e.bIsDown = true;
 
+			g_InputSystem->MouseButton(e);
 			g_Engine->MouseButton(e);
 
 			return 0;
@@ -155,6 +161,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.Button = RpgInputKey::MOUSE_MIDDLE;
 			e.bIsDown = false;
 
+			g_InputSystem->MouseButton(e);
 			g_Engine->MouseButton(e);
 
 			return 0;
@@ -167,6 +174,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.Button = RpgInputKey::MOUSE_MIDDLE;
 			e.bIsDoubleClick = true;
 
+			g_InputSystem->MouseButton(e);
 			g_Engine->MouseButton(e);
 
 			return 0;
@@ -180,6 +188,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.Button = RpgInputKey::MOUSE_RIGHT;
 			e.bIsDown = true;
 
+			g_InputSystem->MouseButton(e);
 			g_Engine->MouseButton(e);
 
 			return 0;
@@ -192,6 +201,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.Button = RpgInputKey::MOUSE_RIGHT;
 			e.bIsDown = false;
 
+			g_InputSystem->MouseButton(e);
 			g_Engine->MouseButton(e);
 
 			return 0;
@@ -204,6 +214,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.Button = RpgInputKey::MOUSE_RIGHT;
 			e.bIsDoubleClick = true;
 
+			g_InputSystem->MouseButton(e);
 			g_Engine->MouseButton(e);
 
 			return 0;
@@ -218,6 +229,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.RepeatCount = lParam & 0xFFFF;
 			e.bIsDown = true;
 
+			g_InputSystem->KeyboardButton(e);
 			g_Engine->KeyboardButton(e);
 
 			return 0;
@@ -232,6 +244,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.RepeatCount = lParam & 0xFFFF;
 			e.bIsDown = false;
 
+			g_InputSystem->KeyboardButton(e);
 			g_Engine->KeyboardButton(e);
 
 			return 0;
@@ -317,15 +330,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	}
 
 
-	// Initialize asset manager
+	// Initialize asset system
+	g_AssetSystem = new RpgAssetSystem();
+
+	// Initialize input system
+	g_InputSystem = new RpgInputSystem();
 	
-
-	// Initialize asset importer
-#ifndef RPG_BUILD_SHIPPING
-	g_AssetImporter = new RpgAssetImporter();
-#endif // !RPG_BUILD_SHIPPING
-
-
 	// Initialize engine
 	g_Engine = new RpgEngine();
 
@@ -466,6 +476,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 // 	Shutdown
 // ------------------------------------------------------------------------------------------------- //
 	delete g_Engine;
+	delete g_InputSystem;
+	delete g_AssetSystem;
 
 	RpgMaterial::s_DestroyDefaults();
 	RpgFont::s_DestroyDefaults();
@@ -477,7 +489,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	RpgThreadPool::Shutdown();
 	RpgPlatformProcess::Shutdown();
-
+	
 	delete g_ConsoleSystem;
 
 	return 0;

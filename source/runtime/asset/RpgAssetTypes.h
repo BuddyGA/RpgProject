@@ -1,5 +1,6 @@
 #pragma once
 
+/*
 #include "core/RpgFilePath.h"
 #include "core/RpgPointer.h"
 #include "core/RpgStream.h"
@@ -169,3 +170,4 @@ private:
 public:												\
 static constexpr RpgAssetFileType FILE_TYPE = type;	\
 static constexpr uint16_t FILE_VERSION = version;
+*/

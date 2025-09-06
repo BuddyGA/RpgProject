@@ -3,7 +3,7 @@
 
 
 RpgMesh::RpgMesh(const RpgName& in_Name) noexcept
-	: RpgAssetInterface(in_Name)
+	: RpgAssetObject(in_Name)
 {
 	Flags = FLAG_None;
 	InitializeSRWLock(&LockPosition);

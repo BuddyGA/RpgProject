@@ -1,9 +1,13 @@
 #include "RpgEditor.h"
-#include "core/RpgConsoleSystem.h"
+#include "core/RpgAssetSystem.h"
 #include "gui/RpgGuiCanvas.h"
-#include "asset/RpgAssetImporter.h"
-#include "asset/RpgAssetManager.h"
+#include "render/world/RpgRenderComponent.h"
+#include "render/world/RpgRenderWorldSubsystem.h"
+#include "animation/world/RpgAnimationWorldSubsystem.h"
+#include "engine/RpgEngine.h"
+#include "task/RpgEditorTask_ImportModel.h"
 #include <ShObjIdl_core.h>
+#include <compressonator.h>
 
 
 
@@ -12,6 +16,10 @@ RpgEditor* g_Editor = nullptr;
 
 RpgEditor::RpgEditor() noexcept
 {
+	AssetBrowser = nullptr;
+	MainWorld = nullptr;
+
+	CMP_InitFramework();
 }
 
 
@@ -56,9 +64,9 @@ void RpgEditor::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 				{
 					RPG_CONSOLE_Log(RpgLogEditor, "Importing asset from source file (%s)", *sourceFilePath);
 					
-					if (RpgAssetFileModel::IsFileSupported(sourceFilePath))
+					if (RpgEditorImportModel::IsFileSupported(sourceFilePath))
 					{
-						RpgAssetImportSetting_Model setting;
+						RpgEditorImportSetting_Model setting;
 						setting.SourceFilePath = sourceFilePath;
 						setting.bImportMaterialTexture = true;
 						setting.bGenerateTextureMipMaps = true;
@@ -69,7 +77,7 @@ void RpgEditor::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 						RpgArray<RpgSharedModel> models;
 						RpgSharedAnimationSkeleton skeleton;
 						RpgArray<RpgSharedAnimationClip> animations;
-						g_AssetImporter->ImportModel(models, skeleton, animations, setting);
+						ImportModel(models, skeleton, animations, setting);
 
 						if (models.IsEmpty())
 						{
@@ -80,10 +88,11 @@ void RpgEditor::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 						for (const auto& mdl : models)
 						{
 							RPG_Check(mdl->GetMeshCount() == 1);
-							g_AssetManager->SaveMesh(mdl->GetMeshLod(0, 0), "game/mesh");
+							RpgSharedMesh mesh = mdl->GetMeshLod(0, 0);
+							g_AssetSystem->SaveAsset<RpgMesh>(mesh, "game/mesh");
 						}
 					}
-					else if (RpgAssetFileImage::IsFileSupported(sourceFilePath))
+					else if (RpgEditorImportTexture::IsFileSupported(sourceFilePath))
 					{
 						RPG_NotImplementedYet();
 					}
@@ -95,6 +104,48 @@ void RpgEditor::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 				AssetBrowser->SetVisibility(!bVisible);
 			}
 		}
+		else if (e.Button == RpgInputKey::KEYBOARD_EQUALS)
+		{
+			g_Engine->GetMainRenderer()->Gamma += 0.01f;
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_MINUS)
+		{
+			g_Engine->GetMainRenderer()->Gamma -= 0.01f;
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_0)
+		{
+			RpgRenderComponent_Camera* cameraComp = MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(CameraObject);
+			cameraComp->bFrustumCulling = !cameraComp->bFrustumCulling;
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_9)
+		{
+			RpgAnimationWorldSubsystem* subsystem = MainWorld->Subsystem_Get<RpgAnimationWorldSubsystem>();
+			subsystem->bDebugDrawSkeletonBones = !subsystem->bDebugDrawSkeletonBones;
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_8)
+		{
+			RpgRenderWorldSubsystem* subsystem = MainWorld->Subsystem_Get<RpgRenderWorldSubsystem>();
+			subsystem->bDebugDrawMeshBound = !subsystem->bDebugDrawMeshBound;
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_F8)
+		{
+			g_Engine->SaveLevel();
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_F9)
+		{
+			g_Engine->LoadLevel(RpgString("game/world_main"));
+		}
+		else if (e.Button == RpgInputKey::KEYBOARD_F10)
+		{
+			if (MainWorld->HasStartedPlay())
+			{
+				MainWorld->DispatchStopPlay();
+			}
+			else
+			{
+				MainWorld->DispatchStartPlay();
+			}
+		}
 	}
 }
 
@@ -102,6 +153,95 @@ void RpgEditor::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 void RpgEditor::TickUpdate(float deltaTime) noexcept
 {
 
+}
+
+
+void RpgEditor::Render2d(RpgRenderer2D& r2d) noexcept
+{
+	RpgRenderer* mainRenderer = g_Engine->GetMainRenderer();
+
+	const RpgPointInt windowDimension = g_Engine->GetWindowDimension();
+	const RpgTransform cameraTransform = CameraObject.IsValid() ? MainWorld->GameObject_GetWorldTransform(CameraObject) : RpgTransform();
+
+	float cameraPitch, cameraYaw;
+	CameraScript.GetRotationPitchYaw(cameraPitch, cameraYaw);
+
+	RpgRenderComponent_Camera* cameraComp = CameraObject.IsValid() ? MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(CameraObject) : nullptr;
+
+	// Debug info
+	static RpgString debugInfoText;
+
+	debugInfoText = RpgString::Format(
+		"WindowSize: %i, %i\n"
+		"CameraPosition: %.2f, %.2f, %.2f\n"
+		"CameraPitchYaw: %.2f, %.2f\n"
+		"CameraFrustumCulling: %d\n"
+		"Gamma: %.2f\n"
+		"VSync: %d\n"
+		"\n"
+		"GameObject: %i\n"
+		, windowDimension.X, windowDimension.Y
+		, cameraTransform.Position.X, cameraTransform.Position.Y, cameraTransform.Position.Z
+		, cameraPitch, cameraYaw
+		, cameraComp ? cameraComp->bFrustumCulling : false
+		, mainRenderer->Gamma
+		, mainRenderer->GetVsync()
+		, MainWorld->GameObject_GetCount()
+	);
+
+	r2d.AddText(*debugInfoText, debugInfoText.GetLength(), RpgPointFloat(8.0f, 8.0f), RpgColor(255, 255, 255));
+}
+
+
+void RpgEditor::LevelLoaded(RpgWorld* world) noexcept
+{
+	MainWorld = world;
+	CameraObject = MainWorld->GameObject_CreateTransient("editor_camera");
+
+	MainWorld->GameObject_AddComponent<RpgRenderComponent_Camera>(CameraObject);
+	MainWorld->GameObject_AttachScript(CameraObject, &CameraScript);
+	MainWorld->GameObject_Spawn(CameraObject);
+
+	g_Engine->SetMainCamera(CameraObject);
+}
+
+
+void RpgEditor::ImportTexture(RpgSharedTexture2D& out_Texture, const RpgEditorImportSetting_Texture& setting) noexcept
+{
+
+}
+
+
+void RpgEditor::ImportModel(RpgArray<RpgSharedModel>& out_Models, RpgSharedAnimationSkeleton& out_Skeleton, RpgArray<RpgSharedAnimationClip>& out_Animations, const RpgEditorImportSetting_Model& setting) noexcept
+{
+	RPG_IsMainThread();
+
+	out_Models.Clear();
+	out_Skeleton.Release();
+	out_Animations.Clear();
+
+	RpgEditorTask_ImportModel task;
+	task.Reset();
+	task.SourceFilePath = setting.SourceFilePath;
+	task.Scale = setting.Scale;
+	task.bImportMaterialTexture = setting.bImportMaterialTexture;
+	task.bImportSkeleton = setting.bImportSkeleton;
+	task.bImportAnimation = setting.bImportAnimation;
+	task.bGenerateTextureMipMaps = setting.bGenerateTextureMipMaps;
+	task.bIgnoreTextureNormals = setting.bIgnoreTextureNormals;
+	task.Execute();
+
+	out_Models = task.GetImportedModels();
+
+	if (setting.bImportSkeleton)
+	{
+		out_Skeleton = task.GetImportedSkeleton();
+	}
+
+	if (setting.bImportAnimation)
+	{
+		out_Animations = task.GetImportedAnimations();
+	}
 }
 
 

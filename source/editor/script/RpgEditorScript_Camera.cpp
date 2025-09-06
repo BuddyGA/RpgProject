@@ -1,11 +1,11 @@
-#include "RpgScript_DebugCamera.h"
+#include "RpgEditorScript_Camera.h"
+#include "core/RpgInputSystem.h"
 #include "core/world/RpgWorld.h"
-#include "input/RpgInputManager.h"
 #include "render/world/RpgRenderComponent.h"
 
 
 
-RpgScript_DebugCamera::RpgScript_DebugCamera() noexcept
+RpgEditorScript_Camera::RpgEditorScript_Camera() noexcept
 {
 	Flashlight = nullptr;
 	PitchValue = 75.0f;
@@ -19,7 +19,7 @@ RpgScript_DebugCamera::RpgScript_DebugCamera() noexcept
 }
 
 
-void RpgScript_DebugCamera::AttachedToGameObject() noexcept
+void RpgEditorScript_Camera::AttachedToGameObject() noexcept
 {
 	if (!bInitialized)
 	{
@@ -43,18 +43,18 @@ void RpgScript_DebugCamera::AttachedToGameObject() noexcept
 }
 
 
-void RpgScript_DebugCamera::TickUpdate(float deltaTime) noexcept
+void RpgEditorScript_Camera::TickUpdate(float deltaTime) noexcept
 {
 	RpgTransform transform = World->GameObject_GetWorldTransform(GameObject);
 
-	if (g_InputManager->IsKeyButtonPressed(RpgInputKey::MOUSE_RIGHT))
+	if (g_InputSystem->IsKeyButtonPressed(RpgInputKey::MOUSE_RIGHT))
 	{
 		RPG_Log(RpgLogTemp, "Camera FreeFly update movement BEGIN");
 		RpgPlatformMouse::Capture(NULL, true);
 		RpgPlatformMouse::SetCursorHidden(true);
 		SavedMousePos = RpgPointFloat(RpgPlatformMouse::GetCursorPosition(NULL));
 	}
-	else if (g_InputManager->IsKeyButtonReleased(RpgInputKey::MOUSE_RIGHT))
+	else if (g_InputSystem->IsKeyButtonReleased(RpgInputKey::MOUSE_RIGHT))
 	{
 		RPG_Log(RpgLogTemp, "Camera FreeFly update movement END");
 		RpgPlatformMouse::SetCursorPosition(NULL, RpgPointInt(SavedMousePos));
@@ -62,26 +62,26 @@ void RpgScript_DebugCamera::TickUpdate(float deltaTime) noexcept
 		RpgPlatformMouse::SetCursorHidden(false);
 	}
 
-	if (g_InputManager->IsKeyButtonDown(RpgInputKey::MOUSE_RIGHT))
+	if (g_InputSystem->IsKeyButtonDown(RpgInputKey::MOUSE_RIGHT))
 	{
 		RpgVector3 moveAxis;
 
-		if (g_InputManager->IsKeyButtonDown(RpgInputKey::KEYBOARD_W))
+		if (g_InputSystem->IsKeyButtonDown(RpgInputKey::KEYBOARD_W))
 		{
 			moveAxis.Z = 1.0f;
 		}
 
-		if (g_InputManager->IsKeyButtonDown(RpgInputKey::KEYBOARD_S))
+		if (g_InputSystem->IsKeyButtonDown(RpgInputKey::KEYBOARD_S))
 		{
 			moveAxis.Z = -1.0f;
 		}
 
-		if (g_InputManager->IsKeyButtonDown(RpgInputKey::KEYBOARD_D))
+		if (g_InputSystem->IsKeyButtonDown(RpgInputKey::KEYBOARD_D))
 		{
 			moveAxis.X = 1.0f;
 		}
 
-		if (g_InputManager->IsKeyButtonDown(RpgInputKey::KEYBOARD_A))
+		if (g_InputSystem->IsKeyButtonDown(RpgInputKey::KEYBOARD_A))
 		{
 			moveAxis.X = -1.0f;
 		}
@@ -107,7 +107,7 @@ void RpgScript_DebugCamera::TickUpdate(float deltaTime) noexcept
 	World->GameObject_SetWorldTransform(GameObject, transform);
 
 
-	if (g_InputManager->IsKeyButtonPressed(RpgInputKey::KEYBOARD_F))
+	if (g_InputSystem->IsKeyButtonPressed(RpgInputKey::KEYBOARD_F))
 	{
 		Flashlight->bIsVisible = !Flashlight->bIsVisible;
 	}

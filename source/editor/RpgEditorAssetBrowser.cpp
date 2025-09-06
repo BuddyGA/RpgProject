@@ -1,6 +1,6 @@
 #include "RpgEditorAssetBrowser.h"
+#include "core/RpgAssetSystem.h"
 #include "render/RpgRenderer2D.h"
-#include "asset/RpgAssetManager.h"
 
 
 
@@ -59,7 +59,7 @@ void RpgEditorAssetBrowserWindow::ScanAssetFiles(RpgEditorAssetFolder& folder) n
 			const RpgFilePath filePath = RpgString::Format("%s%s", *folder.Path, fileData.cFileName);
 
 			RpgAssetInfo info;
-			if (g_AssetManager->IsValidAssetFile(filePath, &info))
+			if (g_AssetSystem->IsValidAssetFile(filePath, &info))
 			{
 				RpgEditorAssetFile& assetFile = folder.Files.Add();
 				assetFile.Path = info.Path;

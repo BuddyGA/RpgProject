@@ -1,6 +1,5 @@
-#include "RpgAssetTask_ImportModel.h"
-#include "RpgAssetTask_ImportTexture.h"
-#include "../RpgAssetImporter.h"
+#include "RpgEditorTask_ImportModel.h"
+#include "RpgEditorTask_ImportTexture.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -76,7 +75,7 @@ namespace RpgAssimp
 
 
 
-RpgAssetTask_ImportModel::RpgAssetTask_ImportModel() noexcept
+RpgEditorTask_ImportModel::RpgEditorTask_ImportModel() noexcept
 {
 	Scale = 1.0f;
 	bImportMaterialTexture = false;
@@ -86,7 +85,7 @@ RpgAssetTask_ImportModel::RpgAssetTask_ImportModel() noexcept
 }
 
 
-void RpgAssetTask_ImportModel::Reset() noexcept
+void RpgEditorTask_ImportModel::Reset() noexcept
 {
 	RpgThreadTask::Reset();
 
@@ -105,7 +104,7 @@ void RpgAssetTask_ImportModel::Reset() noexcept
 }
 
 
-void RpgAssetTask_ImportModel::Execute() noexcept
+void RpgEditorTask_ImportModel::Execute() noexcept
 {
 	RPG_Check(SourceFilePath.IsFilePath());
 
@@ -217,7 +216,7 @@ void RpgAssetTask_ImportModel::Execute() noexcept
 }
 
 
-void RpgAssetTask_ImportModel::ExtractMaterialTextures(const aiScene* assimpScene)
+void RpgEditorTask_ImportModel::ExtractMaterialTextures(const aiScene* assimpScene)
 {
 	if (!bImportMaterialTexture)
 	{
@@ -290,7 +289,7 @@ void RpgAssetTask_ImportModel::ExtractMaterialTextures(const aiScene* assimpScen
 			}
 
 			int textureIndex = ImportTextureTasks.GetCount();
-			RpgAssetTask_ImportTexture* task = nullptr;
+			RpgEditorTask_ImportTexture* task = nullptr;
 			RpgFilePath absoluteFilePath;
 
 			// embedded texture
@@ -313,13 +312,13 @@ void RpgAssetTask_ImportModel::ExtractMaterialTextures(const aiScene* assimpScen
 				{
 					importingEmbeddedTextures.AddValue(assimpTextureIndex);
 
-					task = new RpgAssetTask_ImportTexture();
+					task = new RpgEditorTask_ImportTexture();
 					task->Reset();
 					task->SourceEmbedded = RpgAssimp::FTextureEmbedded(sourceEmbeddedName, assimpTexture->pcData, assimpTexture->mWidth, assimpTexture->mHeight, assimpTexture->achFormatHint);
 				}
 				else
 				{
-					RPG_Log(RpgLogAssetImporter, "Ignore import embedded texture (%s). Has been added to import list!", *sourceEmbeddedName);
+					RPG_Log(RpgLogEditor, "Ignore import embedded texture (%s). Has been added to import list!", *sourceEmbeddedName);
 					textureIndex = importingIndex;
 				}
 			}
@@ -336,13 +335,13 @@ void RpgAssetTask_ImportModel::ExtractMaterialTextures(const aiScene* assimpScen
 				{
 					importingExternalTextures.AddValue(absoluteFilePath);
 
-					task = new RpgAssetTask_ImportTexture();
+					task = new RpgEditorTask_ImportTexture();
 					task->Reset();
 					task->SourceFilePath = absoluteFilePath;
 				}
 				else
 				{
-					RPG_Log(RpgLogAssetImporter, "Ignore import external texture (%s). Has been added to import list!", *absoluteFilePath);
+					RPG_Log(RpgLogEditor, "Ignore import external texture (%s). Has been added to import list!", *absoluteFilePath);
 					textureIndex = importingIndex;
 				}
 			}
@@ -381,7 +380,7 @@ void RpgAssetTask_ImportModel::ExtractMaterialTextures(const aiScene* assimpScen
 }
 
 
-void RpgAssetTask_ImportModel::ExtractSkeleton(const aiMesh* assimpMesh) noexcept
+void RpgEditorTask_ImportModel::ExtractSkeleton(const aiMesh* assimpMesh) noexcept
 {
 	const int assimpBoneCount = static_cast<int>(assimpMesh->mNumBones);
 	if (assimpBoneCount == 0)
@@ -446,7 +445,7 @@ void RpgAssetTask_ImportModel::ExtractSkeleton(const aiMesh* assimpMesh) noexcep
 }
 
 
-void RpgAssetTask_ImportModel::ExtractMeshesFromNode(const aiScene* assimpScene, const aiNode* assimpNode) noexcept
+void RpgEditorTask_ImportModel::ExtractMeshesFromNode(const aiScene* assimpScene, const aiNode* assimpNode) noexcept
 {
 	if (!ImportedSkeleton)
 	{
@@ -626,7 +625,7 @@ void RpgAssetTask_ImportModel::ExtractMeshesFromNode(const aiScene* assimpScene,
 }
 
 
-void RpgAssetTask_ImportModel::ExtractAnimations(const aiScene* assimpScene) noexcept
+void RpgEditorTask_ImportModel::ExtractAnimations(const aiScene* assimpScene) noexcept
 {
 	if (!bImportAnimation)
 	{

@@ -153,11 +153,11 @@ struct RpgPointerRefCount
 template<typename T>
 class RpgSharedPtr
 {
-
 public:
 	explicit RpgSharedPtr(T* in_Obj = nullptr) noexcept
 	{
 		Ref = nullptr;
+		Obj = nullptr;
 
 		if (in_Obj)
 		{
@@ -165,24 +165,29 @@ public:
 			Ref->Object = in_Obj;
 			Ref->SharedCount = 1;
 			Ref->WeakCount = 0;
+
+			Obj = in_Obj;
 		}
 	}
 
 
 	RpgSharedPtr(const RpgSharedPtr& other) noexcept
 		: Ref(other.Ref)
+		, Obj(other.Obj)
 	{
 		if (Ref)
 		{
-			InterlockedAdd(&Ref->SharedCount, 1);
+			InterlockedIncrement(&Ref->SharedCount);
 		}
 	}
 
 
 	RpgSharedPtr(RpgSharedPtr&& other) noexcept
 		: Ref(other.Ref)
+		, Obj(other.Obj)
 	{
 		other.Ref = nullptr;
+		other.Obj = nullptr;
 	}
 
 
@@ -199,10 +204,11 @@ public:
 		{
 			Release();
 			Ref = rhs.Ref;
+			Obj = rhs.Obj;
 
 			if (Ref)
 			{
-				InterlockedAdd(&Ref->SharedCount, 1);
+				InterlockedIncrement(&Ref->SharedCount);
 			}
 		}
 
@@ -216,7 +222,9 @@ public:
 		{
 			Release();
 			Ref = rhs.Ref;
+			Obj = rhs.Obj;
 			rhs.Ref = nullptr;
+			rhs.Obj = nullptr;
 		}
 
 		return *this;
@@ -225,7 +233,7 @@ public:
 
 	inline bool operator==(const RpgSharedPtr& rhs) const noexcept
 	{
-		return Ref == rhs.Ref;
+		return Ref == rhs.Ref && Obj == rhs.Obj;
 	}
 
 
@@ -237,25 +245,25 @@ public:
 
 	inline T* operator->() noexcept
 	{
-		return Ref ? static_cast<T*>(Ref->Object) : nullptr;
+		return Obj;
 	}
 
 	inline const T* operator->() const noexcept
 	{
-		return Ref ? static_cast<const T*>(Ref->Object) : nullptr;
+		return Obj;
 	}
 
 
 	inline operator bool() const noexcept
 	{
-		return Ref && Ref->Object;
+		return IsValid();
 	}
 
 
 public:
 	inline bool IsValid() const noexcept
 	{
-		return Ref && Ref->Object;
+		return Ref && Ref->Object && Obj;
 	}
 
 
@@ -263,9 +271,10 @@ public:
 	{
 		if (Ref)
 		{
-			if (InterlockedAdd(&Ref->SharedCount, -1) == 0)
+			if (InterlockedDecrement(&Ref->SharedCount) == 0)
 			{
-				delete static_cast<T*>(Ref->Object);
+				RPG_Check(Ref->Object == Obj);
+				delete Obj;
 				Ref->Object = nullptr;
 
 				if (Ref->WeakCount == 0)
@@ -276,17 +285,18 @@ public:
 		}
 
 		Ref = nullptr;
+		Obj = nullptr;
 	}
 
 
 	inline T* Get() noexcept
 	{
-		return Ref ? static_cast<T*>(Ref->Object) : nullptr;
+		return Obj;
 	}
 
 	inline const T* Get() const noexcept
 	{
-		return Ref ? static_cast<const T*>(Ref->Object) : nullptr;
+		return Obj;
 	}
 
 	inline int GetRefCount() const noexcept
@@ -296,26 +306,52 @@ public:
 
 
 	template<typename U>
-	[[nodiscard]] inline RpgSharedPtr<U> Cast() const noexcept
+	[[nodiscard]] inline RpgSharedPtr<U> CastStatic() const noexcept
 	{
-		static_assert(std::is_convertible<T*, U*>::value, "RpgSharedPtr: Cast type <T> must be convertible to type <U>!");
+		static_assert(std::is_base_of<U, T>::value, "RpgSharedPtr: StaticCast type <U> must be parent of type <T>!");
 		
 		if (Ref == nullptr)
 		{
 			return RpgSharedPtr<U>();
 		}
 
-		InterlockedAdd(&Ref->SharedCount, 1);
+		InterlockedIncrement(&Ref->SharedCount);
 
 		RpgSharedPtr<U> parent;
 		parent.Ref = Ref;
+		parent.Obj = static_cast<U*>(Obj);
 
 		return parent;
 	}
 
 
+	template<typename U>
+	[[nodiscard]] inline RpgSharedPtr<U> CastDynamic() const noexcept
+	{
+		if (Ref == nullptr)
+		{
+			return RpgSharedPtr<U>();
+		}
+
+		U* check = dynamic_cast<U*>(Obj);
+		if (check == nullptr)
+		{
+			return RpgSharedPtr<U>();
+		}
+
+		InterlockedIncrement(&Ref->SharedCount);
+
+		RpgSharedPtr<U> other;
+		other.Ref = Ref;
+		other.Obj = check;
+
+		return other;
+	}
+
+
 private:
 	RpgPointerRefCount* Ref;
+	T* Obj;
 
 
 	template<typename U>
@@ -346,7 +382,7 @@ public:
 
 		if (Ref)
 		{
-			InterlockedAdd(&Ref->WeakCount, 1);
+			InterlockedIncrement(&Ref->WeakCount);
 		}
 	}
 
@@ -357,7 +393,7 @@ public:
 
 		if (Ref)
 		{
-			InterlockedAdd(&Ref->WeakCount, 1);
+			InterlockedIncrement(&Ref->WeakCount);
 		}
 	}
 
@@ -383,7 +419,7 @@ public:
 
 		if (Ref)
 		{
-			InterlockedAdd(&Ref->WeakCount, 1);
+			InterlockedIncrement(&Ref->WeakCount);
 		}
 
 		return *this;
@@ -399,7 +435,7 @@ public:
 
 			if (Ref)
 			{
-				InterlockedAdd(&Ref->WeakCount, 1);
+				InterlockedIncrement(&Ref->WeakCount);
 			}
 		}
 
@@ -441,7 +477,7 @@ public:
 	{
 		if (Ref)
 		{
-			if ( (InterlockedAdd(&Ref->WeakCount, -1) == 0) && (Ref->SharedCount == 0) )
+			if ( (InterlockedDecrement(&Ref->WeakCount) == 0) && (Ref->SharedCount == 0) )
 			{
 				RPG_Check(Ref->Object == nullptr);
 				delete Ref;
@@ -477,6 +513,7 @@ public:
 		while (InterlockedCompareExchange(&Ref->SharedCount, exchange, expected) != expected);
 
 		shared.Ref = Ref;
+		shared.Obj = static_cast<T*>(Ref->Object);
 		RPG_Check(shared.Ref && shared.Ref->Object);
 
 		return shared;

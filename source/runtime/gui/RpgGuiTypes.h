@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/RpgDelegate.h"
-#include "input/RpgInputTypes.h"
+#include "core/RpgInputTypes.h"
 #include "render/asset/RpgFont.h"
 #include "render/asset/RpgMaterial.h"
 

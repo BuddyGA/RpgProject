@@ -1,5 +1,6 @@
 #pragma once
 
+/*
 #include "core/RpgFilePath.h"
 #include "render/asset/RpgMesh.h"
 #include "render/asset/RpgMaterial.h"
@@ -250,3 +251,4 @@ private:
 	RpgAssetLoadedData<RpgMaterial> LoadedMaterialData;
 
 };
+*/

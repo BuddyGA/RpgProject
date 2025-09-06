@@ -1,12 +1,12 @@
 #include "RpgRenderComponent.h"
-#include "asset/RpgAssetManager.h"
+#include "core/RpgAssetSystem.h"
 
 
 
 RPG_COMPONENT_DEFINITION_STATIC_StreamWrite(RpgRenderComponent_Mesh)
 {
-	writer.Write(g_AssetManager->GetMeshAssetPath(data.Mesh));
-	writer.Write(g_AssetManager->GetMaterialAssetPath(data.Material));
+	writer.Write(data.Mesh ? data.Mesh->GetAssetPath() : RpgString());
+	writer.Write(data.Material ? data.Material->GetAssetPath() : RpgString());
 	writer.Write(data.bIsVisible);
 	writer.Write(data.Bound);
 }
@@ -14,13 +14,19 @@ RPG_COMPONENT_DEFINITION_STATIC_StreamWrite(RpgRenderComponent_Mesh)
 
 RPG_COMPONENT_DEFINITION_STATIC_StreamRead(RpgRenderComponent_Mesh)
 {
-	RpgString meshAssetPath;
-	reader.Read(meshAssetPath);
-	data.Mesh = g_AssetManager->LoadMesh(meshAssetPath);
+	RpgString tempAssetPath;
 
-	RpgString materialAssetPath;
-	reader.Read(materialAssetPath);
-	data.Material = g_AssetManager->LoadMaterial(materialAssetPath);
+	reader.Read(tempAssetPath);
+	if (!tempAssetPath.IsEmpty())
+	{
+		data.Mesh = g_AssetSystem->LoadAsset<RpgMesh>(tempAssetPath);
+	}
+
+	reader.Read(tempAssetPath);
+	if (!tempAssetPath.IsEmpty())
+	{
+		data.Material = g_AssetSystem->LoadAsset<RpgMaterial>(tempAssetPath);
+	}
 
 	reader.Read(data.bIsVisible);
 	reader.Read(data.Bound);

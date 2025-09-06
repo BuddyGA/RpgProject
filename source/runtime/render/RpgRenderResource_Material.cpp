@@ -130,12 +130,12 @@ void RpgMaterialResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noexce
 	{
 		const int index = UploadTextureIndices[i];
 		RpgSharedTexture2D texture = TextureDescriptors[index].WeakTexture.AsShared();
-		RPG_CheckV(texture.IsValid() && texture->IsDirty(), "Texture: %s", *texture->GetName());
+		RPG_CheckV(texture.IsValid() && texture->IsDirty(), "Texture: %s", *texture->GetAssetName());
 
 		texture->GPU_CommandCopy(cmdList);
 		texture->GPU_SetLoaded();
 
-		RPG_LogDebug(RpgLogTemp, "Texture loaded to GPU (%s)", *texture->GetName());
+		RPG_LogDebug(RpgLogTemp, "Texture loaded to GPU (%s)", *texture->GetAssetName());
 	}
 }
 

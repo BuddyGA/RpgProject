@@ -9,7 +9,7 @@ class RpgRenderComponent_Light;
 
 
 
-class RpgScript_DebugCamera : public RpgGameObjectScript
+class RpgEditorScript_Camera : public RpgGameObjectScript
 {
 	RPG_GAMEOBJECT_SCRIPT("RpgScript - DebugCamera")
 
@@ -21,7 +21,7 @@ public:
 
 
 public:
-	RpgScript_DebugCamera() noexcept;
+	RpgEditorScript_Camera() noexcept;
 
 
 	inline void GetRotationPitchYaw(float& out_Pitch, float& out_Yaw) const noexcept

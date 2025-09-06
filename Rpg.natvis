@@ -80,7 +80,7 @@
 		<DisplayString Condition="Ref == nullptr">null</DisplayString>
 		<DisplayString>{(($T1*)Ref->Object)->Name}</DisplayString>
 		<Expand>
-			<Item Name="Object">($T1*)Ref->Object</Item>
+			<Item Name="Object">Obj</Item>
 			<Item Name="SharedCount">Ref->SharedCount</Item>
 			<Item Name="WeakCount">Ref->WeakCount</Item>
 		</Expand>

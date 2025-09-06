@@ -49,7 +49,7 @@ public:
 	
 	virtual RpgSharedTextureDepthStencil GetTextureDepth(int frameIndex) noexcept override
 	{
-		return FrameDatas[frameIndex].TextureDepthCube.Cast<RpgTextureDepthStencil>();
+		return FrameDatas[frameIndex].TextureDepthCube.CastStatic<RpgTextureDepthStencil>();
 	}
 
 

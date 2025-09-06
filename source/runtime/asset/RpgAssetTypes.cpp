@@ -1,3 +1,4 @@
+/*
 #include "RpgAssetTypes.h"
 
 
@@ -43,3 +44,4 @@ RpgAssetFileModel::EType RpgAssetFileModel::GetSupportedFileType(const RpgFilePa
 
 	return MAX_COUNT;
 }
+*/

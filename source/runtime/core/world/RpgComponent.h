@@ -25,8 +25,8 @@ public:																					\
 	RpgGameObjectID GameObject;
 
 
-#define RPG_COMPONENT_CLASS_END()		\
-	friend RpgWorld;			\
+#define RPG_COMPONENT_CLASS_END()	\
+	friend RpgWorld;				\
 };
 
 

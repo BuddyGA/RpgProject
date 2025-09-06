@@ -1,3 +1,4 @@
+/*
 #include "RpgAssetManager.h"
 #include "core/RpgConsoleSystem.h"
 #include "core/world/RpgWorld.h"
@@ -426,3 +427,4 @@ RpgString RpgAssetManager::GetAssetPath(const RpgFilePath& filePath) const noexc
 
 	return assetPath;
 }
+*/

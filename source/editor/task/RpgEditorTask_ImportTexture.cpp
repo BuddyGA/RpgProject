@@ -1,6 +1,4 @@
-#include "RpgAssetTask_ImportTexture.h"
-#include "core/RpgMath.h"
-#include "../RpgAssetImporter.h"
+#include "RpgEditorTask_ImportTexture.h"
 #include "thirdparty/stb/stb_image.h"
 #include <compressonator.h>
 
@@ -35,7 +33,7 @@ namespace RpgCompressonator
 
 		if (cmpStatus != CMP_OK)
 		{
-			RPG_LogError(RpgLogAssetImporter, "Fail to import texture from source file (%s). Load file data failed!", *filePath);
+			RPG_LogError(RpgLogEditor, "Fail to import texture from source file (%s). Load file data failed!", *filePath);
 			return;
 		}
 
@@ -43,7 +41,7 @@ namespace RpgCompressonator
 		{
 			if (!(RpgMath::IsPowerOfTwo(srcMipSet.m_nWidth) && RpgMath::IsPowerOfTwo(srcMipSet.m_nHeight)))
 			{
-				RPG_LogError(RpgLogAssetImporter, "Fail to import texture from source file (%s). If generate mip-maps, width and height must be power of two! (W: %i, H: %i)", *filePath, srcMipSet.m_nWidth, srcMipSet.m_nHeight);
+				RPG_LogError(RpgLogEditor, "Fail to import texture from source file (%s). If generate mip-maps, width and height must be power of two! (W: %i, H: %i)", *filePath, srcMipSet.m_nWidth, srcMipSet.m_nHeight);
 				CMP_FreeMipSet(&srcMipSet);
 
 				return;
@@ -74,7 +72,7 @@ namespace RpgCompressonator
 
 			if (cmpStatus != CMP_OK)
 			{
-				RPG_LogError(RpgLogAssetImporter, "Fail to import texture from source file (%s). Process texture compression failed!", *filePath);
+				RPG_LogError(RpgLogEditor, "Fail to import texture from source file (%s). Process texture compression failed!", *filePath);
 				CMP_FreeMipSet(&srcMipSet);
 
 				return;
@@ -163,7 +161,7 @@ namespace RpgCompressonator
 				}
 				else
 				{
-					RPG_LogError(RpgLogAssetImporter, "Fail to import texture from embedded data (%s). Write file failed!", *embedded.Name);
+					RPG_LogError(RpgLogEditor, "Fail to import texture from embedded data (%s). Write file failed!", *embedded.Name);
 				}
 
 				RpgPlatformFile::FileClose(fileHandle);
@@ -182,7 +180,7 @@ namespace RpgCompressonator
 
 		if (pixelData == nullptr)
 		{
-			RPG_PLATFORM_LogError(RpgLogAssetImporter, "Fail to import texture from embedded data (%s). Load data failed!", *embedded.Name);
+			RPG_PLATFORM_LogError(RpgLogEditor, "Fail to import texture from embedded data (%s). Load data failed!", *embedded.Name);
 			return;
 		}
 
@@ -208,7 +206,7 @@ namespace RpgCompressonator
 		{
 			if (!(RpgMath::IsPowerOfTwo(srcMipSet.m_nWidth) && RpgMath::IsPowerOfTwo(srcMipSet.m_nHeight)))
 			{
-				RPG_PLATFORM_LogError(RpgLogAssetImporter, "Fail to import texture from source file (%s). If generate mip-maps, width and height must be power of two! [W: %i, H: %i]", 
+				RPG_PLATFORM_LogError(RpgLogEditor, "Fail to import texture from source file (%s). If generate mip-maps, width and height must be power of two! [W: %i, H: %i]", 
 					*embedded.Name, srcMipSet.m_nWidth, srcMipSet.m_nHeight
 				);
 
@@ -249,7 +247,7 @@ namespace RpgCompressonator
 			CMP_ERROR cmpError = CMP_ConvertTexture(&srcTexture, &compressedTexture, &options, nullptr);
 			if (cmpError != CMP_OK)
 			{
-				RPG_PLATFORM_LogError(RpgLogAssetImporter, "Fail to import texture from embedded data [%s]. Compress texture failed!", *embedded.Name);
+				RPG_PLATFORM_LogError(RpgLogEditor, "Fail to import texture from embedded data [%s]. Compress texture failed!", *embedded.Name);
 				return;
 			}
 		}
@@ -290,14 +288,14 @@ namespace RpgCompressonator
 };
 
 
-RpgAssetTask_ImportTexture::RpgAssetTask_ImportTexture() noexcept
+RpgEditorTask_ImportTexture::RpgEditorTask_ImportTexture() noexcept
 {
 	Format = RpgTextureFormat::TEX_2D_RGBA;
 	bGenerateMipMaps = false;
 }
 
 
-void RpgAssetTask_ImportTexture::Reset() noexcept
+void RpgEditorTask_ImportTexture::Reset() noexcept
 {
 	RpgThreadTask::Reset();
 
@@ -309,31 +307,31 @@ void RpgAssetTask_ImportTexture::Reset() noexcept
 }
 
 
-void RpgAssetTask_ImportTexture::Execute() noexcept
+void RpgEditorTask_ImportTexture::Execute() noexcept
 {
 	RPG_Check(SourceFilePath.IsFilePath() || SourceEmbedded.Data);
 
 	if (SourceFilePath.IsFilePath())
 	{
-		RPG_Log(RpgLogAssetImporter, "[Thread-%u]: Import texture from file (%s)", GetCurrentThreadId(), *SourceFilePath);
+		RPG_Log(RpgLogEditor, "[Thread-%u]: Import texture from file (%s)", GetCurrentThreadId(), *SourceFilePath);
 		RpgCompressonator::ImportFromFile(Result, SourceFilePath, Format, bGenerateMipMaps);
 	}
 	else
 	{
-		RPG_Log(RpgLogAssetImporter, "[Thread-%u]: Import texture from embedded data (%s)", GetCurrentThreadId(), *SourceEmbedded.Name);
+		RPG_Log(RpgLogEditor, "[Thread-%u]: Import texture from embedded data (%s)", GetCurrentThreadId(), *SourceEmbedded.Name);
 		RpgCompressonator::ImportFromEmbedded(Result, SourceEmbedded, Format, bGenerateMipMaps);
 	}
 
 	if (Result)
 	{
-		RPG_Log(RpgLogAssetImporter, "[Thread-%u]: Import texture SUCCESS!\n"
+		RPG_Log(RpgLogEditor, "[Thread-%u]: Import texture SUCCESS!\n"
 			"\tSourceFile: %s\n"
 			"\tTexture: %s\n"
 			"\tFormat: %s\n"
 			"\tMipCount: %u\n",
 			GetCurrentThreadId(),
 			*SourceFilePath,
-			*Result->GetName(),
+			*Result->GetAssetName(),
 			RpgTextureFormat::NAMES[Result->GetFormat()],
 			Result->GetMipCount()
 		);

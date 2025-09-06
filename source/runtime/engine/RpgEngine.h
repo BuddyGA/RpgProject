@@ -8,7 +8,6 @@
 #include "gui/RpgGuiContext.h"
 #include "gui/RpgGuiCanvas.h"
 #include "gui/widget/RpgGuiConsole.h"
-#include "script/RpgScript_DebugCamera.h"
 
 
 
@@ -34,10 +33,13 @@ public:
 	void FrameTick(uint64_t frameCounter, float deltaTime) noexcept;
 	void RequestExit(bool bAskConfirmation) noexcept;
 
-	[[nodiscard]] RpgWorld* CreateWorld(const RpgName& name) noexcept;
+	RpgWorld* CreateWorld(const RpgName& name) noexcept;
 	void DestroyWorld(RpgWorld*& world) noexcept;
 
-	void SpawnMainCamera() noexcept;
+	void SaveLevel() noexcept;
+	void LoadLevel(const RpgString& levelAssetPath) noexcept;
+
+	void SetMainCamera(RpgGameObjectID cameraObject) noexcept;
 
 
 	inline bool IsWindowMinimized() const noexcept
@@ -45,6 +47,10 @@ public:
 		return WindowState == RpgPlatformWindowSizeState::MINIMIZED;
 	}
 
+	inline RpgPointInt GetWindowDimension() const noexcept
+	{
+		return WindowDimension;
+	}
 
 	inline RpgWorld* GetMainWorld() noexcept
 	{
@@ -84,7 +90,6 @@ private:
 	// Main window state
 	RpgPlatformWindowSizeState WindowState;
 
-
 	// Created worlds. Main world always at index 0
 	RpgArray<RpgUniquePtr<RpgWorld>> Worlds;
 	RpgWorld* MainWorld;
@@ -102,11 +107,8 @@ private:
 	// GUI console
 	RpgGuiConsole* GuiConsole;
 
-	// Main camera object inside main world
+	// Main camera object
 	RpgGameObjectID MainCameraObject;
-
-	// Script camera
-	RpgScript_DebugCamera ScriptDebugCamera;
 
 
 public:

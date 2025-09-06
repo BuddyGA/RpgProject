@@ -1,6 +1,9 @@
 #pragma once
 
+#include "render/RpgModel.h"
+#include "animation/RpgAnimationTypes.h"
 #include "RpgEditorAssetBrowser.h"
+#include "script/RpgEditorScript_Camera.h"
 
 
 
@@ -18,6 +21,12 @@ public:
 	void MouseButton(const RpgPlatformMouseButtonEvent& e) noexcept;
 	void KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept;
 	void TickUpdate(float deltaTime) noexcept;
+	void Render2d(RpgRenderer2D& r2d) noexcept;
+
+	void LevelLoaded(RpgWorld* world) noexcept;
+
+	void ImportTexture(RpgSharedTexture2D& out_Texture, const RpgEditorImportSetting_Texture& setting) noexcept;
+	void ImportModel(RpgArray<RpgSharedModel>& out_Models, RpgSharedAnimationSkeleton& out_Skeleton, RpgArray<RpgSharedAnimationClip>& out_Animations, const RpgEditorImportSetting_Model& setting) noexcept;
 
 
 private:
@@ -26,5 +35,14 @@ private:
 
 private:
 	RpgEditorAssetBrowserWindow* AssetBrowser;
+
+	// main world
+	RpgWorld* MainWorld;
+
+	// Camera object
+	RpgGameObjectID CameraObject;
+
+	// Script camera
+	RpgEditorScript_Camera CameraScript;
 
 };

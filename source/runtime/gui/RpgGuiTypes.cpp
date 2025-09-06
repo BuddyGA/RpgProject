@@ -1,7 +1,4 @@
 #include "RpgGuiTypes.h"
-#include "input/RpgInputManager.h"
-#include "render/RpgRenderer2D.h"
-#include <algorithm>
 
 
 RPG_LOG_DEFINE_CATEGORY(RpgLogGui, VERBOSITY_DEBUG)

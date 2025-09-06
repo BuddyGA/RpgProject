@@ -1,13 +1,13 @@
 #pragma once
 
 #include "core/RpgThreadPool.h"
-#include "core/RpgFilePath.h"
 #include "render/asset/RpgTexture.h"
 #include "RpgAssimpTypes.h"
+#include "../RpgEditorTypes.h"
 
 
 
-class RpgAssetTask_ImportTexture : public RpgThreadTask
+class RpgEditorTask_ImportTexture : public RpgThreadTask
 {
 public:
 	RpgFilePath SourceFilePath;
@@ -17,7 +17,7 @@ public:
 
 
 public:
-	RpgAssetTask_ImportTexture() noexcept;
+	RpgEditorTask_ImportTexture() noexcept;
 
 	virtual void Reset() noexcept override;
 	virtual void Execute() noexcept override;

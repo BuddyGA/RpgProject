@@ -1,5 +1,6 @@
 #pragma once
 
+#include "render/asset/RpgMesh.h"
 #include "render/RpgModel.h"
 #include "animation/RpgAnimationTypes.h"
 

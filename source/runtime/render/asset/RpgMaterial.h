@@ -189,7 +189,7 @@ namespace RpgMaterialDefault
 
 typedef RpgSharedPtr<class RpgMaterial> RpgSharedMaterial;
 
-class RpgMaterial : public RpgAssetInterface
+class RpgMaterial : public RpgAssetObject
 {
 	RPG_ASSET_FILE(RpgAssetFileType::MATERIAL, 1)
 

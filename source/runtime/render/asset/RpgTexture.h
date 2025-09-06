@@ -1,6 +1,6 @@
 #pragma once
 
-#include "asset/RpgAssetTypes.h"
+#include "core/RpgAssetTypes.h"
 #include "../RpgRenderTypes.h"
 
 
@@ -30,7 +30,7 @@ typedef RpgSharedPtr<class RpgTextureDepthCube> RpgSharedTextureDepthCube;
 
 
 
-class RpgTexture2D : public RpgAssetInterface
+class RpgTexture2D : public RpgAssetObject
 {
 	RPG_ASSET_FILE(RpgAssetFileType::TEXTURE, 1)
 

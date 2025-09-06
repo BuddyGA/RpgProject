@@ -1,6 +1,6 @@
 #include "RpgMaterial.h"
+#include "core/RpgAssetSystem.h"
 #include "shader/RpgShaderTypes.h"
-#include "asset/RpgAssetManager.h"
 
 
 RPG_LOG_DECLARE_CATEGORY_STATIC(RpgLogMaterial, VERBOSITY_DEBUG)
@@ -8,7 +8,7 @@ RPG_LOG_DECLARE_CATEGORY_STATIC(RpgLogMaterial, VERBOSITY_DEBUG)
 
 
 RpgMaterial::RpgMaterial(const RpgName& in_Name) noexcept
-	: RpgAssetInterface(in_Name)
+	: RpgAssetObject(in_Name)
 {
 	Flags = FLAG_None;
 	InitializeSRWLock(&ParameterTextureLock);
@@ -45,13 +45,14 @@ void RpgMaterial::StreamWrite(RpgStreamWriter& writer) const noexcept
 {
 	const uint16_t savedFlags = (Flags & ~RUNTIME_FLAGS);
 	writer.Write(savedFlags);
-	writer.Write(g_AssetManager->GetMaterialAssetPath(ParentMaterial));
+
+	writer.Write(ParentMaterial ? ParentMaterial->GetAssetPath() : RpgString());
 	writer.Write(RenderState);
 
 	const RpgMaterialParameterTextureArray& paramTextures = ParameterLayout.GetTextures();
 	for (int i = 0; i < paramTextures.GetCount(); ++i)
 	{
-		writer.Write(g_AssetManager->GetTextureAssetPath(paramTextures[i]));
+		writer.Write(paramTextures[i] ? paramTextures[i]->GetAssetPath() : RpgString());
 	}
 
 	writer.Write(ParameterLayout.GetVectors());
@@ -61,15 +62,15 @@ void RpgMaterial::StreamWrite(RpgStreamWriter& writer) const noexcept
 
 void RpgMaterial::StreamRead(RpgStreamReader& reader) noexcept
 {
+	RpgString tempAssetPath;
+
 	reader.Read(Name);
 	reader.Read(Flags);
+	reader.Read(tempAssetPath);
 
-	RpgString assetPath;
-	reader.Read(assetPath);
-
-	if (!assetPath.IsEmpty())
+	if (!tempAssetPath.IsEmpty())
 	{
-		ParentMaterial = g_AssetManager->LoadMaterial(assetPath);
+		ParentMaterial = g_AssetSystem->LoadAsset<RpgMaterial>(tempAssetPath);
 	}
 
 	reader.Read(RenderState);
@@ -77,11 +78,11 @@ void RpgMaterial::StreamRead(RpgStreamReader& reader) noexcept
 	RpgMaterialParameterTextureArray& paramTextures = ParameterLayout.GetTextures();
 	for (int i = 0; i < paramTextures.GetCount(); ++i)
 	{
-		reader.Read(assetPath);
+		reader.Read(tempAssetPath);
 		
-		if (!assetPath.IsEmpty())
+		if (!tempAssetPath.IsEmpty())
 		{
-			paramTextures[i] = g_AssetManager->LoadTexture(assetPath);
+			paramTextures[i] = g_AssetSystem->LoadAsset<RpgTexture2D>(tempAssetPath);
 		}
 	}
 
