@@ -25,13 +25,13 @@ void RpgEditorScript_Camera::AttachedToGameObject() noexcept
 	{
 		bInitialized = true;
 
-		RpgTransform transform = World->GameObject_GetWorldTransform(GameObject);
+		RpgTransform transform = GameObject.GetWorldTransform();
 		transform.Position = RpgVector3(0.0f, 800.0f, 0.0f);
 		transform.Rotation = RpgQuaternion::FromPitchYawRollDegree(PitchValue, 45.0f, 0.0f);
 
-		World->GameObject_SetWorldTransform(GameObject, transform);
+		GameObject.SetWorldTransform(transform);
 
-		Flashlight = World->GameObject_AddComponent<RpgRenderComponent_Light>(GameObject);
+		Flashlight = &GameObject.AddComponent<RpgRenderComponent_Light>();
 		Flashlight->Type = RpgRenderLight::TYPE_SPOT_LIGHT;
 		Flashlight->ColorIntensity = RpgColorLinear(1.0f, 1.0f, 1.0f, 2.0f);
 		Flashlight->AttenuationRadius = 1600.0f;
@@ -45,7 +45,7 @@ void RpgEditorScript_Camera::AttachedToGameObject() noexcept
 
 void RpgEditorScript_Camera::TickUpdate(float deltaTime) noexcept
 {
-	RpgTransform transform = World->GameObject_GetWorldTransform(GameObject);
+	RpgTransform transform = GameObject.GetWorldTransform();
 
 	if (g_InputSystem->IsKeyButtonPressed(RpgInputKey::MOUSE_RIGHT))
 	{
@@ -104,7 +104,7 @@ void RpgEditorScript_Camera::TickUpdate(float deltaTime) noexcept
 		RpgPlatformMouse::SetCursorPosition(NULL, RpgPointInt(SavedMousePos));
 	}
 
-	World->GameObject_SetWorldTransform(GameObject, transform);
+	GameObject.SetWorldTransform(transform);
 
 
 	if (g_InputSystem->IsKeyButtonPressed(RpgInputKey::KEYBOARD_F))

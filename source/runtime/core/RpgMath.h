@@ -643,6 +643,11 @@ public:
 		return axisForward;
 	}
 
+	inline void SetPosition(const RpgVector3& position) noexcept
+	{
+		Xmm.r[3] = DirectX::XMVectorSet(position.X, position.Y, position.Z, 1.0f);
+	}
+
 	inline RpgVector3 GetPosition() const noexcept
 	{
 		return Xmm.r[3];

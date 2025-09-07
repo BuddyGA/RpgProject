@@ -4,7 +4,7 @@
 #include "render/world/RpgRenderComponent.h"
 #include "render/world/RpgRenderWorldSubsystem.h"
 #include "animation/world/RpgAnimationWorldSubsystem.h"
-#include "engine/RpgEngine.h"
+#include "game/RpgGameApp.h"
 #include "task/RpgEditorTask_ImportModel.h"
 #include <ShObjIdl_core.h>
 #include <compressonator.h>
@@ -106,15 +106,15 @@ void RpgEditor::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_EQUALS)
 		{
-			g_Engine->GetMainRenderer()->Gamma += 0.01f;
+			g_GameApp->GetMainRenderer()->Gamma += 0.01f;
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_MINUS)
 		{
-			g_Engine->GetMainRenderer()->Gamma -= 0.01f;
+			g_GameApp->GetMainRenderer()->Gamma -= 0.01f;
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_0)
 		{
-			RpgRenderComponent_Camera* cameraComp = MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(CameraObject);
+			RpgRenderComponent_Camera* cameraComp = CameraObject.GetComponent<RpgRenderComponent_Camera>();
 			cameraComp->bFrustumCulling = !cameraComp->bFrustumCulling;
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_9)
@@ -129,11 +129,11 @@ void RpgEditor::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_F8)
 		{
-			g_Engine->SaveLevel();
+			//g_GameApp->SaveLevel();
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_F9)
 		{
-			g_Engine->LoadLevel(RpgString("game/world_main"));
+			//g_GameApp->LoadLevel(RpgString("game/world_main"));
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_F10)
 		{
@@ -158,15 +158,15 @@ void RpgEditor::TickUpdate(float deltaTime) noexcept
 
 void RpgEditor::Render2d(RpgRenderer2D& r2d) noexcept
 {
-	RpgRenderer* mainRenderer = g_Engine->GetMainRenderer();
+	RpgRenderer* mainRenderer = g_GameApp->GetMainRenderer();
 
-	const RpgPointInt windowDimension = g_Engine->GetWindowDimension();
-	const RpgTransform cameraTransform = CameraObject.IsValid() ? MainWorld->GameObject_GetWorldTransform(CameraObject) : RpgTransform();
+	const RpgPointInt windowDimension = g_GameApp->GetWindowDimension();
+	const RpgTransform cameraTransform = !CameraObject.IsNull() ? CameraObject.GetWorldTransform() : RpgTransform();
 
 	float cameraPitch, cameraYaw;
 	CameraScript.GetRotationPitchYaw(cameraPitch, cameraYaw);
 
-	RpgRenderComponent_Camera* cameraComp = CameraObject.IsValid() ? MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(CameraObject) : nullptr;
+	RpgRenderComponent_Camera* cameraComp = !CameraObject.IsNull() ? CameraObject.GetComponent<RpgRenderComponent_Camera>() : nullptr;
 
 	// Debug info
 	static RpgString debugInfoText;
@@ -179,14 +179,14 @@ void RpgEditor::Render2d(RpgRenderer2D& r2d) noexcept
 		"Gamma: %.2f\n"
 		"VSync: %d\n"
 		"\n"
-		"GameObject: %i\n"
+		//"GameObject: %i\n"
 		, windowDimension.X, windowDimension.Y
 		, cameraTransform.Position.X, cameraTransform.Position.Y, cameraTransform.Position.Z
 		, cameraPitch, cameraYaw
 		, cameraComp ? cameraComp->bFrustumCulling : false
 		, mainRenderer->Gamma
 		, mainRenderer->GetVsync()
-		, MainWorld->GameObject_GetCount()
+		//, MainWorld->GameObject_GetCount()
 	);
 
 	r2d.AddText(*debugInfoText, debugInfoText.GetLength(), RpgPointFloat(8.0f, 8.0f), RpgColor(255, 255, 255));
@@ -196,19 +196,21 @@ void RpgEditor::Render2d(RpgRenderer2D& r2d) noexcept
 void RpgEditor::LevelLoaded(RpgWorld* world) noexcept
 {
 	MainWorld = world;
-	CameraObject = MainWorld->GameObject_CreateTransient("editor_camera");
+	CameraObject = MainWorld->CreateGameObject("editor_camera", nullptr, true);
 
-	MainWorld->GameObject_AddComponent<RpgRenderComponent_Camera>(CameraObject);
-	MainWorld->GameObject_AttachScript(CameraObject, &CameraScript);
-	MainWorld->GameObject_Spawn(CameraObject);
+	CameraObject.AddComponent<RpgRenderComponent_Camera>();
+	CameraObject.SpawnAtTransform(RpgTransform());
+	CameraObject.AttachScript(&CameraScript);
 
-	g_Engine->SetMainCamera(CameraObject);
+	g_GameApp->SetMainCamera(CameraObject);
 }
 
 
 void RpgEditor::ImportTexture(RpgSharedTexture2D& out_Texture, const RpgEditorImportSetting_Texture& setting) noexcept
 {
+	RPG_IsMainThread();
 
+	RPG_NotImplementedYet();
 }
 
 

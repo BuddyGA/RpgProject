@@ -10,8 +10,8 @@ class RpgShadowViewport
 	RPG_NOCOPY(RpgShadowViewport)
 
 public:
-	// Game object id of this point light
-	RpgGameObjectID GameObject;
+	// Gameobject this point light
+	RpgGameObject GameObject;
 
 	// Attenuation radius
 	float AttenuationRadius;

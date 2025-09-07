@@ -34,7 +34,7 @@ void RpgRenderTask_CaptureMesh::Execute() noexcept
 	RpgArray<RpgSceneMesh>& sceneMeshes = viewport->GetFrameMeshes(FrameIndex);
 	sceneMeshes.Clear();
 
-	for (auto it = World->Component_CreateConstIterator<RpgRenderComponent_Mesh>(); it; ++it)
+	for (auto it = World->ComponentIterator<RpgRenderComponent_Mesh>(); it; ++it)
 	{
 		const RpgRenderComponent_Mesh& comp = it.GetValue();
 
@@ -42,16 +42,16 @@ void RpgRenderTask_CaptureMesh::Execute() noexcept
 		// - check visibility
 		// - check if spawned
 		// - if frustum culling enabled, test bound againts frustum
-		if (!comp.Mesh || !comp.bIsVisible || !World->GameObject_IsSpawned(comp.GameObject) || (bFrustumCulling && !frustum.TestIntersectAABB(comp.GetBound())) )
+		if (!comp.IsGameObjectSpawned() || !comp.Mesh || !comp.bIsVisible || (bFrustumCulling && !frustum.TestIntersectAABB(comp.GetBound())) )
 		{
 			continue;
 		}
 
-		const RpgMatrixTransform worldTransformMatrix = World->GameObject_GetWorldTransformMatrix(comp.GameObject);
+		const RpgGameObject gameObject = comp.GetGameObject();
 
 		RpgSceneMesh& data = sceneMeshes.Add();
-		data.GameObject = comp.GameObject;
-		data.WorldTransformMatrix = worldTransformMatrix;
+		data.GameObject = gameObject;
+		data.WorldTransformMatrix = gameObject.GetWorldTransformMatrix();
 		data.Material = comp.Material;
 		data.Mesh = comp.Mesh;
 

@@ -11,7 +11,7 @@ class RpgRenderComponent_Light;
 
 class RpgEditorScript_Camera : public RpgGameObjectScript
 {
-	RPG_GAMEOBJECT_SCRIPT("RpgScript - DebugCamera")
+	RPG_GAMEOBJECT_SCRIPT("RpgScript - DebugCamera");
 
 public:
 	float PitchMin;

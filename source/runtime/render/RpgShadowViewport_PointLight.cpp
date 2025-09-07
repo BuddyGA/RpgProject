@@ -26,8 +26,8 @@ void RpgShadowViewport_PointLight::PreRender(RpgRenderFrameContext& frameContext
 	depthTexture->Resize(shadowTextureDimension, shadowTextureDimension);
 	depthTexture->GPU_UpdateResource();
 
-	RpgTransform transform = world->GameObject_GetWorldTransform(GameObject);
-	const float fovDegree = 91.0f;
+	RpgTransform transform = GameObject.GetWorldTransform();
+	const float fovDegree = 90.0f;
 	const float nearClipZ = 1.0f;
 	const float farClipZ = AttenuationRadius * 1.05f;
 	const RpgMatrixProjection projMatrix = RpgMatrixProjection::CreatePerspective(1.0f, fovDegree, nearClipZ, farClipZ);
@@ -86,38 +86,16 @@ void RpgShadowViewport_PointLight::PreRender(RpgRenderFrameContext& frameContext
 
 
 	// build draw calls
-	for (auto it = world->Component_CreateConstIterator<RpgRenderComponent_Mesh>(); it; ++it)
+	for (auto it = world->ComponentConstIterator<RpgRenderComponent_Mesh>(); it; ++it)
 	{
 		const RpgRenderComponent_Mesh& comp = it.GetValue();
-		if (!(comp.Mesh && comp.bIsVisible))
+		if (!(comp.IsGameObjectSpawned() && comp.Mesh && comp.bIsVisible))
 		{
 			continue;
 		}
 
-		const RpgMatrixTransform worldTransformMatrix = world->GameObject_GetWorldTransformMatrix(comp.GameObject);
-
-		/*
-		const RpgSharedModel& model = comp.Model;
-
-		for (int m = 0; m < model->GetMeshCount(); ++m)
-		{
-			const RpgSharedMesh& mesh = model->GetMeshLod(m, 0);
-			RpgDrawIndexedDepth* draw = nullptr;
-
-			if (mesh->HasSkin())
-			{
-				draw = &frame.DrawSkinnedMeshes.Add();
-				frameContext.MeshSkinnedResource->AddMesh(mesh, draw->IndexCount, draw->IndexStart, draw->IndexVertexOffset);
-			}
-			else
-			{
-				draw = &frame.DrawMeshes.Add();
-				frameContext.MeshResource->AddMesh(mesh, draw->IndexCount, draw->IndexStart, draw->IndexVertexOffset);
-			}
-
-			draw->ObjectParam.TransformIndex = worldResource->AddTransform(comp.GameObject.GetIndex(), worldTransformMatrix);
-		}
-		*/
+		RpgGameObject gameObject = comp.GetGameObject();
+		const RpgMatrixTransform worldTransformMatrix = gameObject.GetWorldTransformMatrix();
 
 		const RpgSharedMesh& mesh = comp.Mesh;
 		RpgDrawIndexedDepth* draw = nullptr;
@@ -133,7 +111,7 @@ void RpgShadowViewport_PointLight::PreRender(RpgRenderFrameContext& frameContext
 			frameContext.MeshResource->AddMesh(mesh, draw->IndexCount, draw->IndexStart, draw->IndexVertexOffset);
 		}
 
-		draw->ObjectParam.TransformIndex = worldResource->AddTransform(comp.GameObject.GetIndex(), worldTransformMatrix);
+		draw->ObjectParam.TransformIndex = worldResource->AddTransform(gameObject, worldTransformMatrix);
 	}
 }
 

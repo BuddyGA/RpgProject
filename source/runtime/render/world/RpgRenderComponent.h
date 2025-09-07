@@ -1,7 +1,8 @@
 #pragma once
 
 #include "core/world/RpgComponent.h"
-#include "../RpgModel.h"
+#include "../asset/RpgMesh.h"
+#include "../asset/RpgMaterial.h"
 #include "../RpgSceneViewport.h"
 #include "../RpgShadowViewport.h"
 
@@ -12,7 +13,9 @@ class RpgRenderTask_CaptureLight;
 
 
 
-RPG_COMPONENT_CLASS_BEGIN(RpgRenderComponent_Mesh, 2, "RpgRenderComponent - Mesh")
+class RpgRenderComponent_Mesh
+{
+	RPG_COMPONENT(RpgRenderComponent_Mesh, 2);
 
 public:
 	RpgSharedMesh Mesh;
@@ -46,12 +49,13 @@ private:
 
 	friend RpgRenderWorldSubsystem;
 
-RPG_COMPONENT_CLASS_END()
+};
 
 
 
-
-RPG_COMPONENT_CLASS_BEGIN(RpgRenderComponent_Light, 3, "RpgRenderComponent - Light")
+class RpgRenderComponent_Light
+{
+	RPG_COMPONENT(RpgRenderComponent_Light, 3);
 
 public:
 	// Light type (point light, spot light, directional light)
@@ -78,7 +82,7 @@ public:
 
 	// TRUE if light visible
 	bool bIsVisible;
-	
+
 
 public:
 	RpgRenderComponent_Light() noexcept
@@ -112,12 +116,14 @@ private:
 
 	friend class RpgRenderWorldSubsystem;
 
-RPG_COMPONENT_CLASS_END()
+};
 
 
 
 
-RPG_COMPONENT_CLASS_BEGIN(RpgRenderComponent_Camera, 4, "RpgRenderComponent - Camera")
+class RpgRenderComponent_Camera
+{
+	RPG_COMPONENT(RpgRenderComponent_Camera, 4);
 
 public:
 	RpgPointInt RenderTargetDimension;
@@ -170,9 +176,4 @@ public:
 private:
 	RpgUniquePtr<RpgSceneViewport> SelfViewport;
 
-
-	friend RpgRenderWorldSubsystem;
-	friend RpgRenderTask_CaptureMesh;
-	friend RpgRenderTask_CaptureLight;
-
-RPG_COMPONENT_CLASS_END()
+};

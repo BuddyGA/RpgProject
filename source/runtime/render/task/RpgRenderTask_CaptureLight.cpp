@@ -34,20 +34,20 @@ void RpgRenderTask_CaptureLight::Execute() noexcept
 	RpgArray<RpgSceneLight>& sceneLights = viewport->GetFrameLights(FrameIndex);
 	sceneLights.Clear();
 
-	for (auto it = World->Component_CreateIterator<RpgRenderComponent_Light>(); it; ++it)
+	for (auto it = World->ComponentIterator<RpgRenderComponent_Light>(); it; ++it)
 	{
 		RpgRenderComponent_Light& comp = it.GetValue();
 
 		// check if visible
 		// check if spawned
-		if (!comp.bIsVisible || !World->GameObject_IsSpawned(comp.GameObject))
+		if (!comp.IsGameObjectSpawned() || !comp.bIsVisible)
 		{
 			continue;
 		}
 
 		RpgSceneLight& data = sceneLights.Add();
-		data.GameObject = comp.GameObject;
-		data.WorldTransform = World->GameObject_GetWorldTransform(comp.GameObject);
+		data.GameObject = comp.GetGameObject();
+		data.WorldTransform = data.GameObject.GetWorldTransform();
 		data.Type = comp.Type;
 		data.ColorIntensity = comp.ColorIntensity;
 		data.AttenuationRadius = comp.AttenuationRadius;

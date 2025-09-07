@@ -22,11 +22,10 @@ void RpgRenderWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) noex
 {
 	RpgWorld* world = GetWorld();
 
-	for (auto it = world->Component_CreateIterator<RpgRenderComponent_Mesh>(); it; ++it)
+	for (auto it = world->ComponentIterator<RpgRenderComponent_Mesh>(); it; ++it)
 	{
 		RpgRenderComponent_Mesh& comp = it.GetValue();
-
-		if (!world->GameObject_IsTransformUpdated(comp.GameObject))
+		if (!comp.IsGameObjectSpawned() ||!comp.IsGameObjectTransformUpdated())
 		{
 			continue;
 		}
@@ -34,11 +33,11 @@ void RpgRenderWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) noex
 		comp.Bound = comp.Mesh ? comp.Mesh->GetBound() : RpgBoundingAABB(RpgVector3(-32.0f), RpgVector3(32.0f));
 
 		// transform bound into world space
-		comp.Bound = RpgBoundingBox(comp.Bound, world->GameObject_GetWorldTransformMatrix(comp.GameObject)).ToAABB();
+		comp.Bound = RpgBoundingBox(comp.Bound, comp.GetGameObject().GetWorldTransformMatrix()).ToAABB();
 	}
 
 
-	for (auto it = world->Component_CreateIterator<RpgRenderComponent_Light>(); it; ++it)
+	for (auto it = world->ComponentIterator<RpgRenderComponent_Light>(); it; ++it)
 	{
 		RpgRenderComponent_Light& comp = it.GetValue();
 		if (comp.Type == RpgRenderLight::TYPE_NONE || !comp.bIsVisible)
@@ -87,10 +86,10 @@ void RpgRenderWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) noex
 	}
 
 
-	for (auto it = world->Component_CreateIterator<RpgRenderComponent_Camera>(); it; ++it)
+	for (auto it = world->ComponentIterator<RpgRenderComponent_Camera>(); it; ++it)
 	{
 		RpgRenderComponent_Camera& comp = it.GetValue();
-		if (!comp.bActivated || !world->GameObject_IsSpawned(comp.GameObject))
+		if (!comp.IsGameObjectSpawned() || !comp.bActivated)
 		{
 			continue;
 		}
@@ -98,7 +97,7 @@ void RpgRenderWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) noex
 		RpgSceneViewport* sceneViewport = comp.GetSceneViewport();
 		sceneViewport->RenderTargetDimension = comp.RenderTargetDimension;
 
-		const RpgTransform worldTransform = world->GameObject_GetWorldTransform(comp.GameObject);
+		const RpgTransform worldTransform = comp.GetGameObject().GetWorldTransform();
 		sceneViewport->SetViewRotationAndPosition(worldTransform.Rotation, worldTransform.Position);
 
 		if (comp.ProjectionMode == RpgRenderProjectionMode::PERSPECTIVE)
@@ -133,10 +132,10 @@ void RpgRenderWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) noex
 	{
 		RpgVertexPrimitiveBatchLine* debugLine = renderer->Debug_GetPrimitiveBatchLine(frameIndex, world, false);
 
-		for (auto it = world->Component_CreateConstIterator<RpgRenderComponent_Mesh>(); it; ++it)
+		for (auto it = world->ComponentIterator<RpgRenderComponent_Mesh>(); it; ++it)
 		{
 			const RpgRenderComponent_Mesh& comp = it.GetValue();
-			if (!comp.bIsVisible)
+			if (!comp.IsGameObjectSpawned() || !comp.bIsVisible)
 			{
 				continue;
 			}

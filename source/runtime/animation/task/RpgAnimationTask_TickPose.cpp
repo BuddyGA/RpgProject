@@ -38,14 +38,14 @@ void RpgAnimationTask_TickPose::Execute() noexcept
 		// Skeleton must valid
 		if (!comp->Skeleton)
 		{
-			RPG_LogWarn(RpgLogAnimation, "Fail to update animation for game object (%s). Invalid skeleton!", *World->GameObject_GetName(comp->GameObject));
+			RPG_LogWarn(RpgLogAnimation, "Fail to update animation for gameobject (%s). Invalid skeleton!", *comp->GameObject.GetName());
 			continue;
 		}
 
 		// AnimClip must valid
 		if (!comp->Clip)
 		{
-			RPG_LogWarn(RpgLogAnimation, "Fail to update animation for game object (%s). Invalid animation clip!", *World->GameObject_GetName(comp->GameObject));
+			RPG_LogWarn(RpgLogAnimation, "Fail to update animation for gameobject (%s). Invalid animation clip!", *comp->GameObject.GetName());
 			continue;
 		}
 
@@ -54,7 +54,7 @@ void RpgAnimationTask_TickPose::Execute() noexcept
 
 		const float animDurationSeconds = animClip->GetDurationSeconds();
 		const float animPlayRate = RpgMath::Clamp(comp->PlayRate * GlobalPlayRate, 0.1f, 100.0f);
-		comp->AnimTimer += DeltaTime * animPlayRate;
+		comp->AnimTimer += animPlayRate * DeltaTime;
 
 		if (comp->bLoopAnim)
 		{

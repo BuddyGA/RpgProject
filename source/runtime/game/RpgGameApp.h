@@ -2,24 +2,28 @@
 
 #include "core/RpgConsoleSystem.h"
 #include "core/RpgPointer.h"
-#include "core/world/RpgWorld.h"
 #include "render/RpgRenderer.h"
 #include "render/RpgSceneViewport.h"
 #include "gui/RpgGuiContext.h"
 #include "gui/RpgGuiCanvas.h"
 #include "gui/widget/RpgGuiConsole.h"
+#include "world/RpgGameWorld.h"
 
 
 
-extern class RpgEngine* g_Engine;
+RPG_LOG_DECLARE_CATEGORY_EXTERN(RpgLogGame);
 
-class RpgEngine 
+
+
+extern class RpgGameApp* g_GameApp;
+
+class RpgGameApp 
 {
-	RPG_NOCOPYMOVE(RpgEngine)
+	RPG_NOCOPYMOVE(RpgGameApp)
 
 public:
-	RpgEngine() noexcept;
-	~RpgEngine() noexcept;
+	RpgGameApp() noexcept;
+	~RpgGameApp() noexcept;
 
 	void Initialize() noexcept;
 	void HandleConsoleCommand(const RpgName& command, const RpgConsoleCommandParams& params) noexcept;
@@ -33,13 +37,7 @@ public:
 	void FrameTick(uint64_t frameCounter, float deltaTime) noexcept;
 	void RequestExit(bool bAskConfirmation) noexcept;
 
-	RpgWorld* CreateWorld(const RpgName& name) noexcept;
-	void DestroyWorld(RpgWorld*& world) noexcept;
-
-	void SaveLevel() noexcept;
-	void LoadLevel(const RpgString& levelAssetPath) noexcept;
-
-	void SetMainCamera(RpgGameObjectID cameraObject) noexcept;
+	void SetMainCamera(RpgGameObject cameraObject) noexcept;
 
 
 	inline bool IsWindowMinimized() const noexcept
@@ -51,6 +49,39 @@ public:
 	{
 		return WindowDimension;
 	}
+
+
+	template<typename TWorld>
+	inline TWorld* CreateWorld(const RpgName& name) noexcept
+	{
+		static_assert(std::is_base_of<RpgWorld, TWorld>::value, "RpgGameApp::CreateWorld type of <TWorld> must be derived from type <RpgWorld>!");
+
+		const int index = Worlds.GetCount();
+		Worlds.AddValue(RpgPointer::MakeUnique<TWorld>(name));
+
+		TWorld* world = static_cast<TWorld*>(Worlds[index].Get());
+		world->Initialize();
+
+		return world;
+	}
+
+
+	void DestroyWorld(RpgWorld* world) noexcept
+	{
+		RPG_Check(world);
+
+		const int index = Worlds.FindIndexByCompare(world);
+		if (index != RPG_INDEX_INVALID)
+		{
+			Worlds.RemoveAt(index);
+			world = nullptr;
+
+			return;
+		}
+
+		RPG_LogWarn(RpgLogGame, "Fail to destroy world. World (%s) not found!", *world->GetName());
+	}
+
 
 	inline RpgWorld* GetMainWorld() noexcept
 	{
@@ -92,7 +123,7 @@ private:
 
 	// Created worlds. Main world always at index 0
 	RpgArray<RpgUniquePtr<RpgWorld>> Worlds;
-	RpgWorld* MainWorld;
+	RpgGameWorld* MainWorld;
 
 	// Main renderer
 	RpgUniquePtr<RpgRenderer> MainRenderer;
@@ -108,7 +139,7 @@ private:
 	RpgGuiConsole* GuiConsole;
 
 	// Main camera object
-	RpgGameObjectID MainCameraObject;
+	RpgGameObject MainCameraObject;
 
 
 public:

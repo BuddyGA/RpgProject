@@ -75,17 +75,22 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 	{
 		const RpgSceneMesh& data = frame.Meshes[m];
 
+		if (data.GameObject.IsPendingDestroy())
+		{
+			continue;
+		}
+
 		const bool bHasSkin = data.Mesh->HasSkin();
 		bool bIsStaticMesh = true;
 
 		RpgDrawIndexed draw;
 		draw.Material = data.Material ? materialResource->AddMaterial(data.Material) : materialResource->AddMaterial(RpgMaterial::s_GetDefault(RpgMaterialDefault::MESH_PHONG));
 		draw.ObjectParam.ViewIndex = cameraId;
-		draw.ObjectParam.TransformIndex = worldResource->AddTransform(data.GameObject.GetIndex(), data.WorldTransformMatrix);
+		draw.ObjectParam.TransformIndex = worldResource->AddTransform(data.GameObject, data.WorldTransformMatrix);
 
 		if (bHasSkin)
 		{
-			const RpgAnimationComponent_AnimSkeletonPose* animComp = world->GameObject_GetComponent<RpgAnimationComponent_AnimSkeletonPose>(data.GameObject);
+			const RpgAnimationComponent_AnimSkeletonPose* animComp = data.GameObject.GetComponent<RpgAnimationComponent_AnimSkeletonPose>();
 
 			// draw as static mesh if no animation component
 			bIsStaticMesh = (animComp == nullptr);
@@ -95,12 +100,13 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 				const RpgAnimationSkeleton* skeleton = animComp->GetSkeleton().Get();
 				RPG_Check(skeleton);
 
+				const RpgAnimationPose& finalPose = animComp->GetFinalPose();
 				const int boneCount = skeleton->GetBoneCount();
 				tempBoneSkinningTransforms.Resize(boneCount);
 
 				for (int b = 0; b < boneCount; ++b)
 				{
-					tempBoneSkinningTransforms[b] = skeleton->GetBoneInverseBindPoseTransform(b) * animComp->GetFinalPose().GetBonePoseTransform(b);
+					tempBoneSkinningTransforms[b] = skeleton->GetBoneInverseBindPoseTransform(b) * finalPose.GetBonePoseTransform(b);
 				}
 
 				const RpgMeshSkinnedResource::FMeshID meshId = meshSkinnedResource->AddMesh(data.Mesh, draw.IndexCount, draw.IndexStart, draw.IndexVertexOffset);
@@ -134,15 +140,21 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 	for (int l = 0; l < frame.Lights.GetCount(); ++l)
 	{
 		const RpgSceneLight& data = frame.Lights[l];
+		
+		if (data.GameObject.IsPendingDestroy())
+		{
+			continue;
+		}
+
 		RpgWorldResource::FLightID lightId = RPG_INDEX_INVALID;
 
 		if (data.Type == RpgRenderLight::TYPE_POINT_LIGHT)
 		{
-			lightId = worldResource->AddLight_Point(data.GameObject.GetIndex(), data.WorldTransform.Position, data.ColorIntensity, data.AttenuationRadius, data.AttenuationFallOffExp);
+			lightId = worldResource->AddLight_Point(data.GameObject, data.WorldTransform.Position, data.ColorIntensity, data.AttenuationRadius, data.AttenuationFallOffExp);
 		}
 		else if (data.Type == RpgRenderLight::TYPE_SPOT_LIGHT)
 		{
-			lightId = worldResource->AddLight_Spot(data.GameObject.GetIndex(), data.WorldTransform.Position, data.WorldTransform.GetAxisForward(), 
+			lightId = worldResource->AddLight_Spot(data.GameObject, data.WorldTransform.Position, data.WorldTransform.GetAxisForward(), 
 				data.ColorIntensity, data.AttenuationRadius, 16, data.SpotInnerConeDegree, data.SpotOuterConeDegree);
 		}
 		else

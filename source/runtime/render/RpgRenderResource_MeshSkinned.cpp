@@ -53,10 +53,7 @@ RpgMeshSkinnedResource::FSkeletonID RpgMeshSkinnedResource::AddObjectBoneSkinnin
 	param.IndexCount = meshData.IndexCount;
 	param.SkeletonIndex = id;
 
-	for (int b = 0; b < boneSkinningTransforms.GetCount(); ++b)
-	{
-		SkeletonBoneSkinningTransforms.AddValue(boneSkinningTransforms[b].Xmm);
-	}
+	SkeletonBoneSkinningTransforms.InsertAtRange(boneSkinningTransforms, RPG_INDEX_LAST);
 
 	return id;
 }

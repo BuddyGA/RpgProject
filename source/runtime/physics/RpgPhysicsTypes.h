@@ -132,7 +132,7 @@ namespace RpgPhysicsTrace
 {
 	struct FOption
 	{
-		RpgArray<RpgGameObjectID> IgnoredGameObjects;
+		RpgArray<RpgGameObject> IgnoredGameObjects;
 		RpgPhysicsCollision::EChannel Channel{ RpgPhysicsCollision::CHANNEL_NONE };
 	};
 

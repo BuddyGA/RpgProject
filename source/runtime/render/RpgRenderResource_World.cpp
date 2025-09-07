@@ -10,7 +10,7 @@ RpgWorldResource::RpgWorldResource() noexcept
 
 void RpgWorldResource::Reset() noexcept
 {
-	CachedTagLights.Clear();
+	CachedGameObjectLights.Clear();
 
 	WorldData.DeltaTime = 0.0f;
 	WorldData.ViewCount = 0;
@@ -19,7 +19,7 @@ void RpgWorldResource::Reset() noexcept
 	WorldData.SpotLightCount = 0;
 	WorldData.AmbientColorStrength = RpgVector4(1.0f, 1.0f, 1.0f, 0.05f).Xmm;
 
-	CachedTagTransforms.Clear();
+	CachedGameObjectTransforms.Clear();
 	TransformDatas.Clear();
 
 
@@ -74,37 +74,41 @@ void RpgWorldResource::UpdateResources() noexcept
 }
 
 
-RpgWorldResource::FTransformID RpgWorldResource::AddTransform(int uniqueTagId, const RpgMatrixTransform& worldTransformMatrix) noexcept
+RpgWorldResource::FTransformID RpgWorldResource::AddTransform(RpgGameObject gameObject, const RpgMatrixTransform& worldTransformMatrix) noexcept
 {
-	const int tagIndex = CachedTagTransforms.FindIndexByCompare(uniqueTagId);
-	if (tagIndex != RPG_INDEX_INVALID)
+	RPG_Check(!gameObject.IsNull());
+
+	const int index = CachedGameObjectTransforms.FindIndexByCompare(gameObject);
+	if (index != RPG_INDEX_INVALID)
 	{
-		return CachedTagTransforms[tagIndex].TransformId;
+		return CachedGameObjectTransforms[index].TransformId;
 	}
 
-	FTagTransformID tag;
-	tag.TagId = uniqueTagId;
+	FGameObjectTransformID tag;
+	tag.GameObject = gameObject;
 	tag.TransformId = TransformDatas.GetCount();
 
-	CachedTagTransforms.AddValue(tag);
+	CachedGameObjectTransforms.AddValue(tag);
 	TransformDatas.AddValue(worldTransformMatrix.Xmm);
 
 	return tag.TransformId;
 }
 
 
-RpgWorldResource::FLightID RpgWorldResource::AddLight_Point(int uniqueTagId, RpgVector3 worldPosition, RpgColorLinear colorIntensity, float attRadius, float attFallOffExp) noexcept
+RpgWorldResource::FLightID RpgWorldResource::AddLight_Point(RpgGameObject gameObject, RpgVector3 worldPosition, RpgColorLinear colorIntensity, float attRadius, float attFallOffExp) noexcept
 {
-	const int tagIndex = CachedTagLights.FindIndexByCompare(uniqueTagId);
-	if (tagIndex != RPG_INDEX_INVALID)
+	RPG_Check(!gameObject.IsNull());
+
+	const int index = CachedGameObjectLights.FindIndexByCompare(gameObject);
+	if (index != RPG_INDEX_INVALID)
 	{
-		return CachedTagLights[tagIndex].LightId;
+		return CachedGameObjectLights[index].LightId;
 	}
 
-	FTagLightID tag;
-	tag.TagId = uniqueTagId;
+	FGameObjectLightID tag;
+	tag.GameObject = gameObject;
 	tag.LightId = RPG_SHADER_LIGHT_POINT_INDEX + WorldData.PointLightCount++;
-	CachedTagLights.AddValue(tag);
+	CachedGameObjectLights.AddValue(tag);
 
 	RpgShaderLight& data = WorldData.Lights[tag.LightId];
 	data.WorldPosition = worldPosition.Xmm;
@@ -118,18 +122,20 @@ RpgWorldResource::FLightID RpgWorldResource::AddLight_Point(int uniqueTagId, Rpg
 }
 
 
-RpgWorldResource::FLightID RpgWorldResource::AddLight_Spot(int uniqueTagId, RpgVector3 worldPosition, RpgVector3 worldDirection, RpgColorLinear colorIntensity, float attRadius, float attFallOffExp, float innerConeDegree, float outerConeDegree) noexcept
+RpgWorldResource::FLightID RpgWorldResource::AddLight_Spot(RpgGameObject gameObject, RpgVector3 worldPosition, RpgVector3 worldDirection, RpgColorLinear colorIntensity, float attRadius, float attFallOffExp, float innerConeDegree, float outerConeDegree) noexcept
 {
-	const int tagIndex = CachedTagLights.FindIndexByCompare(uniqueTagId);
-	if (tagIndex != RPG_INDEX_INVALID)
+	RPG_Check(!gameObject.IsNull());
+
+	const int index = CachedGameObjectLights.FindIndexByCompare(gameObject);
+	if (index != RPG_INDEX_INVALID)
 	{
-		return CachedTagLights[tagIndex].LightId;
+		return CachedGameObjectLights[index].LightId;
 	}
 
-	FTagLightID tag;
-	tag.TagId = uniqueTagId;
+	FGameObjectLightID tag;
+	tag.GameObject = gameObject;
 	tag.LightId = RPG_SHADER_LIGHT_SPOT_INDEX + WorldData.SpotLightCount++;
-	CachedTagLights.AddValue(tag);
+	CachedGameObjectLights.AddValue(tag);
 
 	RpgShaderLight& data = WorldData.Lights[tag.LightId];
 	data.WorldPosition = worldPosition.Xmm;

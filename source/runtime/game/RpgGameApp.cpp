@@ -1,31 +1,26 @@
-#include "RpgEngine.h"
+#include "RpgGameApp.h"
 #include "core/RpgCommandLine.h"
 #include "core/RpgAssetSystem.h"
 #include "core/RpgInputSystem.h"
-#include "physics/world/RpgPhysicsComponent.h"
-#include "physics/world/RpgPhysicsWorldSubsystem.h"
 #include "render/RpgRenderThread.h"
 #include "render/world/RpgRenderComponent.h"
-#include "render/world/RpgRenderWorldSubsystem.h"
-#include "animation/world/RpgAnimationComponent.h"
-#include "animation/world/RpgAnimationWorldSubsystem.h"
 
 
 #ifndef RPG_BUILD_SHIPPING
 #include "RpgEditor.h"
 #include "../../test/gui/RpgTestGui.h"
-#include "../../test/engine/RpgTestEngine.h"
+#include "../../test/game/RpgTestGame.h"
 #endif // !RPG_BUILD_SHIPPING
 
 
 
-RPG_LOG_DEFINE_CATEGORY(RpgLogEngine, VERBOSITY_DEBUG)
+RPG_LOG_DEFINE_CATEGORY(RpgLogGame, VERBOSITY_DEBUG)
 
 
-RpgEngine* g_Engine = nullptr;
+RpgGameApp* g_GameApp = nullptr;
 
 
-RpgEngine::RpgEngine() noexcept
+RpgGameApp::RpgGameApp() noexcept
 {
 	WindowState = RpgPlatformWindowSizeState::DEFAULT;
 
@@ -40,15 +35,15 @@ RpgEngine::RpgEngine() noexcept
 }
 
 
-RpgEngine::~RpgEngine() noexcept
+RpgGameApp::~RpgGameApp() noexcept
 {
 	RpgRenderThread::Shutdown();
 }
 
 
-void RpgEngine::Initialize() noexcept
+void RpgGameApp::Initialize() noexcept
 {
-	g_ConsoleSystem->RegisterObjectCommandListener(this, &RpgEngine::HandleConsoleCommand);
+	g_ConsoleSystem->RegisterObjectCommandListener(this, &RpgGameApp::HandleConsoleCommand);
 
 
 #ifndef RPG_BUILD_SHIPPING
@@ -70,23 +65,7 @@ void RpgEngine::Initialize() noexcept
 
 
 	// main world
-	{
-		MainWorld = CreateWorld("world_main");
-
-		// Subsystems
-		MainWorld->Subsystem_Register<RpgPhysicsWorldSubsystem>();
-		MainWorld->Subsystem_Register<RpgAnimationWorldSubsystem>();
-		MainWorld->Subsystem_Register<RpgRenderWorldSubsystem>();
-
-		// Components
-		MainWorld->Component_Register<RpgPhysicsComponent_Filter>();
-		MainWorld->Component_Register<RpgPhysicsComponent_Collision>();
-		MainWorld->Component_Register<RpgRenderComponent_Mesh>();
-		MainWorld->Component_Register<RpgRenderComponent_Light>();
-		MainWorld->Component_Register<RpgRenderComponent_Camera>();
-		MainWorld->Component_Register<RpgAnimationComponent_AnimSkeletonPose>();
-	}
-
+	MainWorld = CreateWorld<RpgGameWorld>("world_game");
 
 	// main renderer
 	MainRenderer = RpgPointer::MakeUnique<RpgRenderer>(RpgPlatformProcess::GetMainWindowHandle(), !RpgCommandLine::HasCommand("novsync"));
@@ -106,7 +85,7 @@ void RpgEngine::Initialize() noexcept
 	//RpgTest::Gui::Create(GuiCanvas);
 
 	// test level
-	RpgTest::Engine::Create(MainWorld);
+	RpgTest::Game::Create(MainWorld);
 
 	g_Editor->LevelLoaded(MainWorld);
 #endif // !RPG_BUILD_SHIPPING
@@ -114,7 +93,7 @@ void RpgEngine::Initialize() noexcept
 }
 
 
-void RpgEngine::HandleConsoleCommand(const RpgName& command, const RpgConsoleCommandParams& params) noexcept
+void RpgGameApp::HandleConsoleCommand(const RpgName& command, const RpgConsoleCommandParams& params) noexcept
 {
 	if (command == "exit")
 	{
@@ -123,32 +102,32 @@ void RpgEngine::HandleConsoleCommand(const RpgName& command, const RpgConsoleCom
 }
 
 
-void RpgEngine::WindowSizeChanged(const RpgPlatformWindowEvent& e) noexcept
+void RpgGameApp::WindowSizeChanged(const RpgPlatformWindowEvent& e) noexcept
 {
 	WindowDimension = e.Size;
 	WindowState = e.State;
 }
 
 
-void RpgEngine::MouseMove(const RpgPlatformMouseMoveEvent& e) noexcept
+void RpgGameApp::MouseMove(const RpgPlatformMouseMoveEvent& e) noexcept
 {
 	GuiContext.MouseMove(e);
 }
 
 
-void RpgEngine::MouseWheel(const RpgPlatformMouseWheelEvent& e) noexcept
+void RpgGameApp::MouseWheel(const RpgPlatformMouseWheelEvent& e) noexcept
 {
 	GuiContext.MouseWheel(e);
 }
 
 
-void RpgEngine::MouseButton(const RpgPlatformMouseButtonEvent& e) noexcept
+void RpgGameApp::MouseButton(const RpgPlatformMouseButtonEvent& e) noexcept
 {
 	GuiContext.MouseButton(e);
 }
 
 
-void RpgEngine::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
+void RpgGameApp::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 {
 	GuiContext.KeyboardButton(e);
 
@@ -167,7 +146,7 @@ void RpgEngine::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 }
 
 
-void RpgEngine::CharInput(char c) noexcept
+void RpgGameApp::CharInput(char c) noexcept
 {
 	// Ignore toggle console
 	if (c == '`')
@@ -179,7 +158,7 @@ void RpgEngine::CharInput(char c) noexcept
 }
 
 
-void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
+void RpgGameApp::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 {
 	const int frameIndex = frameCounter % RPG_FRAME_BUFFERING;
 
@@ -224,7 +203,7 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 
 	// Tick update
 	{
-		RpgRenderComponent_Camera* mainCameraComp = MainCameraObject.IsValid() ? MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(MainCameraObject) : nullptr;
+		RpgRenderComponent_Camera* mainCameraComp = !MainCameraObject.IsNull() ? MainCameraObject.GetComponent<RpgRenderComponent_Camera>() : nullptr;
 
 		if (mainCameraComp && WindowState != RpgPlatformWindowSizeState::MINIMIZED)
 		{
@@ -299,7 +278,7 @@ void RpgEngine::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 }
 
 
-void RpgEngine::RequestExit(bool bAskConfirmation) noexcept
+void RpgGameApp::RequestExit(bool bAskConfirmation) noexcept
 {
 	if (!bAskConfirmation)
 	{
@@ -314,54 +293,16 @@ void RpgEngine::RequestExit(bool bAskConfirmation) noexcept
 }
 
 
-RpgWorld* RpgEngine::CreateWorld(const RpgName& name) noexcept
-{
-	const int index = Worlds.GetCount();
-	Worlds.AddValue(RpgPointer::MakeUnique<RpgWorld>(name));
-
-	return Worlds[index].Get();
-}
-
-
-void RpgEngine::DestroyWorld(RpgWorld*& world) noexcept
-{
-	RPG_Check(world);
-
-	const int index = Worlds.FindIndexByCompare(world);
-	if (index != RPG_INDEX_INVALID)
-	{
-		Worlds.RemoveAt(index);
-		world = nullptr;
-
-		return;
-	}
-
-	RPG_LogWarn(RpgLogEngine, "Fail to destroy world. World (%s) not found!", *world->GetName());
-}
-
-
-void RpgEngine::SaveLevel() noexcept
-{
-	
-}
-
-
-void RpgEngine::LoadLevel(const RpgString& levelAssetPath) noexcept
-{
-	RPG_NotImplementedYet();
-}
-
-
-void RpgEngine::SetMainCamera(RpgGameObjectID cameraObject) noexcept
+void RpgGameApp::SetMainCamera(RpgGameObject cameraObject) noexcept
 {
 	MainCameraObject = cameraObject;
 
-	if (!MainWorld->GameObject_IsValid(MainCameraObject))
+	if (MainCameraObject.IsNull())
 	{
 		return;
 	}
 
-	RpgRenderComponent_Camera* cameraComp = MainWorld->GameObject_GetComponent<RpgRenderComponent_Camera>(MainCameraObject);
+	RpgRenderComponent_Camera* cameraComp = MainCameraObject.GetComponent<RpgRenderComponent_Camera>();
 	RPG_Check(cameraComp);
 	cameraComp->Viewport = &SceneViewport;
 	cameraComp->bActivated = true;

@@ -5,7 +5,10 @@
 
 
 
-RPG_COMPONENT_CLASS_BEGIN(RpgPhysicsComponent_Filter, 0, "RpgPhysicsComponent - Filter")
+class RpgPhysicsComponent_Filter
+{
+	RPG_COMPONENT(RpgPhysicsComponent_Filter, 0);
+
 public:
 	// Object collision channel
 	RpgPhysicsCollision::EChannel ObjectChannel;
@@ -27,12 +30,14 @@ public:
 		// Nothing to do
 	}
 
-RPG_COMPONENT_CLASS_END()
+};
 
 
 
+class RpgPhysicsComponent_Collision
+{
+	RPG_COMPONENT(RpgPhysicsComponent_Collision, 1);
 
-RPG_COMPONENT_CLASS_BEGIN(RpgPhysicsComponent_Collision, 1, "RpgPhysicsComponent - Collision")
 public:
 	RpgPhysicsComponent_Collision() noexcept
 	{
@@ -91,4 +96,4 @@ private:
 	friend RpgPhysicsTask_UpdateBound;
 	friend RpgPhysicsTask_UpdateShape;
 
-RPG_COMPONENT_CLASS_END()
+};

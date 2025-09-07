@@ -113,7 +113,7 @@ namespace RpgPhysicsCollision
 // =========================================================================================================================================================== //
 	void Filter::GeneratePairs(RpgArray<FPairTest>& out_Pairs, RpgWorld* world) noexcept
 	{
-		for (auto firstIt = world->Component_CreateIterator<RpgPhysicsComponent_Filter>(); firstIt; ++firstIt)
+		for (auto firstIt = world->ComponentIterator<RpgPhysicsComponent_Filter>(); firstIt; ++firstIt)
 		{
 			RpgPhysicsComponent_Filter& firstFilter = firstIt.GetValue();
 
@@ -139,11 +139,13 @@ namespace RpgPhysicsCollision
 
 				if (firstFilter.ResponseChannels[secondFilter.ObjectChannel] == secondFilter.ResponseChannels[firstFilter.ObjectChannel])
 				{
-					RpgPhysicsComponent_Collision* firstCollision = world->GameObject_GetComponent<RpgPhysicsComponent_Collision>(firstFilter.GameObject);
-					RPG_Check(firstCollision && firstCollision->GameObject == firstFilter.GameObject);
+					RpgGameObject firstGameObject = firstFilter.GetGameObject();
+					RpgPhysicsComponent_Collision* firstCollision = firstGameObject.GetComponent<RpgPhysicsComponent_Collision>();
+					RPG_Check(firstCollision && firstCollision->GetGameObject() == firstGameObject);
 
-					RpgPhysicsComponent_Collision* secondCollision = world->GameObject_GetComponent<RpgPhysicsComponent_Collision>(secondFilter.GameObject);
-					RPG_Check(secondCollision && secondCollision->GameObject == secondFilter.GameObject);
+					RpgGameObject secondGameObject = secondFilter.GetGameObject();
+					RpgPhysicsComponent_Collision* secondCollision = secondGameObject.GetComponent<RpgPhysicsComponent_Collision>();
+					RPG_Check(secondCollision && secondCollision->GetGameObject() == secondGameObject);
 
 					out_Pairs.AddValue({ firstCollision, secondCollision });
 				}

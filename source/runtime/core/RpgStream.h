@@ -16,16 +16,6 @@ public:
 	virtual void WriteData(const void* data, uint32_t dataSizeBytes) noexcept = 0;
 
 
-	/*
-	template<typename T>
-	inline uint32_t GetSizeBytes(const T& data) const noexcept
-	{
-		static_assert(std::is_trivially_copyable<T>::value, "RpgStreamWriter::GetSizeBytes type of <T> must trivially copyable!");
-		return sizeof(T);
-	}
-	*/
-
-
 	template<typename T>
 	inline void Write(const T& rhs) noexcept
 	{
@@ -33,23 +23,6 @@ public:
 		WriteData(&rhs, sizeof(T));
 	}
 
-
-	/*
-	template<typename T, int N>
-	inline uint32_t GetSizeBytes(const RpgArray<T, N>& data) const noexcept
-	{
-		// count
-		uint32_t sizeBytes = sizeof(int);
-
-		// data
-		for (int i = 0; i < data.GetCount(); ++i)
-		{
-			sizeBytes += GetSizeBytes(data[i]);
-		}
-
-		return sizeBytes;
-	}
-	*/
 
 	template<typename T, int N>
 	inline void Write(const RpgArray<T, N>& dataArray) noexcept
@@ -63,23 +36,6 @@ public:
 	}
 
 
-	/*
-	template<typename T, int N>
-	inline uint32_t GetSizeBytes(const RpgArrayInline<T, N>& data) const noexcept
-	{
-		// count
-		uint32_t sizeBytes = sizeof(int);
-
-		// data
-		for (int i = 0; i < data.GetCount(); ++i)
-		{
-			sizeBytes += GetSizeBytes(data[i]);
-		}
-
-		return sizeBytes;
-	}
-	*/
-
 	template<typename T, int N>
 	inline void Write(const RpgArrayInline<T, N>& dataArray) noexcept
 	{
@@ -91,19 +47,6 @@ public:
 		}
 	}
 
-
-	/*
-	inline uint32_t GetSizeBytes(const RpgString& data) const noexcept
-	{
-		// length
-		uint32_t sizeBytes = sizeof(int);
-		
-		// data
-		sizeBytes += data.GetLength();
-
-		return sizeBytes;
-	}
-	*/
 
 	inline void Write(const RpgString& str) noexcept
 	{

@@ -446,23 +446,23 @@ public:
 
 
 	// Add transform
-	// @param uniqueTagId - Unique tag identifier. Normally the value is game object id but could be anything as long as it is to prevent adding the same transform object multiple times
+	// @param gameObject - Gameobject for unique identifier to prevent adding the same transform object multiple times
 	// @param worldTransformMatrix - World transformation matrix
 	// @returns Transform id in this world resource
-	FTransformID AddTransform(int uniqueTagId, const RpgMatrixTransform& worldTransformMatrix) noexcept;
+	FTransformID AddTransform(RpgGameObject gameObject, const RpgMatrixTransform& worldTransformMatrix) noexcept;
 
 
 	// Add point light
-	// @param uniqueTagId - Unique tag identifier. Normally the value is game object id but could be anything as long as it is to prevent adding the same light object multiple times
+	// @param gameObject - Gameobject for unique identifier to prevent adding the same light multiple times
 	// @param worldPosition - World position
 	// @param colorIntensity - Light color (RGB), and light intensity (A)
 	// @param attRadius - Attenuation radius factor
 	// @param attFallOffExp - Attenuation falloff exponential factor
 	// @returns Light id in this world resource
-	FLightID AddLight_Point(int uniqueTagId, RpgVector3 worldPosition, RpgColorLinear colorIntensity, float attRadius, float attFallOffExp) noexcept;
+	FLightID AddLight_Point(RpgGameObject gameObject, RpgVector3 worldPosition, RpgColorLinear colorIntensity, float attRadius, float attFallOffExp) noexcept;
 	
 	// Add spot light
-	// @param uniqueTagId - Unique tag identifier. Normally the value is game object id but could be anything as long as it is to prevent adding the same light object multiple times
+	// @param gameObject - Gameobject for unique identifier to prevent adding the same light multiple times
 	// @param worldPosition - World position
 	// @param worldDirection - World direction 
 	// @param colorIntensity - Light color (RGB), and light intensity (A)
@@ -471,7 +471,7 @@ public:
 	// @param innerConeDegree - Inner cone (umbra) in degree
 	// @param outerConeDegree - Outer cone (penumbra) in degree
 	// @returns Light id in this world resource
-	FLightID AddLight_Spot(int uniqueTagId, RpgVector3 worldPosition, RpgVector3 worldDirection, RpgColorLinear colorIntensity, float attRadius, float attFallOffExp, float innerConeDegree, float outerConeDegree) noexcept;
+	FLightID AddLight_Spot(RpgGameObject gameObject, RpgVector3 worldPosition, RpgVector3 worldDirection, RpgColorLinear colorIntensity, float attRadius, float attFallOffExp, float innerConeDegree, float outerConeDegree) noexcept;
 
 
 	inline void SetLightShadow(FLightID lightId, FViewID shadowCameraId, int shadowTextureDescriptorIndex) noexcept
@@ -483,35 +483,35 @@ public:
 
 
 private:
-	struct FTagLightID
+	struct FGameObjectLightID
 	{
-		int TagId{ 0 };
+		RpgGameObject GameObject;
 		int LightId{ 0 };
 
-		inline bool operator==(int rhs) const noexcept
+		inline bool operator==(RpgGameObject rhs) const noexcept
 		{
-			return TagId == rhs;
+			return GameObject == rhs;
 		}
 	};
 
-	RpgArrayInline<FTagLightID, RPG_SHADER_MAX_LIGHT> CachedTagLights;
+	RpgArrayInline<FGameObjectLightID, RPG_SHADER_MAX_LIGHT> CachedGameObjectLights;
 
 	RpgShaderWorldData WorldData;
 	ComPtr<D3D12MA::Allocation> WorldConstantBuffer;
 
 
-	struct FTagTransformID
+	struct FGameObjectTransformID
 	{
-		int TagId{ 0 };
+		RpgGameObject GameObject;
 		int TransformId{ 0 };
 
-		inline bool operator==(int rhs) const noexcept
+		inline bool operator==(const RpgGameObject& rhs) const noexcept
 		{
-			return TagId == rhs;
+			return GameObject == rhs;
 		}
 	};
 
-	RpgArray<FTagTransformID> CachedTagTransforms;
+	RpgArray<FGameObjectTransformID> CachedGameObjectTransforms;
 	RpgArray<RpgMatrixTransform> TransformDatas;
 	ComPtr<D3D12MA::Allocation> TransformStructBuffer;
 
@@ -541,7 +541,7 @@ public:
 
 struct RpgSceneMesh
 {
-	RpgGameObjectID GameObject;
+	RpgGameObject GameObject;
 	RpgMatrixTransform WorldTransformMatrix;
 	RpgSharedMaterial Material;
 	RpgSharedMesh Mesh;
@@ -551,7 +551,7 @@ struct RpgSceneMesh
 
 struct RpgSceneLight
 {
-	RpgGameObjectID GameObject;
+	RpgGameObject GameObject;
 	RpgTransform WorldTransform;
 	RpgRenderLight::EType Type{ RpgRenderLight::TYPE_NONE };
 	RpgColorLinear ColorIntensity;

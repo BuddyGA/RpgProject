@@ -12,7 +12,7 @@
 #include "render/asset/RpgMaterial.h"
 #include "shader/RpgShaderManager.h"
 #include "render/RpgRenderPipeline.h"
-#include "engine/RpgEngine.h"
+#include "game/RpgGameApp.h"
 
 #include <windowsx.h>
 #include <hidusage.h>
@@ -33,7 +33,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 	{
 		case WM_CLOSE:
 		{
-			g_Engine->RequestExit(true);
+			g_GameApp->RequestExit(true);
 			return 0;
 		}
 
@@ -68,7 +68,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.Size = RpgPointInt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 			RPG_Log(RpgLogSystem, "Window size changed: %u, %u", e.Size.X, e.Size.Y);
 
-			g_Engine->WindowSizeChanged(e);
+			g_GameApp->WindowSizeChanged(e);
 
 			return 0;
 		}
@@ -82,7 +82,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 
 			//RPG_LogDebug(RpgLogTemp, "MouseDelta: %i, %i", e.DeltaPosition.X, e.DeltaPosition.Y);
 			g_InputSystem->MouseMove(e);
-			g_Engine->MouseMove(e);
+			g_GameApp->MouseMove(e);
 
 			MousePrevPosition = e.Position;
 
@@ -96,7 +96,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.ScrollValue.Y = GET_WHEEL_DELTA_WPARAM(wParam) / 120;
 
 			g_InputSystem->MouseWheel(e);
-			g_Engine->MouseWheel(e);
+			g_GameApp->MouseWheel(e);
 
 			return 0;
 		}
@@ -109,7 +109,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.bIsDown = true;
 
 			g_InputSystem->MouseButton(e);
-			g_Engine->MouseButton(e);
+			g_GameApp->MouseButton(e);
 
 			return 0;
 		}
@@ -122,7 +122,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.bIsDown = false;
 
 			g_InputSystem->MouseButton(e);
-			g_Engine->MouseButton(e);
+			g_GameApp->MouseButton(e);
 
 			return 0;
 		}
@@ -135,7 +135,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.bIsDoubleClick = true;
 
 			g_InputSystem->MouseButton(e);
-			g_Engine->MouseButton(e);
+			g_GameApp->MouseButton(e);
 
 			return 0;
 		}
@@ -149,7 +149,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.bIsDown = true;
 
 			g_InputSystem->MouseButton(e);
-			g_Engine->MouseButton(e);
+			g_GameApp->MouseButton(e);
 
 			return 0;
 		}
@@ -162,7 +162,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.bIsDown = false;
 
 			g_InputSystem->MouseButton(e);
-			g_Engine->MouseButton(e);
+			g_GameApp->MouseButton(e);
 
 			return 0;
 		}
@@ -175,7 +175,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.bIsDoubleClick = true;
 
 			g_InputSystem->MouseButton(e);
-			g_Engine->MouseButton(e);
+			g_GameApp->MouseButton(e);
 
 			return 0;
 		}
@@ -189,7 +189,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.bIsDown = true;
 
 			g_InputSystem->MouseButton(e);
-			g_Engine->MouseButton(e);
+			g_GameApp->MouseButton(e);
 
 			return 0;
 		}
@@ -202,7 +202,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.bIsDown = false;
 
 			g_InputSystem->MouseButton(e);
-			g_Engine->MouseButton(e);
+			g_GameApp->MouseButton(e);
 
 			return 0;
 		}
@@ -215,7 +215,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.bIsDoubleClick = true;
 
 			g_InputSystem->MouseButton(e);
-			g_Engine->MouseButton(e);
+			g_GameApp->MouseButton(e);
 
 			return 0;
 		}
@@ -230,7 +230,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.bIsDown = true;
 
 			g_InputSystem->KeyboardButton(e);
-			g_Engine->KeyboardButton(e);
+			g_GameApp->KeyboardButton(e);
 
 			return 0;
 		}
@@ -245,7 +245,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 			e.bIsDown = false;
 
 			g_InputSystem->KeyboardButton(e);
-			g_Engine->KeyboardButton(e);
+			g_GameApp->KeyboardButton(e);
 
 			return 0;
 		}
@@ -253,7 +253,7 @@ static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, L
 
 		case WM_CHAR:
 		{
-			g_Engine->CharInput(static_cast<char>(wParam));
+			g_GameApp->CharInput(static_cast<char>(wParam));
 			return 0;
 		}
 
@@ -336,8 +336,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	// Initialize input system
 	g_InputSystem = new RpgInputSystem();
 	
-	// Initialize engine
-	g_Engine = new RpgEngine();
+	// Initialize game engine
+	g_GameApp = new RpgGameApp();
 
 	// main window
 	{
@@ -396,7 +396,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		RpgPlatformProcess::SetMainWindowHandle(mainWindowHandle);
 	}
 
-	g_Engine->Initialize();
+	g_GameApp->Initialize();
 
 
 // ------------------------------------------------------------------------------------------------- //
@@ -439,11 +439,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 
 		Timer.Tick();
-		g_Engine->FrameTick(FrameCounter, Timer.GetDeltaTimeSeconds());
+		g_GameApp->FrameTick(FrameCounter, Timer.GetDeltaTimeSeconds());
 
-		const int fpsLimit = g_Engine->FpsLimit;
+		const int fpsLimit = g_GameApp->FpsLimit;
 
-		if (g_Engine->IsWindowMinimized())
+		if (g_GameApp->IsWindowMinimized())
 		{
 			Sleep(30);
 		}
@@ -475,7 +475,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 // ------------------------------------------------------------------------------------------------- //
 // 	Shutdown
 // ------------------------------------------------------------------------------------------------- //
-	delete g_Engine;
+	delete g_GameApp;
 	delete g_InputSystem;
 	delete g_AssetSystem;
 

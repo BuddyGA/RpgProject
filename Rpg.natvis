@@ -78,7 +78,7 @@
 	<!-- RpgSharedPtr -->
 	<Type Name="RpgSharedPtr&lt;*&gt;">
 		<DisplayString Condition="Ref == nullptr">null</DisplayString>
-		<DisplayString>{(($T1*)Ref->Object)->Name}</DisplayString>
+		<DisplayString>{Obj}</DisplayString>
 		<Expand>
 			<Item Name="Object">Obj</Item>
 			<Item Name="SharedCount">Ref->SharedCount</Item>

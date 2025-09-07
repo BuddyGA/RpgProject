@@ -32,7 +32,7 @@ void RpgAnimationWorldSubsystem::StopPlay() noexcept
 
 void RpgAnimationWorldSubsystem::TickUpdate(float deltaTime) noexcept
 {
-	if (!bTickAnimationPose)
+	if (!bTickAnimationPose || deltaTime <= 0.0f)
 	{
 		return;
 	}
@@ -56,10 +56,10 @@ void RpgAnimationWorldSubsystem::TickUpdate(float deltaTime) noexcept
 	// Distribute tasks
 	int taskIndex = 0;
 
-	for (auto it = world->Component_CreateIterator<RpgAnimationComponent_AnimSkeletonPose>(); it; ++it)
+	for (auto it = world->ComponentIterator<RpgAnimationComponent_AnimSkeletonPose>(); it; ++it)
 	{
 		RpgAnimationComponent_AnimSkeletonPose& comp = it.GetValue();
-		if (!world->GameObject_IsSpawned(comp.GameObject))
+		if (!comp.IsGameObjectSpawned())
 		{
 			continue;
 		}
@@ -92,15 +92,15 @@ void RpgAnimationWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) n
 	{
 		RpgVertexPrimitiveBatchLine* debugLine = renderer->Debug_GetPrimitiveBatchLine(frameIndex, world, true);
 
-		for (auto it = world->Component_CreateIterator<RpgAnimationComponent_AnimSkeletonPose>(); it; ++it)
+		for (auto it = world->ComponentIterator<RpgAnimationComponent_AnimSkeletonPose>(); it; ++it)
 		{
 			const RpgAnimationComponent_AnimSkeletonPose& comp = it.GetValue();
-			if (!comp.Skeleton || !world->GameObject_IsSpawned(comp.GameObject))
+			if (!comp.IsGameObjectSpawned() || !comp.Skeleton)
 			{
 				continue;
 			}
 			
-			const RpgMatrixTransform gameObjectWorldMatrix = world->GameObject_GetWorldTransformMatrix(comp.GameObject);
+			const RpgMatrixTransform gameObjectWorldMatrix = comp.GameObject.GetWorldTransformMatrix();
 			const RpgArray<int>& boneParentIndices = comp.Skeleton->GetBoneParentIndices();
 			const RpgArray<RpgMatrixTransform>& bonePoseTransforms = comp.FinalPose.GetBonePoseTransforms();
 			const int boneCount = boneParentIndices.GetCount();

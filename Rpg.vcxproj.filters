@@ -42,9 +42,6 @@
     <ClCompile Include="source\runtime\core\RpgThreadPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\core\world\RpgWorld.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\runtime\core\RpgVertex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -75,7 +72,7 @@
     <ClCompile Include="source\runtime\shader\RpgShaderManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\engine\RpgEngine.cpp">
+    <ClCompile Include="source\runtime\game\RpgGameApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\render\RpgRenderer.cpp">
@@ -204,9 +201,6 @@
     <ClCompile Include="source\runtime\physics\task\RpgPhysicsTask_UpdateShape.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\engine\script\RpgScript_Gameplay.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\runtime\gui\RpgGuiTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -267,10 +261,7 @@
     <ClCompile Include="source\runtime\gui\widget\RpgGuiTree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\core\world\RpgLevel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\test\engine\RpgTestEngine.cpp">
+    <ClCompile Include="source\test\game\RpgTestGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\animation\world\RpgAnimationComponent.cpp">
@@ -286,6 +277,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\core\RpgAssetSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\core\world\RpgGameObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\core\world\RpgLevel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\core\world\RpgWorld.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\game\world\RpgGameWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -329,12 +332,6 @@
     <ClInclude Include="source\runtime\core\RpgTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\core\world\RpgComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\core\world\RpgWorld.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\runtime\core\RpgVertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -362,7 +359,7 @@
     <ClInclude Include="source\runtime\shader\RpgShaderManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\engine\RpgEngine.h">
+    <ClInclude Include="source\runtime\game\RpgGameApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\render\RpgRenderer.h">
@@ -381,9 +378,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\render\asset\RpgMesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\core\world\RpgGameObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\render\task\RpgRenderTask_RenderPass.h">
@@ -497,9 +491,6 @@
     <ClInclude Include="source\runtime\physics\task\RpgPhysicsTask_UpdateShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\engine\script\RpgScript_Gameplay.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\runtime\gui\RpgGuiTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -551,10 +542,7 @@
     <ClInclude Include="source\runtime\gui\widget\RpgGuiTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\core\world\RpgLevel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\test\engine\RpgTestEngine.h">
+    <ClInclude Include="source\test\game\RpgTestGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\game\script\RpgScript_GameCamera.h">
@@ -564,6 +552,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\core\RpgAssetTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\core\world\RpgGameObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\core\world\RpgLevel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\core\world\RpgWorld.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\core\world\RpgComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\game\world\RpgGameWorld.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

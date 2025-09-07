@@ -356,16 +356,22 @@ public:
 
 	
 	public:
-		[[nodiscard]] inline int GetIndex() const noexcept
+		inline int GetIndex() const noexcept
 		{
 			return Index;
 		}
 
-		[[nodiscard]] inline T& GetValue() const noexcept
+		inline T& GetValue() const noexcept
 		{
 			return FreeList->GetAt(Index);
 		}
 
+		inline bool IsValid() const noexcept
+		{
+			return FreeList && Index >= 0 && Index < FreeList->GetCapacity();
+		}
+
+	public:
 		inline Iterator& operator++() noexcept
 		{
 			UpdateValidIndex();
@@ -394,7 +400,7 @@ public:
 
 		inline operator bool() const noexcept
 		{
-			return FreeList && Index >= 0 && Index < FreeList->GetCapacity();
+			return IsValid();
 		}
 
 
@@ -450,6 +456,12 @@ public:
 			return FreeList->GetAt(Index);
 		}
 
+		inline bool IsValid() const noexcept
+		{
+			return FreeList && Index >= 0 && Index < FreeList->GetCapacity();
+		}
+
+	public:
 		inline ConstIterator& operator++() noexcept
 		{
 			UpdateValidIndex();
@@ -478,7 +490,7 @@ public:
 
 		inline operator bool() const noexcept
 		{
-			return FreeList && Index >= 0 && Index < FreeList->GetCapacity();
+			return IsValid();
 		}
 
 

@@ -6,7 +6,7 @@ class RpgWorld;
 
 namespace RpgTest
 {
-	namespace Engine
+	namespace Game
 	{
 		extern bool Create(RpgWorld* world) noexcept;
 	};

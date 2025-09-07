@@ -15,7 +15,7 @@ void RpgAnimationPose::UpdateBonePoseTransforms(const RpgAnimationSkeleton* skel
 		}
 	}
 
-	// Zeroed dirty transfrom values
+	// Zeroed dirty transform values
 	RpgPlatformMemory::MemZero(BoneDirtyTransforms.GetData(), BoneDirtyTransforms.GetMemorySizeBytes_Allocated());
 
 	for (int i = 0; i < updateBoneIndices.GetCount(); ++i)

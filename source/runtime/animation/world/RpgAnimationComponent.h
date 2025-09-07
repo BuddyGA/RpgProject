@@ -8,7 +8,9 @@
 // ======================================================================================================================= //
 // ANIMATION COMPONENT
 // ======================================================================================================================= //
-RPG_COMPONENT_CLASS_BEGIN(RpgAnimationComponent_AnimSkeletonPose, 5, "RpgAnimationComponent - AnimSkeletonPose")
+class RpgAnimationComponent_AnimSkeletonPose
+{
+	RPG_COMPONENT(RpgAnimationComponent_AnimSkeletonPose, 5);
 
 public:
 	RpgSharedAnimationClip Clip;
@@ -74,4 +76,4 @@ private:
 	friend RpgAnimationWorldSubsystem;
 	friend RpgAnimationTask_TickPose;
 
-RPG_COMPONENT_CLASS_END()
+};

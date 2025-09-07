@@ -1,4 +1,4 @@
-#include "RpgTestEngine.h"
+#include "RpgTestGame.h"
 #include "core/RpgAssetSystem.h"
 #include "core/world/RpgWorld.h"
 #include "render/world/RpgRenderComponent.h"
@@ -28,16 +28,15 @@ static void TestLevel_AddBlocker(RpgWorld* world, RpgVector3 center, RpgVector3 
 
 	static int Counter = 0;
 
-	const RpgGameObjectID blocker = world->GameObject_Create(RpgName::Format("test_blocker_%i", Counter++), RpgTransform(center));
+	RpgGameObject blocker = world->CreateGameObject(RpgName::Format("test_blocker_%i", Counter++));
 	{
 		// Add render component
-		RpgRenderComponent_Mesh* meshComp = world->GameObject_AddComponent<RpgRenderComponent_Mesh>(blocker);
-		meshComp->Mesh = model->GetMeshLod(0, 0);
-		meshComp->Material = model->GetMaterial(0);
-		meshComp->bIsVisible = true;
+		RpgRenderComponent_Mesh& meshComp = blocker.AddComponent<RpgRenderComponent_Mesh>();
+		meshComp.Mesh = model->GetMeshLod(0, 0);
+		meshComp.Material = model->GetMaterial(0);
+		meshComp.bIsVisible = true;
 	}
-
-	world->GameObject_Spawn(blocker);
+	blocker.SpawnAtTransform(RpgTransform(center));
 }
 
 
@@ -45,16 +44,15 @@ static void TestLevel_AddCube(RpgWorld* world, const RpgTransform& transform) no
 {
 	static int Counter = 0;
 
-	const RpgGameObjectID box = world->GameObject_Create(RpgName::Format("test_cube_%i", Counter++), transform);
+	RpgGameObject box = world->CreateGameObject(RpgName::Format("test_cube_%i", Counter++));
 	{
 		// Add render component
-		RpgRenderComponent_Mesh* meshComp = world->GameObject_AddComponent<RpgRenderComponent_Mesh>(box);
-		meshComp->Mesh = g_AssetSystem->LoadAsset<RpgMesh>(RpgString("game/mesh/cube_x100_y100_z100"));
-		meshComp->Material = RpgMaterial::s_GetDefault(RpgMaterialDefault::MESH_PHONG);
-		meshComp->bIsVisible = true;
+		RpgRenderComponent_Mesh& meshComp = box.AddComponent<RpgRenderComponent_Mesh>();
+		meshComp.Mesh = g_AssetSystem->LoadAsset<RpgMesh>(RpgString("game/mesh/cube_x100_y100_z100"));
+		meshComp.Material = RpgMaterial::s_GetDefault(RpgMaterialDefault::MESH_PHONG);
+		meshComp.bIsVisible = true;
 	}
-
-	world->GameObject_Spawn(box);
+	box.SpawnAtTransform(transform);
 }
 
 
@@ -62,17 +60,16 @@ static void TestLevel_AddLight_Point(RpgWorld* world, const RpgTransform& transf
 {
 	static int Counter = 0;
 
-	RpgGameObjectID pointLight = world->GameObject_Create(RpgName::Format("test_pointlight_%i", Counter++), transform);
+	RpgGameObject pointLight = world->CreateGameObject(RpgName::Format("test_pointlight_%i", Counter++));
 	{
-		RpgRenderComponent_Light* lightComp = world->GameObject_AddComponent<RpgRenderComponent_Light>(pointLight);
-		lightComp->Type = RpgRenderLight::TYPE_POINT_LIGHT;
-		lightComp->ColorIntensity = colorIntensity;
-		lightComp->AttenuationRadius = radius;
-		lightComp->bIsVisible = true;
-		lightComp->bCastShadow = bCastShadow;
+		RpgRenderComponent_Light& lightComp = pointLight.AddComponent<RpgRenderComponent_Light>();
+		lightComp.Type = RpgRenderLight::TYPE_POINT_LIGHT;
+		lightComp.ColorIntensity = colorIntensity;
+		lightComp.AttenuationRadius = radius;
+		lightComp.bIsVisible = true;
+		lightComp.bCastShadow = bCastShadow;
 	}
-
-	world->GameObject_Spawn(pointLight);
+	pointLight.SpawnAtTransform(transform);
 }
 
 
@@ -80,19 +77,18 @@ static void TestLevel_AddLight_Spot(RpgWorld* world, const RpgTransform& transfo
 {
 	static int Counter = 0;
 
-	RpgGameObjectID spotLight = world->GameObject_Create(RpgName::Format("test_spotlight_%i", Counter++), transform);
+	RpgGameObject spotLight = world->CreateGameObject(RpgName::Format("test_spotlight_%i", Counter++));
 	{
-		RpgRenderComponent_Light* lightComp = world->GameObject_AddComponent<RpgRenderComponent_Light>(spotLight);
-		lightComp->Type = RpgRenderLight::TYPE_SPOT_LIGHT;
-		lightComp->ColorIntensity = colorIntensity;
-		lightComp->AttenuationRadius = radius;
-		lightComp->SpotInnerConeDegree = innerConeDeg;
-		lightComp->SpotOuterConeDegree = outerConeDeg;
-		lightComp->bIsVisible = true;
-		lightComp->bCastShadow = bCastShadow;
+		RpgRenderComponent_Light& lightComp = spotLight.AddComponent<RpgRenderComponent_Light>();
+		lightComp.Type = RpgRenderLight::TYPE_SPOT_LIGHT;
+		lightComp.ColorIntensity = colorIntensity;
+		lightComp.AttenuationRadius = radius;
+		lightComp.SpotInnerConeDegree = innerConeDeg;
+		lightComp.SpotOuterConeDegree = outerConeDeg;
+		lightComp.bIsVisible = true;
+		lightComp.bCastShadow = bCastShadow;
 	}
-
-	world->GameObject_Spawn(spotLight);
+	spotLight.SpawnAtTransform(transform);
 }
 
 
@@ -120,13 +116,14 @@ static void TestLevel_Import(RpgWorld* world, const RpgFilePath& sourceFilePath,
 		transform.Position = RpgVector3(0.0f, 0.0f, 0.0f);
 		transform.Rotation = RpgQuaternion::FromPitchYawRollDegree(0.0f, 0.0f, 0.0f);
 
-		RpgGameObjectID gameObject = world->GameObject_Create(model->GetName(), transform);
-		RpgRenderComponent_Mesh* meshComp = world->GameObject_AddComponent<RpgRenderComponent_Mesh>(gameObject);
-		meshComp->Mesh = model->GetMeshLod(0, 0);
-		meshComp->Material = model->GetMaterial(0);
-		meshComp->bIsVisible = true;
-
-		world->GameObject_Spawn(gameObject);
+		RpgGameObject gameObject = world->CreateGameObject(model->GetName());
+		{
+			RpgRenderComponent_Mesh& meshComp = gameObject.AddComponent<RpgRenderComponent_Mesh>();
+			meshComp.Mesh = model->GetMeshLod(0, 0);
+			meshComp.Material = model->GetMaterial(0);
+			meshComp.bIsVisible = true;
+		}
+		gameObject.SpawnAtTransform(transform);
 
 		/*
 		if (model->HasSkin())
@@ -143,7 +140,7 @@ static void TestLevel_Import(RpgWorld* world, const RpgFilePath& sourceFilePath,
 }
 
 
-static void TestLevel_Sponza(RpgWorld* world) noexcept
+static bool TestLevel_Sponza(RpgWorld* world) noexcept
 {
 	TestLevel_Import(world, RpgFileSystem::GetAssetRawDirPath() + "model/sponza_phong/sponza.obj", 1.0f, false, true);
 
@@ -161,6 +158,8 @@ static void TestLevel_Sponza(RpgWorld* world) noexcept
 	transform.Position = RpgVector3(645.0f, 750.0f, 60.0f);
 	transform.Rotation = RpgQuaternion::FromPitchYawRollDegree(20.0f, 90.0f, 0.0f);
 	TestLevel_AddLight_Spot(world, transform, RpgColorLinear(1.0f, 1.0f, 1.0f, 1.0f), 1600.0f, 20.0f, 40.0f, true);
+
+	return true;
 }
 
 
@@ -285,18 +284,19 @@ static void TestLevel_Animations(RpgWorld* world) noexcept
 			transform.Position = spawnPos;
 			transform.Rotation = RpgQuaternion::FromPitchYawRollDegree(90.0f, 0.0f, 0.0f);
 
-			RpgGameObjectID gameObject = world->GameObject_Create(RpgName::Format("test_%i_%i", x, z), transform);
+			RpgGameObject gameObject = world->CreateGameObject(RpgName::Format("test_%i_%i", x, z));
+			{
+				RpgRenderComponent_Mesh& meshComp = gameObject.AddComponent<RpgRenderComponent_Mesh>();
+				meshComp.Mesh = models[modelIndex]->GetMeshLod(0, 0);
+				meshComp.Material = models[modelIndex]->GetMaterial(0);
+				meshComp.bIsVisible = true;
 
-			RpgRenderComponent_Mesh* meshComp = world->GameObject_AddComponent<RpgRenderComponent_Mesh>(gameObject);
-			meshComp->Mesh = models[modelIndex]->GetMeshLod(0, 0);
-			meshComp->Material = models[modelIndex]->GetMaterial(0);
-			meshComp->bIsVisible = true;
-
-			RpgAnimationComponent_AnimSkeletonPose* animComp = world->GameObject_AddComponent<RpgAnimationComponent_AnimSkeletonPose>(gameObject);
-			animComp->SetSkeleton(skeletons[modelIndex]);
-			animComp->Clip = animationClips[modelIndex];
-			animComp->PlayRate = 1.5f;
-			animComp->bLoopAnim = true;
+				RpgAnimationComponent_AnimSkeletonPose& animComp = gameObject.AddComponent<RpgAnimationComponent_AnimSkeletonPose>();
+				animComp.SetSkeleton(skeletons[modelIndex]);
+				animComp.Clip = animationClips[modelIndex];
+				animComp.PlayRate = 1.5f;
+				animComp.bLoopAnim = true;
+			}
 
 			spawnPos.Z += OFFSET;
 			modelIndex = (modelIndex + 1) % 2;
@@ -308,9 +308,9 @@ static void TestLevel_Animations(RpgWorld* world) noexcept
 
 
 
-bool RpgTest::Engine::Create(RpgWorld* world) noexcept
+bool RpgTest::Game::Create(RpgWorld* world) noexcept
 {
-	//TestLevel_Sponza(world);
+	//return TestLevel_Sponza(world);
 
 	//TestLevel_Import(world, RpgFileSystem::GetAssetRawDirPath() + "model/lost_empire/lost_empire.obj", 100.0f);
 	//TestLevel_Import(world, RpgFileSystem::GetAssetRawDirPath() + "model/bunny/bunny.obj", 100.0f);

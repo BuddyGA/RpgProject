@@ -40,7 +40,7 @@ private:
 	RpgWorld* MainWorld;
 
 	// Camera object
-	RpgGameObjectID CameraObject;
+	RpgGameObject CameraObject;
 
 	// Script camera
 	RpgEditorScript_Camera CameraScript;
