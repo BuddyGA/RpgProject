@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/RpgAssetTypes.h"
+#include "core/asset/RpgAssetTypes.h"
 #include "../RpgRenderTypes.h"
 
 
@@ -32,7 +32,7 @@ typedef RpgSharedPtr<class RpgTextureDepthCube> RpgSharedTextureDepthCube;
 
 class RpgTexture2D : public RpgAssetObject
 {
-	RPG_ASSET_FILE(RpgAssetFileType::TEXTURE, 1)
+	RPG_ASSET_CLASS(RpgTexture2D, RpgAssetFileType::TEXTURE, 1);
 
 public:
 	struct FMipData
@@ -51,10 +51,19 @@ public:
 	RpgTexture2D(const RpgName& in_Name, RpgTextureFormat::EType in_Format, uint16_t in_Width, uint16_t in_Height, uint8_t in_MipCount) noexcept;
 	~RpgTexture2D() noexcept;
 
-	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
-	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
+
+// Begin RpgAssetObject interfaces //
+public:
+	virtual void AssetStreamWrite(RpgStreamWriter& writer) noexcept override;
+	virtual void AssetStreamRead(RpgStreamReader& reader, uint16_t version) noexcept override;
+	virtual bool IsAssetLoaded() noexcept override;
+
+protected:
+	virtual void SetAssetLoading() noexcept override;
+// End RpgAssetObject interfaces //
 
 
+public:
 	inline RpgTextureFormat::EType GetFormat() const noexcept
 	{
 		return Format;
@@ -123,6 +132,7 @@ public:
 	{
 		RPG_Check(mipLevel >= 0 && mipLevel < MipCount);
 		RPG_Check(!(Flags & (FLAG_RenderTarget | FLAG_DepthStencil)));
+		Flags = (Flags & ~FLAG_Runtime_Loading) | FLAG_Runtime_Loaded;
 
 		ReleaseSRWLockExclusive(&MipLocks[mipLevel]);
 	}

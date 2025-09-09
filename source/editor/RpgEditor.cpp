@@ -1,5 +1,5 @@
 #include "RpgEditor.h"
-#include "core/RpgAssetSystem.h"
+#include "core/asset/RpgAssetSystem.h"
 #include "gui/RpgGuiCanvas.h"
 #include "render/world/RpgRenderComponent.h"
 #include "render/world/RpgRenderWorldSubsystem.h"
@@ -129,11 +129,11 @@ void RpgEditor::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_F8)
 		{
-			//g_GameApp->SaveLevel();
+			SaveLevel("lvl_test");
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_F9)
 		{
-			//g_GameApp->LoadLevel(RpgString("game/world_main"));
+			g_GameApp->OpenLevel(RpgString("game/lvl_test"));
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_F10)
 		{
@@ -190,6 +190,16 @@ void RpgEditor::Render2d(RpgRenderer2D& r2d) noexcept
 	);
 
 	r2d.AddText(*debugInfoText, debugInfoText.GetLength(), RpgPointFloat(8.0f, 8.0f), RpgColor(255, 255, 255));
+}
+
+
+void RpgEditor::SaveLevel(const RpgName& name) noexcept
+{
+	RPG_IsMainThread();
+	RPG_Check(MainWorld);
+
+	RPG_CONSOLE_Log(RpgLogEditor, "Save level (%s)", *name);
+	MainWorld->SaveLevel(name);
 }
 
 

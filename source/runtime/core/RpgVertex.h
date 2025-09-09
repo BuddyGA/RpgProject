@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RpgMath.h"
-#include "dsa/RpgArray.h"
+#include "RpgArray.h"
 
 
 

@@ -7,7 +7,7 @@
 
 class RpgAttributeComponent
 {
-	RPG_COMPONENT_TYPE("RpgAttributeComponent");
+	RPG_COMPONENT(RpgAttributeComponent, 16);
 
 public:
 	float Base[RpgAttribute::MAX_COUNT];

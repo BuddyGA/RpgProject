@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dsa/RpgArray.h"
+#include "RpgArray.h"
 
 
 
@@ -17,6 +17,15 @@ public:
 		: Data(nullptr)
 		, Length(0)
 	{
+	}
+
+	RpgStringView(const char* in_Cstr) noexcept
+		: Data(in_Cstr)
+	{
+		if (Data)
+		{
+			Length = RpgPlatformString::CStringLength(Data);
+		}
 	}
 
 	RpgStringView(const char* in_Cstr, int in_Length) noexcept
@@ -160,6 +169,18 @@ public:
 	inline const char& operator[](int index) const noexcept
 	{
 		return CharArray[index];
+	}
+
+
+	inline bool operator==(const RpgString& rhs) const noexcept
+	{
+		return Equals(rhs);
+	}
+
+
+	inline bool operator!=(const RpgString& rhs) const noexcept
+	{
+		return !Equals(rhs);
 	}
 
 

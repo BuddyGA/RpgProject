@@ -1,7 +1,7 @@
 #pragma once
 
+#include "RpgSet.h"
 #include "RpgString.h"
-#include "RpgPointer.h"
 
 
 
@@ -27,7 +27,8 @@ public:
 	template<typename T, int N>
 	inline void Write(const RpgArray<T, N>& dataArray) noexcept
 	{
-		Write(dataArray.GetCount());
+		const int count = dataArray.GetCount();
+		Write(count);
 
 		for (int i = 0; i < dataArray.GetCount(); ++i)
 		{
@@ -39,7 +40,8 @@ public:
 	template<typename T, int N>
 	inline void Write(const RpgArrayInline<T, N>& dataArray) noexcept
 	{
-		Write(dataArray.GetCount());
+		const int count = dataArray.GetCount();
+		Write(count);
 
 		for (int i = 0; i < dataArray.GetCount(); ++i)
 		{
@@ -48,14 +50,35 @@ public:
 	}
 
 
-	inline void Write(const RpgString& str) noexcept
+	template<typename T, int N>
+	inline void Write(const RpgSet<T, N>& dataSet) noexcept
 	{
-		int length = str.GetLength();
+		// count
+		const int count = dataSet.GetCount();
+		Write(count);
+
+		if (count > 0)
+		{
+			// hashes
+			WriteData(dataSet.Hashes.GetData(), static_cast<uint32_t>(dataSet.Hashes.GetMemorySizeBytes_Allocated()));
+
+			// values
+			for (int i = 0; i < count; ++i)
+			{
+				Write(dataSet.Values[i]);
+			}
+		}
+	}
+
+
+	inline void Write(const RpgString& dataStr) noexcept
+	{
+		const int length = dataStr.GetLength();
 		Write(length);
 
 		if (length > 0)
 		{
-			WriteData(str.GetData(), length);
+			WriteData(dataStr.GetData(), length);
 		}
 	}
 
@@ -120,9 +143,32 @@ public:
 	}
 
 
-	inline void Read(RpgString& str) noexcept
+	template<typename T, int N>
+	inline void Read(RpgStreamReader& reader, RpgSet<T, N>& dataSet) noexcept
 	{
-		str.Clear();
+		// count
+		int count = 0;
+		reader.Read(count);
+
+		if (count > 0)
+		{
+			// hashes
+			dataSet.Hashes.Resize(count);
+			ReadData(dataSet.Hashes.GetData(), static_cast<uint32_t>(dataSet.Hashes.GetMemorySizeBytes_Allocated()));
+
+			// values
+			dataSet.Values.Resize(count);
+			for (int i = 0; i < count; ++i)
+			{
+				Read(dataSet.Values[i]);
+			}
+		}
+	}
+
+
+	inline void Read(RpgString& dataStr) noexcept
+	{
+		dataStr.Clear();
 
 		int length = 0;
 		Read(length);
@@ -130,12 +176,13 @@ public:
 		if (length > 0)
 		{
 			RPG_Check(length < RPG_STRING_FORMAT_BUFFER_COUNT);
-			str.Resize(length);
-			ReadData(str.GetData(), length);
+			dataStr.Resize(length);
+			ReadData(dataStr.GetData(), length);
 		}
 	}
 
 };
+
 
 
 

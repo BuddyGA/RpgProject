@@ -116,6 +116,7 @@ struct RpgRenderPipelineState
 	bool bTwoSides{ false };
 	bool bConservativeRasterization{ false };
 };
+static_assert(std::is_trivially_copyable<RpgRenderPipelineState>::value, "RpgRenderPipelineState is not POD!");
 
 
 

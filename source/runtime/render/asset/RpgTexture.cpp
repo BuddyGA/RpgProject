@@ -72,8 +72,9 @@ RpgTexture2D::~RpgTexture2D() noexcept
 }
 
 
-void RpgTexture2D::StreamWrite(RpgStreamWriter& writer) const noexcept
+void RpgTexture2D::AssetStreamWrite(RpgStreamWriter& writer) noexcept
 {
+	// only save non-runtime flags
 	const uint16_t savedFlags = (Flags & ~RUNTIME_FLAGS);
 	RPG_Check(!(savedFlags & (FLAG_RenderTarget | FLAG_DepthStencil)));
 	writer.Write(savedFlags);
@@ -87,7 +88,7 @@ void RpgTexture2D::StreamWrite(RpgStreamWriter& writer) const noexcept
 }
 
 
-void RpgTexture2D::StreamRead(RpgStreamReader& reader) noexcept
+void RpgTexture2D::AssetStreamRead(RpgStreamReader& reader, uint16_t version) noexcept
 {
 	reader.Read(Flags);
 	reader.Read(Format);
@@ -99,7 +100,20 @@ void RpgTexture2D::StreamRead(RpgStreamReader& reader) noexcept
 	InitializeMips();
 	reader.ReadData(PixelData, static_cast<uint32_t>(PixelSizeBytes));
 
-	Flags |= FLAG_Runtime_Dirty;
+	Flags &= ~FLAG_Runtime_Loading;
+	Flags |= FLAG_Runtime_Dirty | FLAG_Runtime_Loaded;
+}
+
+
+bool RpgTexture2D::IsAssetLoaded() noexcept
+{
+	return (Flags & FLAG_Runtime_Loaded);
+}
+
+
+void RpgTexture2D::SetAssetLoading() noexcept
+{
+	Flags |= FLAG_Runtime_Loading;
 }
 
 
@@ -253,7 +267,7 @@ const RpgSharedTexture2D& RpgTexture2D::s_GetDefault_White() noexcept
 RpgTextureRenderTarget::RpgTextureRenderTarget(const RpgName& in_Name, RpgTextureFormat::EType in_Format, uint16_t in_Width, uint16_t in_Height) noexcept
 	: RpgTexture2D(in_Name)
 {
-	Flags = FLAG_RenderTarget;
+	Flags = FLAG_RenderTarget | FLAG_Runtime_Loaded;
 
 	RPG_Check(in_Format >= RpgTextureFormat::TEX_RT_RGBA && in_Format <= RpgTextureFormat::TEX_RT_BGRA);
 	Format = in_Format;
@@ -268,7 +282,7 @@ RpgTextureRenderTarget::RpgTextureRenderTarget(const RpgName& in_Name, RpgTextur
 RpgTextureDepthStencil::RpgTextureDepthStencil(const RpgName& in_Name, RpgTextureFormat::EType in_Format, uint16_t in_Width, uint16_t in_Height) noexcept
 	: RpgTexture2D(in_Name)
 {
-	Flags = FLAG_DepthStencil;
+	Flags = FLAG_DepthStencil | FLAG_Runtime_Loaded;
 
 	RPG_Check(in_Format >= RpgTextureFormat::TEX_DS_16 && in_Format <= RpgTextureFormat::TEX_DS_32);
 	Format = in_Format;

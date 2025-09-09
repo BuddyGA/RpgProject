@@ -18,7 +18,9 @@ RpgWorld::RpgWorld(const RpgName& in_Name) noexcept
 
 void RpgWorld::Initialize() noexcept
 {
-    CreateLevel(RpgName::Format("%s/level_main", *Name));
+    // create level_main
+    LevelLoadeds.AddValue(RpgPointer::MakeUnique<RpgLevel>(RpgName::Format("%s/level_main", *Name)));
+    RegisterComponents(LevelLoadeds[0].Get());
 }
 
 
@@ -114,12 +116,130 @@ void RpgWorld::DispatchRender(int frameIndex, RpgRenderer* renderer) noexcept
 }
 
 
-
-void RpgWorld::CreateLevel(const RpgName& name) noexcept
+void RpgWorld::SaveLevel(const RpgName& name) noexcept
 {
-    const int index = LevelLoadeds.GetCount();
-    LevelLoadeds.AddValue(RpgPointer::MakeUnique<RpgLevel>(name));
-    RegisterComponents(LevelLoadeds[index].Get());
+    /*
+    header
+    {
+        magix,
+        type,
+        version,
+        asset_ref_count,
+        asset_ref_size_bytes,
+        asset_data_size_bytes
+    }
+
+    asset_ref_begin
+    {
+        asset_ref_0,
+        asset_ref_1,
+        ...
+    }
+    asset_ref_end
+
+    level_main_begin
+    {
+        level_object_count,
+        level_objects
+        {
+            object_0
+            {
+                name,
+                transform,
+                component_types,
+                component_datas
+                {
+                    component_type_0,
+                    component_type_1,
+                    ...
+                }
+            },
+            object_1
+            {
+                name,
+                transform,
+                component_types,
+                component_datas
+                {
+                    component_type_0,
+                    null,
+                    component_type_2,
+                    ...
+                }
+            },
+            ...
+        }
+    }
+    level_main_end
+
+    level_streaming_ref_count,
+    level_streaming_ref_begin
+    {
+        level_asset_ref_0,
+        level_asset_ref_1,
+        ...
+    }
+    level_streaming_ref_end
+
+    eof
+    */
+
+    RpgLevel* levelMain = LevelLoadeds[0].Get();
+
+
+    // asset references
+    RpgAssetReferences assetReferences;
+    RpgBinaryStreamWriter assetRefWriter;
+    {
+        levelMain->GetExternalAssetReferences(assetReferences);
+
+        assetRefWriter.Write(RPG_ASSET_FILE_ASSET_EXT);
+        assetRefWriter.Write(assetReferences);
+        assetRefWriter.Write(RPG_ASSET_FILE_ASSET_EXT);
+    }
+    RPG_Check(assetReferences.GetCount() < UINT16_MAX);
+
+
+    // level main data
+    RpgBinaryStreamWriter levelWriter;
+    {
+        levelWriter.Write(RPG_ASSET_FILE_ASSET_DATA);
+        levelMain->AssetStreamWrite(levelWriter);
+        levelWriter.Write(RPG_ASSET_FILE_ASSET_DATA);
+    }
+
+
+    const RpgFilePath filePath = RpgString::Format("%sgame/%s.rpgm", *RpgFileSystem::GetAssetDirPath(), *name);
+    HANDLE fileHandle = RpgPlatformFile::FileOpen(*filePath, RpgPlatformFile::OPEN_MODE_WRITE_OVERWRITE);
+    {
+        RPG_ValidateV(fileHandle && fileHandle != INVALID_HANDLE_VALUE, "Open file failed! (FilePath: %s)", *filePath);
+
+        // header
+        RpgAssetFileHeader fileHeader{};
+        fileHeader.Magix = RPG_ASSET_FILE_HEADER;
+        fileHeader.Type = static_cast<uint16_t>(RpgAssetFileType::LEVEL);
+        fileHeader.Version = 1;
+        fileHeader.AssetReferenceCount = static_cast<uint16_t>(assetReferences.GetCount());
+        fileHeader.AssetReferenceSizeBytes = static_cast<uint32_t>(assetRefWriter.GetByteArraySize());
+        fileHeader.AssetDataSizeBytes = static_cast<uint32_t>(levelWriter.GetByteArraySize());
+        fileHeader.AssetClassName = levelMain->GetAssetClassName();
+        RpgPlatformFile::FileWrite(fileHandle, &fileHeader, sizeof(RpgAssetFileHeader));
+
+        // asset references
+        RpgPlatformFile::FileWrite(fileHandle, assetRefWriter.GetByteArrayData(), assetRefWriter.GetByteArraySize());
+
+        // level main data
+        RpgPlatformFile::FileWrite(fileHandle, levelWriter.GetByteArrayData(), levelWriter.GetByteArraySize());
+
+        // TODO: Level streaming refs
+
+        // end-of-file
+        const uint32_t eof = RPG_ASSET_FILE_EOF;
+        RpgPlatformFile::FileWrite(fileHandle, &eof, sizeof(uint32_t));
+    }
+    RpgPlatformFile::FileClose(fileHandle);
+
+    RPG_CONSOLE_Log(RpgLogWorld, "Saved level (File: %s)", *filePath);
 }
 
 

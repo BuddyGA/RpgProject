@@ -1,5 +1,5 @@
 #include "RpgTestGame.h"
-#include "core/RpgAssetSystem.h"
+#include "core/asset/RpgAssetSystem.h"
 #include "core/world/RpgWorld.h"
 #include "render/world/RpgRenderComponent.h"
 #include "animation/world/RpgAnimationComponent.h"

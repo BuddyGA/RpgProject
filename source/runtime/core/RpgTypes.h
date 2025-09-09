@@ -72,26 +72,6 @@ namespace RpgType
 	};
 
 
-	/*
-	// A type is trivially copyable if:
-	// - It has at least one eligible copy constructor, move constructor, copy assignment operator, or move assignment operator.
-	// - Every eligible copy constructor, move constructor, copy assignment operator, and move assignment operator (if any) is trivial.
-	// - It has a trivial non - deleted destructor.
-	template<typename T>
-	struct IsTriviallyCopyable
-	{
-		static constexpr bool Value = __is_trivially_copyable(T);
-	};
-
-
-	template<typename T>
-	struct IsMoveAssignable
-	{
-		static constexpr bool Value = __is_assignable(T&, T&&);
-	};
-	*/
-
-
 	template<typename T>
 	constexpr inline void BitSetCondition(T& out_Flags, T bitFlags, bool bCondition) noexcept
 	{
@@ -111,20 +91,6 @@ namespace RpgType
 	}
 
 };
-
-
-
-inline uint64_t Rpg_GetHash(int value) noexcept
-{
-	return static_cast<uint64_t>(value);
-}
-
-template<typename T>
-inline uint64_t Rpg_GetHash(T* value) noexcept
-{
-	return reinterpret_cast<uint64_t>(value);
-}
-
 
 
 

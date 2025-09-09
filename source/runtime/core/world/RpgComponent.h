@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RpgGameObject.h"
+#include "../asset/RpgAssetTypes.h"
 
 
 
@@ -19,6 +20,7 @@ public:
 	virtual void SetFlags(int id, RpgGameObject gameObject, uint32_t flags) noexcept = 0;
 	virtual void StreamWrite(int id, RpgGameObject gameObject, RpgStreamWriter& writer) const noexcept = 0;
 	virtual void StreamRead(int id, RpgGameObject gameObject, RpgStreamReader& reader) noexcept = 0;
+	virtual void GetExternalAssetReferences(int id, RpgAssetReferences& out_AssetRefs) noexcept = 0;
 
 };
 
@@ -89,6 +91,11 @@ public:
 		TComponent::StreamRead(reader, data);
 	}
 
+	virtual void GetExternalAssetReferences(int id, RpgAssetReferences& out_AssetRefs) noexcept override
+	{
+		TComponent& data = Components[id];
+		TComponent::GetExternalAssetReferences(data, out_AssetRefs);
+	}
 
 	inline RpgFreeList<TComponent>& GetComponents() noexcept
 	{
@@ -108,7 +115,7 @@ private:
 
 
 
-#define RPG_COMPONENT_TYPE_MAX_COUNT		16
+#define RPG_COMPONENT_TYPE_MAX_COUNT		32
 
 
 #define RPG_COMPONENT(type, id)																											\
@@ -118,6 +125,7 @@ public:																																	\
 	static constexpr int TYPE_ID = id;																									\
 	static void StreamWrite(RpgStreamWriter& writer, const type& data) noexcept;														\
 	static void StreamRead(RpgStreamReader& reader, type& data) noexcept;																\
+	static void GetExternalAssetReferences(type& data, RpgAssetReferences& out_AssetRefs) noexcept;										\
 public:																																	\
 inline RpgGameObject GetGameObject() const noexcept																						\
 {																																		\
@@ -144,5 +152,6 @@ private:																																\
 	uint32_t Flags{ RpgGameObjectFlag::None };																							
 
 
-#define RPG_COMPONENT_DEFINITION_STATIC_StreamWrite(type)	void type::StreamWrite(RpgStreamWriter& writer, const type& data) noexcept
-#define RPG_COMPONENT_DEFINITION_STATIC_StreamRead(type)	void type::StreamRead(RpgStreamReader& reader, type& data) noexcept
+#define RPG_COMPONENT_STATIC_StreamWrite(type)					void type::StreamWrite(RpgStreamWriter& writer, const type& data) noexcept
+#define RPG_COMPONENT_STATIC_StreamRead(type)					void type::StreamRead(RpgStreamReader& reader, type& data) noexcept
+#define RPG_COMPONENT_STATIC_GetExternalAssetReferences(type)	void type::GetExternalAssetReferences(type& data, RpgAssetReferences& out_AssetRefs) noexcept

@@ -1,5 +1,5 @@
 #include "RpgMaterial.h"
-#include "core/RpgAssetSystem.h"
+#include "core/asset/RpgAssetSystem.h"
 #include "shader/RpgShaderTypes.h"
 
 
@@ -41,18 +41,35 @@ RpgMaterial::~RpgMaterial() noexcept
 }
 
 
-void RpgMaterial::StreamWrite(RpgStreamWriter& writer) const noexcept
+void RpgMaterial::AssetStreamWrite(RpgStreamWriter& writer) noexcept
 {
+	// only save non-runtime flags
 	const uint16_t savedFlags = (Flags & ~RUNTIME_FLAGS);
 	writer.Write(savedFlags);
 
-	writer.Write(ParentMaterial ? ParentMaterial->GetAssetPath() : RpgString());
+	if (ParentMaterial)
+	{
+		RPG_Check(ParentMaterial->IsAssetLoaded());
+		writer.Write(ParentMaterial->GetAssetPath());
+	}
+	else
+	{
+		writer.Write(RpgString());
+	}
+
 	writer.Write(RenderState);
 
-	const RpgMaterialParameterTextureArray& paramTextures = ParameterLayout.GetTextures();
-	for (int i = 0; i < paramTextures.GetCount(); ++i)
+	for (RpgSharedTexture2D& texture : ParameterLayout.GetTextures())
 	{
-		writer.Write(paramTextures[i] ? paramTextures[i]->GetAssetPath() : RpgString());
+		if (texture)
+		{
+			RPG_Check(texture->IsAssetLoaded());
+			writer.Write(texture->GetAssetPath());
+		}
+		else
+		{
+			writer.Write(RpgString());
+		}
 	}
 
 	writer.Write(ParameterLayout.GetVectors());
@@ -60,12 +77,15 @@ void RpgMaterial::StreamWrite(RpgStreamWriter& writer) const noexcept
 }
 
 
-void RpgMaterial::StreamRead(RpgStreamReader& reader) noexcept
+void RpgMaterial::AssetStreamRead(RpgStreamReader& reader, uint16_t version) noexcept
 {
 	RpgString tempAssetPath;
 
 	reader.Read(Name);
+	
 	reader.Read(Flags);
+	Flags |= FLAG_Runtime_Loading;
+
 	reader.Read(tempAssetPath);
 
 	if (!tempAssetPath.IsEmpty())
@@ -79,7 +99,7 @@ void RpgMaterial::StreamRead(RpgStreamReader& reader) noexcept
 	for (int i = 0; i < paramTextures.GetCount(); ++i)
 	{
 		reader.Read(tempAssetPath);
-		
+
 		if (!tempAssetPath.IsEmpty())
 		{
 			paramTextures[i] = g_AssetSystem->LoadAsset<RpgTexture2D>(tempAssetPath);
@@ -88,6 +108,65 @@ void RpgMaterial::StreamRead(RpgStreamReader& reader) noexcept
 
 	reader.Read(ParameterLayout.GetVectors());
 	reader.Read(ParameterLayout.GetScalars());
+
+	IsAssetLoaded();
+}
+
+
+bool RpgMaterial::IsAssetLoaded() noexcept
+{
+	if (Flags & FLAG_Runtime_Loaded)
+	{
+		return true;
+	}
+
+	// if not loaded check external asset refs
+	RPG_Check(Flags & FLAG_Runtime_Loading);
+
+	// check parent material
+	if (ParentMaterial && !ParentMaterial->IsAssetLoaded())
+	{
+		return false;
+	}
+
+	// check textures
+	for (RpgSharedTexture2D& texture : ParameterLayout.GetTextures())
+	{
+		if (texture && !texture->IsAssetLoaded())
+		{
+			return false;
+		}
+	}
+
+	Flags = (Flags & ~FLAG_Runtime_Loading) | FLAG_Runtime_Loaded;
+
+	return true;
+}
+
+
+void RpgMaterial::GetExternalAssetReferences(RpgAssetReferences& out_AssetRefs) noexcept
+{
+	if (ParentMaterial)
+	{
+		RPG_Check(ParentMaterial->IsAssetLoaded());
+		ParentMaterial->GetExternalAssetReferences(out_AssetRefs);
+		out_AssetRefs.Add(ParentMaterial->GetAssetPath());
+	}
+
+	for (RpgSharedTexture2D& texture : ParameterLayout.GetTextures())
+	{
+		if (texture)
+		{
+			RPG_Check(texture->IsAssetLoaded());
+			out_AssetRefs.Add(texture->GetAssetPath());
+		}
+	}
+}
+
+
+void RpgMaterial::SetAssetLoading() noexcept
+{
+	Flags |= FLAG_Runtime_Loading;
 }
 
 
@@ -122,7 +201,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.RasterMode = RpgRenderRasterMode::SOLID;
 
 		DefaultMaterials[RpgMaterialDefault::GUI] = s_CreateShared("mat_def_gui", renderState);
-		DefaultMaterials[RpgMaterialDefault::GUI]->Flags |= FLAG_Default;
+		DefaultMaterials[RpgMaterialDefault::GUI]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
 	// font2d
@@ -134,7 +213,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.RasterMode = RpgRenderRasterMode::SOLID;
 
 		DefaultMaterials[RpgMaterialDefault::FONT] = s_CreateShared("mat_def_font", renderState);
-		DefaultMaterials[RpgMaterialDefault::FONT]->Flags |= FLAG_Default;
+		DefaultMaterials[RpgMaterialDefault::FONT]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
 	// mesh phong
@@ -154,7 +233,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		paramLayout.AddScalar("opacity", 1.0f);
 
 		DefaultMaterials[RpgMaterialDefault::MESH_PHONG] = s_CreateShared("mat_def_mesh_phong", renderState, paramLayout);
-		DefaultMaterials[RpgMaterialDefault::MESH_PHONG]->Flags |= FLAG_Default;
+		DefaultMaterials[RpgMaterialDefault::MESH_PHONG]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
 
@@ -171,7 +250,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		paramLayout.AddScalar("gamma", 2.2f);
 
 		DefaultMaterials[RpgMaterialDefault::POSTPROCESS_FULLSCREEN] = s_CreateShared("mat_def_postprocess_fullscreen", renderState, paramLayout);
-		DefaultMaterials[RpgMaterialDefault::POSTPROCESS_FULLSCREEN]->Flags |= FLAG_Default;
+		DefaultMaterials[RpgMaterialDefault::POSTPROCESS_FULLSCREEN]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
 
@@ -184,7 +263,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.RasterMode = RpgRenderRasterMode::LINE;
 
 		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_2D] = s_CreateShared("mat_def_dbg_prim_line_2d", renderState);
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_2D]->Flags |= FLAG_Default;
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_2D]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
 	// Debug primitive2d mesh
@@ -196,7 +275,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.RasterMode = RpgRenderRasterMode::SOLID;
 
 		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_2D] = s_CreateShared("mat_def_dbg_prim_mesh_2d", renderState);
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_2D]->Flags |= FLAG_Default;
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_2D]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
 	// Debug primitive line
@@ -210,14 +289,14 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.bDepthWrite = false;
 
 		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE] = s_CreateShared("mat_def_dbg_prim_line", renderState);
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE]->Flags |= FLAG_Default;
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 
 		// no-depth
 		renderState.BlendMode = RpgRenderColorBlendMode::FADE;
 		renderState.bDepthTest = false;
 
 		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_NO_DEPTH] = s_CreateShared("mat_def_dbg_prim_line_no_depth", renderState);
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_NO_DEPTH]->Flags |= FLAG_Default;
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_NO_DEPTH]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
 	// Debug primitive mesh
@@ -231,14 +310,14 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.bDepthWrite = false;
 
 		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH] = s_CreateShared("mat_def_dbg_prim_mesh", renderState);
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH]->Flags |= FLAG_Default;
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 
 		// no-depth
 		renderState.BlendMode = RpgRenderColorBlendMode::FADE;
 		renderState.bDepthTest = false;
 
 		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_NO_DEPTH] = s_CreateShared("mat_def_dbg_prim_mesh_no_depth", renderState);
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_NO_DEPTH]->Flags |= FLAG_Default;
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_NO_DEPTH]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 }
 

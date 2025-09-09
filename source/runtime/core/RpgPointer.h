@@ -308,7 +308,7 @@ public:
 	template<typename U>
 	[[nodiscard]] inline RpgSharedPtr<U> CastStatic() const noexcept
 	{
-		static_assert(std::is_base_of<U, T>::value, "RpgSharedPtr: StaticCast type <U> must be parent of type <T>!");
+		static_assert(std::is_base_of<U, T>::value, "RpgSharedPtr: CastStatic type <U> must be parent of type <T>!");
 		
 		if (Ref == nullptr)
 		{

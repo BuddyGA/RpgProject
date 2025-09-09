@@ -191,7 +191,7 @@ typedef RpgSharedPtr<class RpgMaterial> RpgSharedMaterial;
 
 class RpgMaterial : public RpgAssetObject
 {
-	RPG_ASSET_FILE(RpgAssetFileType::MATERIAL, 1)
+	RPG_ASSET_CLASS(RpgMaterial, RpgAssetFileType::MATERIAL, 1);
 
 public:
 	RpgMaterial(const RpgName& in_Name) noexcept;
@@ -199,10 +199,20 @@ public:
 	RpgMaterial(const RpgName& in_Name, const RpgSharedMaterial& in_ParentMaterial) noexcept;
 	~RpgMaterial() noexcept;
 
-	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
-	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
 
+// Begin RpgAssetObject interfaces //
+public:
+	virtual void AssetStreamWrite(RpgStreamWriter& writer) noexcept override;
+	virtual void AssetStreamRead(RpgStreamReader& reader, uint16_t version) noexcept override;
+	virtual bool IsAssetLoaded() noexcept override;
+	virtual void GetExternalAssetReferences(RpgAssetReferences& out_AssetRefs) noexcept override;
 
+protected:
+	virtual void SetAssetLoading() noexcept override;
+// End RpgAssetObject interfaces //
+	
+
+public:
 	inline const RpgName& GetName() const noexcept
 	{
 		return Name;
@@ -225,7 +235,7 @@ public:
 
 	inline bool IsInstance() const noexcept
 	{
-		return ParentMaterial.IsValid();
+		return (Flags & FLAG_Instance);
 	}
 
 	inline bool IsTransparency() const noexcept
@@ -319,37 +329,35 @@ public:
 	}
 
 
-	inline void MarkPipelinePending() noexcept
+	inline void SetPSOPending() noexcept
 	{
 		RPG_Assert((Flags & (FLAG_Runtime_PSO_Compiling | FLAG_Runtime_PSO_Compiled)) == 0);
 		Flags |= FLAG_Runtime_PSO_Pending;
 	}
 
-	inline void MarkPipelineCompiling() noexcept
+	inline void SetPSOCompiling() noexcept
 	{
 		RPG_Assert((Flags & FLAG_Runtime_PSO_Pending) && (Flags & FLAG_Runtime_PSO_Compiled) == 0);
-		Flags &= ~FLAG_Runtime_PSO_Pending;
-		Flags |= FLAG_Runtime_PSO_Compiling;
+		Flags = (Flags & ~FLAG_Runtime_PSO_Pending) | FLAG_Runtime_PSO_Compiling;
 	}
 
-	inline void MarkPipelineCompiled() noexcept
+	inline void SetPSOCompiled() noexcept
 	{
 		RPG_Assert((Flags & FLAG_Runtime_PSO_Compiling) && (Flags & FLAG_Runtime_PSO_Pending) == 0);
-		Flags &= ~FLAG_Runtime_PSO_Compiling;
-		Flags |= FLAG_Runtime_PSO_Compiled;
+		Flags = (Flags & ~FLAG_Runtime_PSO_Compiling) | FLAG_Runtime_PSO_Compiled;
 	}
 
-	inline bool IsPipelinePending() const noexcept
+	inline bool IsPSOPending() const noexcept
 	{
 		return (Flags & FLAG_Runtime_PSO_Pending);
 	}
 
-	inline bool IsPipelineCompiling() const noexcept
+	inline bool IsPSOCompiling() const noexcept
 	{
 		return (Flags & FLAG_Runtime_PSO_Compiling);
 	}
 
-	inline bool IsPipelineCompiled() const noexcept
+	inline bool IsPSOCompiled() const noexcept
 	{
 		return (Flags & FLAG_Runtime_PSO_Compiled);
 	}

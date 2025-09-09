@@ -1,4 +1,5 @@
 #include "RpgPlatform.h"
+#include "thirdparty/xxhash/xxhash.h"
 #include <mimalloc-new-delete.h>
 
 
@@ -150,20 +151,7 @@ uint64_t RpgPlatformString::CStringHash(const char* cstr) noexcept
 		return 0;
 	}
 
-	uint64_t hash = 0;
-
-	for (int i = 0; i < len; ++i)
-	{
-		hash += cstr[i];
-		hash += (hash << 10);
-		hash ^= (hash >> 6);
-	}
-
-	hash += (hash << 3);
-	hash ^= (hash >> 11);
-	hash += (hash << 15);
-
-	return hash;
+	return XXH3_64bits(cstr, len);
 }
 
 

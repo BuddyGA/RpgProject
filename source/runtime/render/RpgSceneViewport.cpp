@@ -73,7 +73,7 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 
 	for (int m = 0; m < frame.Meshes.GetCount(); ++m)
 	{
-		const RpgSceneMesh& data = frame.Meshes[m];
+		RpgSceneMesh& data = frame.Meshes[m];
 
 		if (data.GameObject.IsPendingDestroy())
 		{
@@ -83,8 +83,10 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 		const bool bHasSkin = data.Mesh->HasSkin();
 		bool bIsStaticMesh = true;
 
+		const RpgSharedMaterial& useMaterial = data.Material && data.Material->IsAssetLoaded() ? data.Material : RpgMaterial::s_GetDefault(RpgMaterialDefault::MESH_PHONG);
+
 		RpgDrawIndexed draw;
-		draw.Material = data.Material ? materialResource->AddMaterial(data.Material) : materialResource->AddMaterial(RpgMaterial::s_GetDefault(RpgMaterialDefault::MESH_PHONG));
+		draw.Material = materialResource->AddMaterial(useMaterial);
 		draw.ObjectParam.ViewIndex = cameraId;
 		draw.ObjectParam.TransformIndex = worldResource->AddTransform(data.GameObject, data.WorldTransformMatrix);
 

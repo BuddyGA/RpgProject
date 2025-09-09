@@ -3,17 +3,21 @@
 #include "RpgArray.h"
 
 
+#ifndef RPG_BUILD_SHIPPING
+	#define RPG_MAP_CHECK_COLLISION	1
+#else
+	#define RPG_MAP_CHECK_COLLISION 0
+#endif // !RPG_BUILD_SHIPPING
+
+
 
 // ============================================================================================================================================================================================== //
 // RpgMap
-// Hash map, key-value pair.
+// Unordered hash map, key-value pair array.
 // ============================================================================================================================================================================================== //
-#define RPG_MAP_CHECK_COLLISION	1
-
-template<typename TUniqueKey, typename TValue>
+template<typename TKey, typename TValue, int CAPACITY_ALIGNMENT = 1>
 class RpgMap
 {
-
 public:
 	RpgMap() noexcept
 	{
@@ -70,14 +74,14 @@ public:
 
 
 	/*
-	inline TValue& operator[](const TUniqueKey& key) noexcept
+	inline TValue& operator[](const TKey& key) noexcept
 	{
 		return Add(key);
 	}
 	*/
 
 
-	inline const TValue& operator[](const TUniqueKey& key) const noexcept
+	inline const TValue& operator[](const TKey& key) const noexcept
 	{
 		const int index = FindIndex(Rpg_GetHash(key));
 		RPG_ValidateV(index != RPG_INDEX_INVALID, "RpgMap key not found!");
@@ -87,15 +91,15 @@ public:
 
 
 public:
-	inline void Reserve(int newCapacity) noexcept
+	inline void Reserve(int in_Capacity) noexcept
 	{
-		Hashes.Reserve(newCapacity);
-		Keys.Reserve(newCapacity);
-		Values.Reserve(newCapacity);
+		Hashes.Reserve(in_Capacity);
+		Keys.Reserve(in_Capacity);
+		Values.Reserve(in_Capacity);
 	}
 
 
-	inline TValue& Add(const TUniqueKey& key, int* outIndex = nullptr) noexcept
+	inline TValue& Add(const TKey& key, int* optOut_Index = nullptr) noexcept
 	{
 		const uint64_t hash = Rpg_GetHash(key);
 		int index = FindIndex(hash);
@@ -110,22 +114,48 @@ public:
 		else
 		{
 		#if RPG_MAP_CHECK_COLLISION
-			const int keyIndex = Keys.FindFirstIndexOf(key);
+			const int keyIndex = Keys.FindIndexByValue(key);
 			RPG_ValidateV(keyIndex != RPG_INDEX_INVALID, "RpgMap collision!");
 		#endif // RPG_MAP_CHECK_COLLISION
 		}
 
-		if (outIndex)
+		if (optOut_Index)
 		{
-			*outIndex = index;
+			*optOut_Index = index;
 		}
 
 		return Values[index];
 	}
 
 
+	inline int AddValue(const TKey& key, const TValue& in_Value) noexcept
+	{
+		const uint64_t hash = Rpg_GetHash(key);
+		int index = FindIndex(hash);
+
+		if (index == RPG_INDEX_INVALID)
+		{
+			index = Hashes.GetCount();
+			Hashes.AddValue(hash);
+			Keys.AddValue(key);
+			Values.AddValue(in_Value);
+		}
+		else
+		{
+		#if RPG_MAP_CHECK_COLLISION
+			const int keyIndex = Keys.FindIndexByValue(key);
+			RPG_ValidateV(keyIndex != RPG_INDEX_INVALID, "RpgMap collision!");
+		#endif // RPG_MAP_CHECK_COLLISION
+
+			Values[index] = in_Value;
+		}
+
+		return index;
+	}
+
+
 	template<typename...TConstructorArgs>
-	inline void Add(const TUniqueKey& key, TConstructorArgs&&... args) noexcept
+	inline void AddConstruct(const TKey& key, TConstructorArgs&&... args) noexcept
 	{
 		const uint64_t hash = Rpg_GetHash(key);
 		int index = FindIndex(hash);
@@ -149,7 +179,7 @@ public:
 	}
 
 
-	inline void Remove(const TUniqueKey& key, bool bKeepOrder = false) noexcept
+	inline void Remove(const TKey& key, bool bKeepOrder = false) noexcept
 	{
 		const int index = FindIndex(Rpg_GetHash(key));
 
@@ -170,13 +200,7 @@ public:
 	}
 
 
-	inline int FindKeyIndex(const TUniqueKey& key) const noexcept
-	{
-		return FindIndex(Rpg_GetHash(key));
-	}
-
-
-	inline bool Exists(const TUniqueKey& key, int* optOut_Index = nullptr) const noexcept
+	inline bool Exists(const TKey& key, int* optOut_Index = nullptr) const noexcept
 	{
 		const int index = FindIndex(Rpg_GetHash(key));
 
@@ -189,25 +213,13 @@ public:
 	}
 
 
-	inline TUniqueKey& GetKeyByIndex(int index) noexcept
+	inline const TKey& GetKeyByIndex(int index) const noexcept
 	{
 		return Keys[index];
 	}
 
 
-	inline const TUniqueKey& GetKeyByIndex(int index) const noexcept
-	{
-		return Keys[index];
-	}
-
-
-	inline const RpgArray<TUniqueKey>& GetKeyArray() const noexcept
-	{
-		return Keys;
-	}
-
-
-	inline TValue* GetValueByKey(const TUniqueKey& key) noexcept
+	inline TValue* FindValue(const TKey& key) noexcept
 	{
 		const int index = FindIndex(Rpg_GetHash(key));
 
@@ -220,7 +232,7 @@ public:
 	}
 
 
-	inline const TValue* GetValueByKey(const TUniqueKey& key) const noexcept
+	inline const TValue* FindValue(const TKey& key) const noexcept
 	{
 		const int index = FindIndex(Rpg_GetHash(key));
 
@@ -242,18 +254,6 @@ public:
 	inline const TValue& GetValueByIndex(int index) const noexcept
 	{
 		return Values[index];
-	}
-
-
-	inline RpgArray<TValue>& GetValueArray() noexcept
-	{
-		return Values;
-	}
-
-
-	inline const RpgArray<TValue>& GetValueArray() const noexcept
-	{
-		return Values;
 	}
 
 
@@ -293,8 +293,8 @@ private:
 
 
 private:
-	RpgArray<uint64_t> Hashes;
-	RpgArray<TUniqueKey> Keys;
-	RpgArray<TValue> Values;
+	RpgArray<uint64_t, CAPACITY_ALIGNMENT> Hashes;
+	RpgArray<TKey, CAPACITY_ALIGNMENT> Keys;
+	RpgArray<TValue, CAPACITY_ALIGNMENT> Values;
 
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/RpgAssetTypes.h"
+#include "core/asset/RpgAssetTypes.h"
 
 
 RPG_LOG_DECLARE_CATEGORY_EXTERN(RpgLogEditor)
@@ -102,8 +102,8 @@ struct RpgEditorImportSetting_Model
 
 struct RpgEditorAssetFile
 {
-	RpgString Path;
 	RpgName Name;
+	RpgString Path;
 	RpgAssetFileType Type{ RpgAssetFileType::NONE };
 };
 

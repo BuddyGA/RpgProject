@@ -4,9 +4,9 @@
 #include "core/RpgThreadPool.h"
 #include "core/RpgTimer.h"
 #include "core/RpgD3D12.h"
-#include "core/RpgAssetSystem.h"
-#include "core/RpgInputWindows.h"
-#include "core/RpgInputSystem.h"
+#include "core/asset/RpgAssetSystem.h"
+#include "core/input/RpgInputWindows.h"
+#include "core/input/RpgInputSystem.h"
 #include "render/asset/RpgTexture.h"
 #include "render/asset/RpgFont.h"
 #include "render/asset/RpgMaterial.h"
@@ -320,6 +320,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	// Compile default materials
 	{
 		RpgSharedMaterial defaultMaterials[RpgMaterialDefault::MAX_COUNT];
+
 		for (int m = 0; m < RpgMaterialDefault::MAX_COUNT; ++m)
 		{
 			defaultMaterials[m] = RpgMaterial::s_GetDefault(static_cast<RpgMaterialDefault::EType>(m));
@@ -332,6 +333,28 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	// Initialize asset system
 	g_AssetSystem = new RpgAssetSystem();
+	{
+		// register asset types
+		g_AssetSystem->RegisterAssetClass<RpgMesh>();
+		g_AssetSystem->RegisterAssetClass<RpgTexture2D>();
+		g_AssetSystem->RegisterAssetClass<RpgMaterial>();
+
+	#ifndef RPG_BUILD_SHIPPING
+		// add engine assets
+		RpgSharedTexture2D texDefWhite = RpgTexture2D::s_GetDefault_White();
+		g_AssetSystem->SaveAsset<RpgTexture2D>(texDefWhite, "engine/texture");
+
+		for (int i = 0; i < RpgMaterialDefault::MAX_COUNT; ++i)
+		{
+			RpgSharedMaterial material = RpgMaterial::s_GetDefault(static_cast<RpgMaterialDefault::EType>(i));
+			g_AssetSystem->SaveAsset<RpgMaterial>(material, "engine/material");
+		}
+
+		// scanning asset files
+		g_AssetSystem->ScanAssetFiles();
+	#endif // !RPG_BUILD_SHIPPING
+	}
+
 
 	// Initialize input system
 	g_InputSystem = new RpgInputSystem();

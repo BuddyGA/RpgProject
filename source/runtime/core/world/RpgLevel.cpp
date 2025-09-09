@@ -7,10 +7,11 @@ RPG_LOG_DECLARE_CATEGORY_STATIC(RpgLogLevel, VERBOSITY_DEBUG)
 
 
 RpgLevel::RpgLevel(const RpgName& in_Name) noexcept
-	: Name(in_Name)
+	: RpgAssetObject(in_Name)
 	, FrameDatas()
 	, FrameIndex(0)
 	, ComponentStorages()
+	, State(STATE_NONE)
 	, bHasStartedPlay(false)
 {
 	Bound = RpgBoundingAABB(RpgVector3(-50.0f), RpgVector3(50.0f));
@@ -24,6 +25,8 @@ RpgLevel::RpgLevel(const RpgName& in_Name) noexcept
 
 RpgLevel::~RpgLevel() noexcept
 {
+	RPG_LogDebug(RpgLogLevel, "Destroy level (%s)", *GetAssetName());
+
 	for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
 	{
 		if (ComponentStorages[compType])
@@ -35,15 +38,122 @@ RpgLevel::~RpgLevel() noexcept
 }
 
 
-void RpgLevel::StreamWrite(RpgBinaryStreamWriter& writer) noexcept
+void RpgLevel::AssetStreamWrite(RpgStreamWriter& writer) noexcept
+{
+	RpgArray<int> gameObjectIds;
+	gameObjectIds.Reserve(GameObjectStates.GetCount());
+
+	for (auto it = GameObjectStates.CreateConstIterator(); it; ++it)
+	{
+		const FGameObjectState state = it.GetValue();
+
+		// ignore transient or pending-destroy
+		if (state.Flags & (RpgGameObjectFlag::Transient | RpgGameObjectFlag::PendingDestroy))
+		{
+			continue;
+		}
+
+		gameObjectIds.AddValue(it.GetIndex());
+	}
+	
+	// gameobject count
+	writer.Write(gameObjectIds.GetCount());
+
+	// for-each gameobject
+	for (int i : gameObjectIds)
+	{
+		const int id = gameObjectIds[i];
+		
+		const FGameObjectState state = GameObjectStates[id];
+		RPG_Check(!(state.Flags & (RpgGameObjectFlag::Transient | RpgGameObjectFlag::PendingDestroy)));
+		
+		// name
+		const RpgName& name = GameObjectNames[id];
+		writer.Write(name);
+
+		// transform
+		const FGameObjectTransform& transform = GameObjectTransforms[id];
+		writer.Write(transform.LocalTransformMatrix);
+		writer.Write(transform.WorldTransformMatrix);
+		writer.Write(transform.InverseWorldTransformMatrix);
+
+		if (!transform.Parent.IsNull())
+		{
+			RPG_Check(GameObject_IsValid(transform.Parent));
+			writer.Write(transform.Parent.Index);
+		}
+
+		// components
+		const FGameObjectComponentScript& compScript = GameObjectComponentScripts[id];
+		writer.WriteData(compScript.Components, sizeof(int16_t) * RPG_COMPONENT_TYPE_MAX_COUNT);
+
+		// for-each component type
+		for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+		{
+			const int compId = compScript.Components[compType];
+			if (compId == RPG_INDEX_INVALID)
+			{
+				continue;
+			}
+
+			ComponentStorages[compType]->StreamWrite(compId, RpgGameObject(this, id, state.Gen), writer);
+		}
+	}
+}
+
+
+void RpgLevel::AssetStreamRead(RpgStreamReader& reader, uint16_t version) noexcept
 {
 
 }
 
 
-void RpgLevel::StreamRead(RpgBinaryStreamReader& reader) noexcept
+bool RpgLevel::IsAssetLoaded() noexcept
 {
+	if (State == STATE_LOADED)
+	{
+		return true;
+	}
 
+	RPG_Check(State == STATE_LOADING);
+
+	for (auto it = GameObjectStates.CreateIterator(); it; ++it)
+	{
+		FGameObjectState& state = it.GetValue();
+		
+		if (state.Flags & RpgGameObjectFlag::Loading)
+		{
+			
+		}
+	}
+
+	State = STATE_LOADED;
+
+	return true;
+}
+
+
+void RpgLevel::GetExternalAssetReferences(RpgAssetReferences& out_AssetRefs) noexcept
+{
+	for (auto it = GameObjectStates.CreateConstIterator(); it; ++it)
+	{
+		const int id = it.GetIndex();
+		const FGameObjectState state = it.GetValue();
+
+		// ignore transient or pending-destroy
+		if (state.Flags & (RpgGameObjectFlag::Transient | RpgGameObjectFlag::PendingDestroy))
+		{
+			continue;
+		}
+
+		GameObject_GetExternalAssetReferences(id, out_AssetRefs);
+	}
+}
+
+
+void RpgLevel::SetAssetLoading() noexcept
+{
+	State = STATE_LOADING;
 }
 
 
@@ -142,7 +252,15 @@ void RpgLevel::TickUpdate(float deltaTime) noexcept
 
 	for (int i = 0; i < AttachedScripts.GetCount(); ++i)
 	{
-		AttachedScripts[i]->TickUpdate(deltaTime);
+		RpgGameObjectScript* script = AttachedScripts[i];
+		RPG_Check(script);
+
+		if (script->TickUpdateOption == RpgTickUpdateOption::NO_UPDATE || (script->TickUpdateOption == RpgTickUpdateOption::STARTED_PLAY && !bHasStartedPlay))
+		{
+			continue;
+		}
+
+		script->TickUpdate(deltaTime);
 	}
 }
 
@@ -288,7 +406,6 @@ void RpgLevel::GameObject_AttachToParent(RpgGameObject gameObject, RpgGameObject
 void RpgLevel::GameObject_Spawn(RpgGameObject gameObject, const RpgTransform& worldTransform) noexcept
 {
 	RPG_IsMainThread();
-
 	RPG_Check(GameObject_IsValid(gameObject));
 
 	const int index = gameObject.Index;
@@ -459,4 +576,38 @@ void RpgLevel::GameObject_UpdateTransform(RpgGameObject gameObject) noexcept
 
 	GameObjectStates[gameObject.Index].Flags |= RpgGameObjectFlag::TransformUpdated;
 	GameObject_UpdateComponentFlags(gameObject);
+}
+
+
+void RpgLevel::GameObject_GetExternalAssetReferences(int id, RpgAssetReferences& out_AssetRefs) const noexcept
+{
+	const FGameObjectComponentScript& compScript = GameObjectComponentScripts[id];
+
+	for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+	{
+		const int compId = compScript.Components[compType];
+		if (compId == RPG_INDEX_INVALID)
+		{
+			continue;
+		}
+
+		ComponentStorages[compType]->GetExternalAssetReferences(compId, out_AssetRefs);
+	}
+}
+
+
+bool RpgLevel::GameObject_IsLoaded(int id) noexcept
+{
+	FGameObjectState& state = GameObjectStates[id];
+
+	if (state.Flags & RpgGameObjectFlag::Loaded)
+	{
+		return true;
+	}
+
+	RPG_Check(state.Flags & RpgGameObjectFlag::Loading);
+
+	state.Flags = (state.Flags & ~RpgGameObjectFlag::Loading) | RpgGameObjectFlag::Loaded;
+	
+	return true;
 }

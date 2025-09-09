@@ -1,7 +1,6 @@
 #include "RpgRenderPipeline.h"
 #include "task/RpgRenderTask_CompilePSO.h"
 #include "shader/RpgShaderManager.h"
-#include "core/dsa/RpgArray.h"
 
 
 
@@ -423,7 +422,7 @@ void RpgRenderPipeline::AddMaterials(RpgSharedMaterial* materialArray, int mater
             continue;
         }
 
-        mat->MarkPipelinePending();
+        mat->SetPSOPending();
 
         Materials.AddValue(mat);
         MaterialPipelineStates.AddValue(nullptr);
@@ -439,7 +438,7 @@ void RpgRenderPipeline::CompileMaterialPSOs(bool bWaitAll) noexcept
     for (int i = 0; i < Materials.GetCount(); ++i)
     {
         RpgSharedMaterial& mat = Materials[i];
-        if (!mat->IsPipelinePending())
+        if (!mat->IsPSOPending())
         {
             continue;
         }
@@ -450,7 +449,7 @@ void RpgRenderPipeline::CompileMaterialPSOs(bool bWaitAll) noexcept
         task.Name = mat->GetName();
         task.PipelineState = mat->GetRenderState();
 
-        mat->MarkPipelineCompiling();
+        mat->SetPSOCompiling();
 
         taskToSubmits.AddValue(&task);
     }
@@ -463,7 +462,7 @@ void RpgRenderPipeline::CompileMaterialPSOs(bool bWaitAll) noexcept
     for (int i = 0; i < Materials.GetCount(); ++i)
     {
         RpgSharedMaterial& mat = Materials[i];
-        if (!mat->IsPipelineCompiling())
+        if (!mat->IsPSOCompiling())
         {
             continue;
         }
@@ -481,7 +480,7 @@ void RpgRenderPipeline::CompileMaterialPSOs(bool bWaitAll) noexcept
         {
             MaterialPipelineStates[i] = task.GetCompiledPSO();
             task.Reset();
-            mat->MarkPipelineCompiled();
+            mat->SetPSOCompiled();
         }
     }
 }

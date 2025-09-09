@@ -1,29 +1,38 @@
 #pragma once
 
 #include "RpgComponent.h"
+#include "../asset/RpgAssetTypes.h"
 
 
 
-class RpgLevel
+class RpgLevel : public RpgAssetObject
 {
+	RPG_ASSET_CLASS(RpgLevel, RpgAssetFileType::LEVEL, 1);
+
 public:
 	RpgLevel(const RpgName& in_Name) noexcept;
 	virtual ~RpgLevel() noexcept;
 
-	void StreamWrite(RpgBinaryStreamWriter& writer) noexcept;
-	void StreamRead(RpgBinaryStreamReader& reader) noexcept;
 
+// Begin RpgAssetObject interfaces //
+public:
+	virtual void AssetStreamWrite(RpgStreamWriter& writer) noexcept override;
+	virtual void AssetStreamRead(RpgStreamReader& reader, uint16_t version) noexcept override;
+	virtual bool IsAssetLoaded() noexcept override;
+	virtual void GetExternalAssetReferences(RpgAssetReferences& out_AssetRefs) noexcept override;
+
+protected:
+	virtual void SetAssetLoading() noexcept override;
+// End RpgAssetObject interfaces //
+
+
+public:
 	void BeginFrame(int frameIndex) noexcept;
 	void EndFrame(int frameIndex) noexcept;
 	void StartPlay() noexcept;
 	void StopPlay() noexcept;
 	void TickUpdate(float deltaTime) noexcept;
 
-
-	inline const RpgName& GetName() const noexcept
-	{
-		return Name;
-	}
 
 	inline const RpgBoundingAABB& GetBound() const noexcept
 	{
@@ -32,7 +41,6 @@ public:
 
 
 private:
-	RpgName Name;
 	RpgBoundingAABB Bound;
 
 
@@ -43,6 +51,16 @@ private:
 
 	FFrameData FrameDatas[RPG_FRAME_BUFFERING];
 	int FrameIndex;
+
+
+	enum EState : uint8_t
+	{
+		STATE_NONE = 0,
+		STATE_LOADING,
+		STATE_LOADED
+	};
+	EState State;
+
 
 	bool bHasStartedPlay;
 
@@ -262,6 +280,8 @@ private:
 	void GameObject_UpdateComponentFlags(RpgGameObject gameObject) noexcept;
 	void GameObject_InternalDetachFromParent(RpgGameObject gameObject, bool bIsDestroying) noexcept;
 	void GameObject_UpdateTransform(RpgGameObject gameObject) noexcept;
+	void GameObject_GetExternalAssetReferences(int id, RpgAssetReferences& out_AssetRefs) const noexcept;
+	bool GameObject_IsLoaded(int id) noexcept;
 
 
 	inline void GameObjectScript_StartPlay(int index) noexcept
@@ -334,7 +354,6 @@ private:
 		RpgArrayInline<RpgGameObject, 8> Children;
 		uint8_t Dirty;
 	};
-
 	RpgFreeList<FGameObjectTransform> GameObjectTransforms;
 
 

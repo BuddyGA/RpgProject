@@ -21,7 +21,8 @@
 #define RPG_DebugBreak()	if (IsDebuggerPresent()) __debugbreak()
 
 
-typedef volatile LONG	RpgAtomicInt;
+typedef volatile long 			RpgAtomicInt;
+typedef volatile unsigned long	RpgAtomicUint;
 
 
 
@@ -218,7 +219,7 @@ if (!(cond))																																					\
 	snprintf(message, RPG_ASSERT_FORMAT_BUFFER_COUNT, format, __VA_ARGS__);																						\
 	char assertMessage[RPG_ASSERT_FORMAT_BUFFER_COUNT];																											\
 	snprintf(assertMessage, RPG_ASSERT_FORMAT_BUFFER_COUNT, "AssertionFailed: (%s)\nMessage: %s\nFile: %s\nLine: %i\n", #cond, message, __FILE__, __LINE__);	\
-	RPG_ASSERT_MESSAGE_EXIT(assertMessage);																							\
+	RPG_ASSERT_MESSAGE_EXIT(assertMessage);																														\
 }
 
 
@@ -342,6 +343,7 @@ namespace RpgPlatformMouse
 enum class RpgPlatformWindowDisplayMode : uint8_t
 {
 	WINDOWED = 0,
+	WINDOWED_FULLSCREEN,
 	FULLSCREEN
 };
 

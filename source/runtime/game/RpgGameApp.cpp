@@ -1,7 +1,7 @@
 #include "RpgGameApp.h"
 #include "core/RpgCommandLine.h"
-#include "core/RpgAssetSystem.h"
-#include "core/RpgInputSystem.h"
+#include "core/asset/RpgAssetSystem.h"
+#include "core/input/RpgInputSystem.h"
 #include "render/RpgRenderThread.h"
 #include "render/world/RpgRenderComponent.h"
 
@@ -37,6 +37,10 @@ RpgGameApp::RpgGameApp() noexcept
 
 RpgGameApp::~RpgGameApp() noexcept
 {
+#ifndef RPG_BUILD_SHIPPING
+	delete g_Editor;
+#endif // !RPG_BUILD_SHIPPING
+
 	RpgRenderThread::Shutdown();
 }
 
@@ -44,25 +48,6 @@ RpgGameApp::~RpgGameApp() noexcept
 void RpgGameApp::Initialize() noexcept
 {
 	g_ConsoleSystem->RegisterObjectCommandListener(this, &RpgGameApp::HandleConsoleCommand);
-
-
-#ifndef RPG_BUILD_SHIPPING
-
-	// add engine assets
-	RpgSharedTexture2D texDefWhite = RpgTexture2D::s_GetDefault_White();
-	g_AssetSystem->SaveAsset<RpgTexture2D>(texDefWhite, "engine/texture");
-
-	for (int i = 0; i < RpgMaterialDefault::MAX_COUNT; ++i)
-	{
-		RpgSharedMaterial matDef = RpgMaterial::s_GetDefault(static_cast<RpgMaterialDefault::EType>(i));
-		g_AssetSystem->SaveAsset<RpgMaterial>(matDef, "engine/material");
-	}
-
-	// scanning asset files
-	g_AssetSystem->ScanAssetFiles();
-
-#endif // !RPG_BUILD_SHIPPING
-
 
 	// main world
 	MainWorld = CreateWorld<RpgGameWorld>("world_game");
@@ -182,8 +167,16 @@ void RpgGameApp::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 
 	// Begin frame
 	{
-		MainWorld->BeginFrame(frameIndex);
 		g_AssetSystem->Update();
+
+		MainWorld->BeginFrame(frameIndex);
+
+		RpgRenderComponent_Camera* mainCameraComp = !MainCameraObject.IsNull() ? MainCameraObject.GetComponent<RpgRenderComponent_Camera>() : nullptr;
+
+		if (mainCameraComp && WindowState != RpgPlatformWindowSizeState::MINIMIZED)
+		{
+			mainCameraComp->RenderTargetDimension = WindowDimension;
+		}
 	}
 
 	const RpgRectFloat windowClipRect(0.0f, 0.0f, static_cast<float>(WindowDimension.X), static_cast<float>(WindowDimension.Y));
@@ -203,13 +196,6 @@ void RpgGameApp::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 
 	// Tick update
 	{
-		RpgRenderComponent_Camera* mainCameraComp = !MainCameraObject.IsNull() ? MainCameraObject.GetComponent<RpgRenderComponent_Camera>() : nullptr;
-
-		if (mainCameraComp && WindowState != RpgPlatformWindowSizeState::MINIMIZED)
-		{
-			mainCameraComp->RenderTargetDimension = WindowDimension;
-		}
-
 		MainWorld->DispatchTickUpdate(deltaTime);
 	}
 
@@ -290,6 +276,16 @@ void RpgGameApp::RequestExit(bool bAskConfirmation) noexcept
 	{
 		PostQuitMessage(0);
 	}
+}
+
+
+void RpgGameApp::OpenLevel(const RpgString& path) noexcept
+{
+	RPG_CONSOLE_Log(RpgLogGame, "Open level (%s)", *path);
+
+	// TODO: Create loading screen
+
+	RPG_NotImplementedYet();
 }
 
 

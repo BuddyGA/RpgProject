@@ -69,7 +69,6 @@ public:
 
 	void BeginFrame(int frameIndex) noexcept;
 	void EndFrame(int frameIndex) noexcept;
-
 	void DispatchStartPlay() noexcept;
 	void DispatchStopPlay() noexcept;
 	void DispatchTickUpdate(float deltaTimeSeconds) noexcept;
@@ -146,7 +145,7 @@ private:
 // 	Level interface
 // --------------------------------------------------------------------------------------------------------------------------------------------- //
 public:
-	void CreateLevel(const RpgName& name) noexcept;
+	void SaveLevel(const RpgName& name) noexcept;
 	void LoadLevelAsync(const RpgString& path) noexcept;
 	
 
@@ -163,7 +162,8 @@ protected:
 
 
 private:
-	RpgArray<uint64_t> LevelHashes;
+	RpgArray<uint64_t> LevelStreamingHashes;
+	RpgArray<RpgString> LevelStreamingPaths;
 	RpgArray<RpgUniquePtr<RpgLevel>> LevelLoadeds;
 
 

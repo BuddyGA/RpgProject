@@ -14,9 +14,12 @@ RpgMesh::RpgMesh(const RpgName& in_Name) noexcept
 }
 
 
-void RpgMesh::StreamWrite(RpgStreamWriter& writer) const noexcept
+void RpgMesh::AssetStreamWrite(RpgStreamWriter& writer) noexcept
 {
-	writer.Write(Flags);
+	// only save non-runtime flags
+	const uint16_t savedFlags = (Flags & ~RUNTIME_FLAGS);
+	writer.Write(savedFlags);
+
 	writer.Write(Positions);
 	writer.Write(NormalTangents);
 	writer.Write(TexCoords);
@@ -26,7 +29,7 @@ void RpgMesh::StreamWrite(RpgStreamWriter& writer) const noexcept
 }
 
 
-void RpgMesh::StreamRead(RpgStreamReader& reader) noexcept
+void RpgMesh::AssetStreamRead(RpgStreamReader& reader, uint16_t version) noexcept
 {
 	reader.Read(Flags);
 	reader.Read(Positions);
@@ -35,6 +38,20 @@ void RpgMesh::StreamRead(RpgStreamReader& reader) noexcept
 	reader.Read(Skins);
 	reader.Read(Indices);
 	reader.Read(Bound);
+
+	Flags = (Flags & ~FLAG_Runtime_Loading) | FLAG_Runtime_Loaded;
+}
+
+
+void RpgMesh::SetAssetLoading() noexcept
+{
+	Flags |= FLAG_Runtime_Loading;
+}
+
+
+bool RpgMesh::IsAssetLoaded() noexcept
+{
+	return (Flags & FLAG_Runtime_Loaded);
 }
 
 
@@ -79,6 +96,8 @@ void RpgMesh::UpdateVertexData(int vertexCount, const RpgVertex::FMeshPosition* 
 		Flags |= FLAG_Attribute_Index;
 	}
 	WriteUnlockAll();
+
+	Flags = (Flags & ~FLAG_Runtime_Loading) | FLAG_Runtime_Loaded;
 
 	UpdateBound();
 }
@@ -148,6 +167,8 @@ void RpgMesh::AddBatchVertexData(int vertexCount, const RpgVertex::FMeshPosition
 		}
 	}
 	WriteUnlockAll();
+
+	Flags = (Flags & ~FLAG_Runtime_Loading) | FLAG_Runtime_Loaded;
 
 	UpdateBound();
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/RpgString.h"
+#include "../RpgString.h"
 
 
 RPG_LOG_DECLARE_CATEGORY_EXTERN(RpgLogInput)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/RpgVertex.h"
-#include "core/RpgAssetTypes.h"
+#include "core/asset/RpgAssetTypes.h"
 
 
 
@@ -9,7 +9,7 @@ typedef RpgSharedPtr<class RpgMesh> RpgSharedMesh;
 
 class RpgMesh : public RpgAssetObject
 {
-	RPG_ASSET_FILE(RpgAssetFileType::MESH, 1)
+	RPG_ASSET_CLASS(RpgMesh, RpgAssetFileType::MESH, 1);
 
 public:
 	struct FVertexData
@@ -37,10 +37,19 @@ public:
 public:
 	RpgMesh(const RpgName& in_Name) noexcept;
 
-	virtual void StreamWrite(RpgStreamWriter& writer) const noexcept override;
-	virtual void StreamRead(RpgStreamReader& reader) noexcept override;
+
+// Begin RpgAssetObject interfaces //
+public:
+	virtual void AssetStreamWrite(RpgStreamWriter& writer) noexcept override;
+	virtual void AssetStreamRead(RpgStreamReader& reader, uint16_t version) noexcept override;
+	virtual bool IsAssetLoaded() noexcept override;
+
+protected:
+	virtual void SetAssetLoading() noexcept override;
+// End RpgAssetObject interfaces //
 
 
+public:
 	// Free memory and overwrite existing vertex data 
 	void UpdateVertexData(int vertexCount, const RpgVertex::FMeshPosition* positionData, const RpgVertex::FMeshNormalTangent* normalTangentData, const RpgVertex::FMeshTexCoord* texCoordData, const RpgVertex::FMeshSkin* skinData, int indexCount, const RpgVertex::FIndex* indexData) noexcept;
 
@@ -260,8 +269,13 @@ private:
 		FLAG_Attribute_TexCoord			= (1 << 2),
 		FLAG_Attribute_Skin				= (1 << 3),
 		FLAG_Attribute_Index			= (1 << 4),
+		FLAG_Runtime_Loading			= (1 << 5),
+		FLAG_Runtime_Loaded				= (1 << 6),
+		FLAG_Runtime_PendingDestroy		= (1 << 7)
 	};
 	uint16_t Flags;
+
+	inline static constexpr uint16_t RUNTIME_FLAGS = FLAG_Runtime_Loading | FLAG_Runtime_Loaded | FLAG_Runtime_PendingDestroy;
 
 
 	// Vertex position data

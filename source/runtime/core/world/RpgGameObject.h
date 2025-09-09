@@ -2,7 +2,7 @@
 
 #include "../RpgMath.h"
 #include "../RpgStream.h"
-#include "../dsa/RpgFreeList.h"
+#include "../RpgFreeList.h"
 
 
 class RpgWorld;
@@ -123,6 +123,15 @@ private:
 
 
 
+enum class RpgTickUpdateOption : uint8_t
+{
+	NO_UPDATE = 0,
+	STARTED_PLAY,
+	ALWAYS
+};
+
+
+
 class RpgGameObjectScript
 {
 	RPG_NOCOPY(RpgGameObjectScript)
@@ -131,6 +140,7 @@ protected:
 	RpgGameObjectScript() noexcept
 	{
 		AttachedScriptIndex = RPG_INDEX_INVALID;
+		TickUpdateOption = RpgTickUpdateOption::STARTED_PLAY;
 		bHasStartedPlay = false;
 	}
 
@@ -147,6 +157,8 @@ public:
 
 protected:
 	RpgGameObject GameObject;
+	RpgTickUpdateOption TickUpdateOption;
+
 
 private:
 	int16_t AttachedScriptIndex;

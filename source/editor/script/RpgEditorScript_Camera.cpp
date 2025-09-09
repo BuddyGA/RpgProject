@@ -1,5 +1,5 @@
 #include "RpgEditorScript_Camera.h"
-#include "core/RpgInputSystem.h"
+#include "core/input/RpgInputSystem.h"
 #include "core/world/RpgWorld.h"
 #include "render/world/RpgRenderComponent.h"
 
@@ -7,6 +7,8 @@
 
 RpgEditorScript_Camera::RpgEditorScript_Camera() noexcept
 {
+	TickUpdateOption = RpgTickUpdateOption::ALWAYS;
+
 	Flashlight = nullptr;
 	PitchValue = 75.0f;
 	YawValue = 45.0f;

@@ -40,6 +40,8 @@ void RpgMaterialResource::UpdateResources(int frameIndex) noexcept
 				continue;
 			}
 
+			RPG_Check(texture->IsAssetLoaded());
+
 			int texIndex = RPG_INDEX_INVALID;
 			if (TextureDescriptors.AddUnique(FTextureDescriptor(texture), &texIndex))
 			{
