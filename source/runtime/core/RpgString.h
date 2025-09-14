@@ -407,10 +407,22 @@ public:
 };
 
 
-inline uint64_t Rpg_GetHash(const RpgString& value) noexcept
+namespace Rpg
 {
-	return RpgPlatformString::CStringHash(*value);
-}
+	template<>
+	struct Type<RpgString>
+	{
+		static constexpr RpgType Value = RpgType("RpgString", sizeof(RpgString), nullptr, nullptr, false, false, true);
+	};
+
+
+	template<>
+	inline uint64_t GetHash<RpgString>(const RpgString& value) noexcept
+	{
+		return RpgPlatformString::CStringHash(*value);
+	}
+
+};
 
 
 
@@ -528,7 +540,19 @@ public:
 };
 
 
-inline uint64_t Rpg_GetHash(const RpgName& value) noexcept
+namespace Rpg
 {
-	return RpgPlatformString::CStringHash(*value);
-}
+	template<>
+	struct Type<RpgName>
+	{
+		static constexpr RpgType Value = RpgType("RpgName", sizeof(RpgName), nullptr, nullptr, false, false, true);
+	};
+
+
+	template<>
+	inline uint64_t GetHash<RpgName>(const RpgName& value) noexcept
+	{
+		return RpgPlatformString::CStringHash(*value);
+	}
+
+};

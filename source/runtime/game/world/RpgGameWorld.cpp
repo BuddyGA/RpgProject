@@ -8,6 +8,18 @@
 
 
 
+void Rpg_RegisterComponents(RpgLevel* level) noexcept
+{
+	level->Component_Register<RpgPhysicsComponent_Filter>();
+	level->Component_Register<RpgPhysicsComponent_Collision>();
+	level->Component_Register<RpgRenderComponent_Mesh>();
+	level->Component_Register<RpgRenderComponent_Light>();
+	level->Component_Register<RpgRenderComponent_Camera>();
+	level->Component_Register<RpgAnimationComponent_AnimSkeletonPose>();
+}
+
+
+
 RpgGameWorld::RpgGameWorld(const RpgName& in_Name) noexcept
 	: RpgWorld(in_Name)
 {
@@ -21,15 +33,4 @@ void RpgGameWorld::Initialize() noexcept
 	Subsystem_Register<RpgPhysicsWorldSubsystem>();
 	Subsystem_Register<RpgAnimationWorldSubsystem>();
 	Subsystem_Register<RpgRenderWorldSubsystem>();
-}
-
-
-void RpgGameWorld::RegisterComponents(RpgLevel* level) noexcept
-{
-	level->Component_Register<RpgPhysicsComponent_Filter>();
-	level->Component_Register<RpgPhysicsComponent_Collision>();
-	level->Component_Register<RpgRenderComponent_Mesh>();
-	level->Component_Register<RpgRenderComponent_Light>();
-	level->Component_Register<RpgRenderComponent_Camera>();
-	level->Component_Register<RpgAnimationComponent_AnimSkeletonPose>();
 }

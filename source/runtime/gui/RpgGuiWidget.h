@@ -73,7 +73,7 @@ public:
 
 	inline void SetVisibility(bool bVisible) noexcept
 	{
-		RpgType::BitSetCondition<uint16_t>(Flags, RpgGui::FLAG_State_Invisible, !bVisible);
+		Rpg::BitSetCondition<uint16_t>(Flags, RpgGui::FLAG_State_Invisible, !bVisible);
 	}
 
 	inline bool IsVisible() const noexcept

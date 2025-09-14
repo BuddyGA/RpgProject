@@ -13,7 +13,10 @@ public:
 	RpgComponentStorageInterface() noexcept = default;
 	virtual ~RpgComponentStorageInterface() noexcept = default;
 
+	virtual bool IsValid(int id) const noexcept = 0;
 	virtual void Clear(bool bFreeMemory = false) noexcept = 0;
+	virtual void Reserve(int capacity) noexcept = 0;
+	virtual int GetCount() const noexcept = 0;
 	virtual int Add(RpgGameObject gameObject, uint32_t flags) noexcept = 0;
 	virtual void* Get(int id, RpgGameObject gameObject) noexcept = 0;
 	virtual void Remove(int id, RpgGameObject gameObject) noexcept = 0;
@@ -21,6 +24,7 @@ public:
 	virtual void StreamWrite(int id, RpgGameObject gameObject, RpgStreamWriter& writer) const noexcept = 0;
 	virtual void StreamRead(int id, RpgGameObject gameObject, RpgStreamReader& reader) noexcept = 0;
 	virtual void GetExternalAssetReferences(int id, RpgAssetReferences& out_AssetRefs) noexcept = 0;
+	virtual bool IsLoaded(int id, RpgGameObject gameObject) noexcept = 0;
 
 };
 
@@ -33,9 +37,24 @@ public:
 	RpgComponentStorage() noexcept = default;
 
 
+	virtual bool IsValid(int id) const noexcept override
+	{
+		return Components.IsValid(id);
+	}
+
 	virtual void Clear(bool bFreeMemory = false) noexcept override
 	{
 		Components.Clear(bFreeMemory);
+	}
+
+	virtual void Reserve(int capacity) noexcept override
+	{
+		Components.Reserve(capacity);
+	}
+
+	virtual int GetCount() const noexcept override
+	{
+		return Components.GetCount();
 	}
 
 	virtual int Add(RpgGameObject gameObject, uint32_t flags) noexcept override
@@ -97,6 +116,14 @@ public:
 		TComponent::GetExternalAssetReferences(data, out_AssetRefs);
 	}
 
+	virtual bool IsLoaded(int id, RpgGameObject gameObject) noexcept override
+	{
+		TComponent& data = Components[id];
+		RPG_Check(data.GameObject == gameObject && data.Index == id);
+		return TComponent::IsLoaded(data);
+	}
+
+
 	inline RpgFreeList<TComponent>& GetComponents() noexcept
 	{
 		return Components;
@@ -126,6 +153,7 @@ public:																																	\
 	static void StreamWrite(RpgStreamWriter& writer, const type& data) noexcept;														\
 	static void StreamRead(RpgStreamReader& reader, type& data) noexcept;																\
 	static void GetExternalAssetReferences(type& data, RpgAssetReferences& out_AssetRefs) noexcept;										\
+	static bool IsLoaded(type& data) noexcept;																							\
 public:																																	\
 inline RpgGameObject GetGameObject() const noexcept																						\
 {																																		\
@@ -155,3 +183,4 @@ private:																																\
 #define RPG_COMPONENT_STATIC_StreamWrite(type)					void type::StreamWrite(RpgStreamWriter& writer, const type& data) noexcept
 #define RPG_COMPONENT_STATIC_StreamRead(type)					void type::StreamRead(RpgStreamReader& reader, type& data) noexcept
 #define RPG_COMPONENT_STATIC_GetExternalAssetReferences(type)	void type::GetExternalAssetReferences(type& data, RpgAssetReferences& out_AssetRefs) noexcept
+#define RPG_COMPONENT_STATIC_IsLoaded(type)						bool type::IsLoaded(type& data) noexcept

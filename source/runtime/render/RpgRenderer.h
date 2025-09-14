@@ -135,14 +135,14 @@ private:
 		ComPtr<ID3D12Fence> Fence;
 		uint64_t FenceValue;
 
-		RpgUniquePtr<RpgMaterialResource> MaterialResource;
-		RpgUniquePtr<RpgMeshResource> MeshResource;
-		RpgUniquePtr<RpgMeshSkinnedResource> MeshSkinnedResource;
+		RpgMaterialResource MaterialResource;
+		RpgMeshResource MeshResource;
+		RpgMeshSkinnedResource MeshSkinnedResource;
 		FWorldContextArray WorldContexts;
 		RpgSharedTexture2D FinalTexture;
 
-		RpgUniquePtr<RpgRenderTask_Copy> TaskCopy;
-		RpgUniquePtr<RpgRenderTask_Compute> TaskCompute;
+		RpgRenderTask_Copy TaskCopy;
+		RpgRenderTask_Compute TaskCompute;
 
 		ComPtr<ID3D12CommandAllocator> SwapChainCmdAlloc;
 		ComPtr<ID3D12GraphicsCommandList> SwapChainCmdList;

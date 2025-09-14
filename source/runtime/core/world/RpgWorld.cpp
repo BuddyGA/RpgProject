@@ -1,9 +1,48 @@
 #include "RpgWorld.h"
+#include "../asset/RpgAssetSystem.h"
 #include "../RpgConsoleSystem.h"
+#include "../RpgThreadPool.h"
 
 
 
 RPG_LOG_DEFINE_CATEGORY(RpgLogWorld, VERBOSITY_DEBUG)
+
+
+
+class RpgWorldTask_LoadLevel : public RpgThreadTask
+{
+public:
+    RpgString AssetPath;
+
+
+public:
+    RpgWorldTask_LoadLevel() noexcept
+    {
+    }
+
+
+    virtual void Reset() noexcept override
+    {
+        RpgThreadTask::Reset();
+
+        AssetPath = RpgString();
+    }
+
+
+    virtual void Execute() noexcept override
+    {
+        RPG_LogDebug(RpgLogWorld, "[ThreadId-%u] Execute task load level (%s)", GetCurrentThreadId(), *AssetPath);
+
+
+    }
+
+
+    virtual const char* GetTaskName() const noexcept override
+    {
+        return "RpgWorldTask_LoadLevel";
+    }
+
+};
 
 
 
@@ -16,28 +55,37 @@ RpgWorld::RpgWorld(const RpgName& in_Name) noexcept
 }
 
 
+RpgWorld::~RpgWorld() noexcept
+{
+    RPG_CONSOLE_Log(RpgLogWorld, "Destroy world (%s)", *Name);
+
+    ClearLevels();
+}
+
+
 void RpgWorld::Initialize() noexcept
 {
     // create level_main
-    LevelLoadeds.AddValue(RpgPointer::MakeUnique<RpgLevel>(RpgName::Format("%s/level_main", *Name)));
-    RegisterComponents(LevelLoadeds[0].Get());
+    Levels.AddValue(RpgPointer::MakeShared<RpgLevel>("level_main"));
+    RegisterComponents(Levels[0].Get());
+    Levels[0]->LoadingStatus.State = RpgLevel::STATE_LOADED;
 }
 
 
 void RpgWorld::BeginFrame(int frameIndex) noexcept
 {
-    for (int i = 0; i < LevelLoadeds.GetCount(); ++i)
+    for (int i = 0; i < Levels.GetCount(); ++i)
     {
-        LevelLoadeds[i]->BeginFrame(frameIndex);
+        Levels[i]->BeginFrame(frameIndex);
     }
 }
 
 
 void RpgWorld::EndFrame(int frameIndex) noexcept
 {
-    for (int i = 0; i < LevelLoadeds.GetCount(); ++i)
+    for (int i = 0; i < Levels.GetCount(); ++i)
     {
-        LevelLoadeds[i]->EndFrame(frameIndex);
+        Levels[i]->EndFrame(frameIndex);
     }
 }
 
@@ -54,9 +102,9 @@ void RpgWorld::DispatchStartPlay() noexcept
         Subsystems[i]->StartPlay();
     }
 
-    for (int i = 0; i < LevelLoadeds.GetCount(); ++i)
+    for (int i = 0; i < Levels.GetCount(); ++i)
     {
-        LevelLoadeds[i]->StartPlay();
+        Levels[i]->StartPlay();
     }
 
     bHasStartedPlay = true;
@@ -75,9 +123,9 @@ void RpgWorld::DispatchStopPlay() noexcept
         Subsystems[i]->StopPlay();
     }
 
-    for (int i = 0; i < LevelLoadeds.GetCount(); ++i)
+    for (int i = 0; i < Levels.GetCount(); ++i)
     {
-        LevelLoadeds[i]->StopPlay();
+        Levels[i]->StopPlay();
     }
 
     bHasStartedPlay = false;
@@ -91,9 +139,9 @@ void RpgWorld::DispatchTickUpdate(float deltaTime) noexcept
         Subsystems[i]->TickUpdate(deltaTime);
     }
 
-    for (int i = 0; i < LevelLoadeds.GetCount(); ++i)
+    for (int i = 0; i < Levels.GetCount(); ++i)
     {
-        LevelLoadeds[i]->TickUpdate(deltaTime);
+        Levels[i]->TickUpdate(deltaTime);
     }
 }
 
@@ -116,141 +164,62 @@ void RpgWorld::DispatchRender(int frameIndex, RpgRenderer* renderer) noexcept
 }
 
 
-void RpgWorld::SaveLevel(const RpgName& name) noexcept
+void RpgWorld::ClearLevels() noexcept
 {
-    /*
-    header
-    {
-        magix,
-        type,
-        version,
-        asset_ref_count,
-        asset_ref_size_bytes,
-        asset_data_size_bytes
-    }
-
-    asset_ref_begin
-    {
-        asset_ref_0,
-        asset_ref_1,
-        ...
-    }
-    asset_ref_end
-
-    level_main_begin
-    {
-        level_object_count,
-        level_objects
-        {
-            object_0
-            {
-                name,
-                transform,
-                component_types,
-                component_datas
-                {
-                    component_type_0,
-                    component_type_1,
-                    ...
-                }
-            },
-            object_1
-            {
-                name,
-                transform,
-                component_types,
-                component_datas
-                {
-                    component_type_0,
-                    null,
-                    component_type_2,
-                    ...
-                }
-            },
-            ...
-        }
-    }
-    level_main_end
-
-    level_streaming_ref_count,
-    level_streaming_ref_begin
-    {
-        level_asset_ref_0,
-        level_asset_ref_1,
-        ...
-    }
-    level_streaming_ref_end
-
-    eof
-    */
-
-    RpgLevel* levelMain = LevelLoadeds[0].Get();
-
-
-    // asset references
-    RpgAssetReferences assetReferences;
-    RpgBinaryStreamWriter assetRefWriter;
-    {
-        levelMain->GetExternalAssetReferences(assetReferences);
-
-        assetRefWriter.Write(RPG_ASSET_FILE_ASSET_EXT);
-        assetRefWriter.Write(assetReferences);
-        assetRefWriter.Write(RPG_ASSET_FILE_ASSET_EXT);
-    }
-    RPG_Check(assetReferences.GetCount() < UINT16_MAX);
-
-
-    // level main data
-    RpgBinaryStreamWriter levelWriter;
-    {
-        levelWriter.Write(RPG_ASSET_FILE_ASSET_DATA);
-        levelMain->AssetStreamWrite(levelWriter);
-        levelWriter.Write(RPG_ASSET_FILE_ASSET_DATA);
-    }
-
-
-    const RpgFilePath filePath = RpgString::Format("%sgame/%s.rpgm", *RpgFileSystem::GetAssetDirPath(), *name);
-    HANDLE fileHandle = RpgPlatformFile::FileOpen(*filePath, RpgPlatformFile::OPEN_MODE_WRITE_OVERWRITE);
-    {
-        RPG_ValidateV(fileHandle && fileHandle != INVALID_HANDLE_VALUE, "Open file failed! (FilePath: %s)", *filePath);
-
-        // header
-        RpgAssetFileHeader fileHeader{};
-        fileHeader.Magix = RPG_ASSET_FILE_HEADER;
-        fileHeader.Type = static_cast<uint16_t>(RpgAssetFileType::LEVEL);
-        fileHeader.Version = 1;
-        fileHeader.AssetReferenceCount = static_cast<uint16_t>(assetReferences.GetCount());
-        fileHeader.AssetReferenceSizeBytes = static_cast<uint32_t>(assetRefWriter.GetByteArraySize());
-        fileHeader.AssetDataSizeBytes = static_cast<uint32_t>(levelWriter.GetByteArraySize());
-        fileHeader.AssetClassName = levelMain->GetAssetClassName();
-        RpgPlatformFile::FileWrite(fileHandle, &fileHeader, sizeof(RpgAssetFileHeader));
-
-        // asset references
-        RpgPlatformFile::FileWrite(fileHandle, assetRefWriter.GetByteArrayData(), assetRefWriter.GetByteArraySize());
-
-        // level main data
-        RpgPlatformFile::FileWrite(fileHandle, levelWriter.GetByteArrayData(), levelWriter.GetByteArraySize());
-
-        // TODO: Level streaming refs
-
-        // end-of-file
-        const uint32_t eof = RPG_ASSET_FILE_EOF;
-        RpgPlatformFile::FileWrite(fileHandle, &eof, sizeof(uint32_t));
-    }
-    RpgPlatformFile::FileClose(fileHandle);
-
-    RPG_CONSOLE_Log(RpgLogWorld, "Saved level (File: %s)", *filePath);
+    Levels.Clear();
 }
 
 
-void RpgWorld::LoadLevelAsync(const RpgString& path) noexcept
+void RpgWorld::SaveLevel(const RpgName& name) noexcept
 {
+    RPG_IsMainThread();
 
+    RPG_CONSOLE_Log(RpgLogWorld, "Save level (%s)", *name);
+
+    g_AssetSystem->SaveAsset(Levels[0], "game");
+}
+
+
+RpgLevel* RpgWorld::LoadLevelAsync(const RpgString& levelAssetPath) noexcept
+{
+    RPG_IsMainThread();
+
+    RPG_CONSOLE_Log(RpgLogWorld, "Loading level (%s)", *levelAssetPath);
+
+    RpgSharedLevel level = g_AssetSystem->LoadAssetAsync<RpgLevel>(levelAssetPath);
+    if (!level)
+    {
+        RPG_CONSOLE_Error(RpgLogWorld, "Fail to load level (%s)!", *levelAssetPath);
+        return nullptr;
+    }
+
+    const int index = Levels.FindIndexByValue(level);
+    if (index == RPG_INDEX_INVALID)
+    {
+        Levels.AddValue(level);
+    }
+
+    return level.Get();
 }
 
 
 RpgGameObject RpgWorld::CreateGameObject(const RpgName& name, RpgLevel* opt_Level, bool opt_bIsTransient) noexcept
 {
-    RpgLevel* level = opt_Level ? opt_Level : LevelLoadeds[0].Get();
+    RpgLevel* level = opt_Level ? opt_Level : Levels[0].Get();
+    RPG_Check(level->IsAssetLoaded());
+
     return level->GameObject_Create(name, opt_bIsTransient);
+}
+
+
+int RpgWorld::GetGameObjectCount() const noexcept
+{
+    int count = 0;
+
+    for (const RpgSharedLevel& level : Levels)
+    {
+        count += level->GameObject_GetCount();
+    }
+
+    return count;
 }

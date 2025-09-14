@@ -319,7 +319,7 @@ bool RpgTest::Game::Create(RpgWorld* world) noexcept
 
 	//TestLevel_Animations(world);
 
-	return TestLevel_PrimitiveShapes(world);
+	//return TestLevel_PrimitiveShapes(world);
 
 	//TestLevel_Import(world, RpgFileSystem::GetAssetRawDirPath() + "default_cube.fbx", 1.0f);
 

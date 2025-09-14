@@ -19,13 +19,13 @@ RPG_COMPONENT_STATIC_StreamRead(RpgRenderComponent_Mesh)
 	reader.Read(tempAssetPath);
 	if (!tempAssetPath.IsEmpty())
 	{
-		data.Mesh = g_AssetSystem->LoadAsset<RpgMesh>(tempAssetPath);
+		data.Mesh = g_AssetSystem->LoadAssetAsync<RpgMesh>(tempAssetPath);
 	}
 
 	reader.Read(tempAssetPath);
 	if (!tempAssetPath.IsEmpty())
 	{
-		data.Material = g_AssetSystem->LoadAsset<RpgMaterial>(tempAssetPath);
+		data.Material = g_AssetSystem->LoadAssetAsync<RpgMaterial>(tempAssetPath);
 	}
 
 	reader.Read(data.bIsVisible);
@@ -46,6 +46,22 @@ RPG_COMPONENT_STATIC_GetExternalAssetReferences(RpgRenderComponent_Mesh)
 		data.Material->GetExternalAssetReferences(out_AssetRefs);
 		out_AssetRefs.Add(data.Material->GetAssetPath());
 	}
+}
+
+
+RPG_COMPONENT_STATIC_IsLoaded(RpgRenderComponent_Mesh)
+{
+	if (!data.Mesh)
+	{
+		return false;
+	}
+
+	if (!data.Material)
+	{
+		return false;
+	}
+
+	return data.Mesh->IsAssetLoaded() && data.Material->IsAssetLoaded();
 }
 
 
@@ -83,6 +99,12 @@ RPG_COMPONENT_STATIC_GetExternalAssetReferences(RpgRenderComponent_Light)
 }
 
 
+RPG_COMPONENT_STATIC_IsLoaded(RpgRenderComponent_Light)
+{
+	// no external asset references
+	return true;
+}
+
 
 
 RPG_COMPONENT_STATIC_StreamWrite(RpgRenderComponent_Camera)
@@ -112,4 +134,11 @@ RPG_COMPONENT_STATIC_StreamRead(RpgRenderComponent_Camera)
 RPG_COMPONENT_STATIC_GetExternalAssetReferences(RpgRenderComponent_Camera)
 {
 	// no external asset references
+}
+
+
+RPG_COMPONENT_STATIC_IsLoaded(RpgRenderComponent_Camera)
+{
+	// no external asset references
+	return true;
 }

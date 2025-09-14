@@ -10,7 +10,4 @@ public:
 	RpgGameWorld(const RpgName& in_Name) noexcept;
 	virtual void Initialize() noexcept override;
 
-protected:
-	virtual void RegisterComponents(RpgLevel* level) noexcept override;
-
 };

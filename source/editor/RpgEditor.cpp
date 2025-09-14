@@ -129,11 +129,14 @@ void RpgEditor::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_F8)
 		{
-			SaveLevel("lvl_test");
+			RPG_Check(MainWorld);
+			MainWorld->SaveLevel("level_main");
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_F9)
 		{
-			g_GameApp->OpenLevel(RpgString("game/lvl_test"));
+			CameraObject.DetachScript(&CameraScript);
+			CameraObject = RpgGameObject();
+			g_GameApp->OpenLevel(RpgString("game/level_main"));
 		}
 		else if (e.Button == RpgInputKey::KEYBOARD_F10)
 		{
@@ -179,35 +182,25 @@ void RpgEditor::Render2d(RpgRenderer2D& r2d) noexcept
 		"Gamma: %.2f\n"
 		"VSync: %d\n"
 		"\n"
-		//"GameObject: %i\n"
+		"GameObject: %i\n"
 		, windowDimension.X, windowDimension.Y
 		, cameraTransform.Position.X, cameraTransform.Position.Y, cameraTransform.Position.Z
 		, cameraPitch, cameraYaw
 		, cameraComp ? cameraComp->bFrustumCulling : false
 		, mainRenderer->Gamma
 		, mainRenderer->GetVsync()
-		//, MainWorld->GameObject_GetCount()
+		, MainWorld->GetGameObjectCount()
 	);
 
 	r2d.AddText(*debugInfoText, debugInfoText.GetLength(), RpgPointFloat(8.0f, 8.0f), RpgColor(255, 255, 255));
 }
 
 
-void RpgEditor::SaveLevel(const RpgName& name) noexcept
-{
-	RPG_IsMainThread();
-	RPG_Check(MainWorld);
-
-	RPG_CONSOLE_Log(RpgLogEditor, "Save level (%s)", *name);
-	MainWorld->SaveLevel(name);
-}
-
-
 void RpgEditor::LevelLoaded(RpgWorld* world) noexcept
 {
 	MainWorld = world;
-	CameraObject = MainWorld->CreateGameObject("editor_camera", nullptr, true);
 
+	CameraObject = MainWorld->CreateGameObject("editor_camera", nullptr, true);
 	CameraObject.AddComponent<RpgRenderComponent_Camera>();
 	CameraObject.SpawnAtTransform(RpgTransform());
 	CameraObject.AttachScript(&CameraScript);

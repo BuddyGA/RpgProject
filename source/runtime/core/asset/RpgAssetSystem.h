@@ -12,6 +12,7 @@ class RpgAssetSystem
 
 public:
 	RpgAssetSystem() noexcept;
+	~RpgAssetSystem() noexcept;
 
 
 	// Register asset type into registry
@@ -55,9 +56,10 @@ public:
 
 
 	// Load asset
-	// @param path - Asset path relative to asset directory
+	// @param assetPath - Asset path relative to asset directory
 	// @return SharedPtr to asset
 	RpgSharedAsset LoadAsset(const RpgString& assetPath) noexcept;
+
 
 	// Load asset
 	// @param path - Asset path relative to asset directory
@@ -81,13 +83,13 @@ public:
 
 	// Load asset asynchronously. 
 	// The return value is empty/unloaded, call IsAssetLoaded() to check if asset has fully loaded before using it
-	// @param path - Asset path relative to asset directory
-	// @return Empty (unloaded) SharedPtr to asset
+	// @param assetPath - Asset path relative to asset directory
+	// @param out_Asset - Asset object result
 	RpgSharedAsset LoadAssetAsync(const RpgString& assetPath) noexcept;
 
 	// Load asset asynchronously. 
 	// The return value is empty/unloaded, call IsAssetLoaded() to check if asset has fully loaded before using it
-	// @param path - Asset path relative to asset directory
+	// @param assetPath - Asset path relative to asset directory
 	// @return Empty (unloaded) SharedPtr to asset
 	template<typename TAsset>
 	inline RpgSharedPtr<TAsset> LoadAssetAsync(const RpgString& assetPath)
@@ -95,6 +97,7 @@ public:
 		static_assert(std::is_base_of<RpgAssetObject, TAsset>::value, "RpgAssetSystem::LoadAssetAsync type of <TAsset> must be derived from type <RpgAssetObject>!");
 
 		RpgSharedAsset asset = LoadAssetAsync(assetPath);
+		RPG_Check(asset);
 		if (asset)
 		{
 			RPG_Check(asset->GetAssetPath().Equals(assetPath, true));
@@ -134,14 +137,12 @@ public:
 	// @return TRUE if asset loaded, FALSE otherwise
 	inline bool IsAssetLoaded(const RpgString& assetPath) const noexcept
 	{
+		RPG_PLATFORM_ScopedLock(LoadedMutex);
 		return LoadedAssetTable.Exists(assetPath);
 	}
 
 
 private:
-	RpgSharedAsset FindLoadedAsset(const RpgString& assetPath) const noexcept;
-	void AddLoadingAsset(const RpgSharedAsset& asset) noexcept;
-
 	// Try register file as asset file
 	// @param filePath - Absolute path to an asset file
 	// @param optOut_Hash - (optional) Asset hash
@@ -162,6 +163,42 @@ private:
 	}
 
 
+	inline RpgSharedAsset FindLoadedAsset(const RpgString& assetPath) const noexcept
+	{
+		if (assetPath.IsEmpty())
+		{
+			return RpgSharedAsset();
+		}
+
+		RpgSharedAsset asset;
+
+		RPG_PLATFORM_ScopedLock(LoadedMutex);
+
+		int index = RPG_INDEX_INVALID;
+		if (LoadedAssetTable.Exists(assetPath, &index))
+		{
+			asset = LoadedAssetTable.GetValueByIndex(index);
+			RPG_Check(asset->GetAssetPath().Equals(assetPath, true));
+		}
+
+		return asset;
+	}
+
+
+	inline void AddLoadedAsset(const RpgString& assetPath, const RpgSharedAsset& asset) noexcept
+	{
+		RPG_PLATFORM_ScopedLock(LoadedMutex);
+		LoadedAssetTable.AddValue(assetPath, asset);
+	}
+
+
+	inline void RemoveLoadedAsset(int index) noexcept
+	{
+		RPG_PLATFORM_ScopedLock(LoadedMutex);
+		LoadedAssetTable.RemoveAt(index);
+	}
+
+
 private:
 	// Asset registry
 	struct FRegistry
@@ -177,8 +214,11 @@ private:
 
 	// Loading assets
 	RpgMap<RpgString, RpgSharedAsset, 8> LoadingAssetTable;
+	RpgArray<RpgAssetTask_Loader*> LoadingAssetTasks;
+	mutable RpgPlatformMutex LoadingMutex;
 
 	// Loaded assets
 	RpgMap<RpgString, RpgSharedAsset, 8> LoadedAssetTable;
+	mutable RpgPlatformMutex LoadedMutex;
 
 };

@@ -74,7 +74,7 @@ void RpgGameObject::SetLocalTransform(const RpgTransform& transform) noexcept
 }
 
 
-RpgTransform RpgGameObject::GetLocalTransform() const noexcept
+const RpgTransform& RpgGameObject::GetLocalTransform() const noexcept
 {
 	RPG_Check(!IsNull());
 	return Level->GameObject_GetLocalTransform(*this);
@@ -88,14 +88,14 @@ void RpgGameObject::SetWorldTransform(const RpgTransform& transform) noexcept
 }
 
 
-RpgTransform RpgGameObject::GetWorldTransform() const noexcept
+const RpgTransform& RpgGameObject::GetWorldTransform() const noexcept
 {
 	RPG_Check(!IsNull());
 	return Level->GameObject_GetWorldTransform(*this);
 }
 
 
-const RpgMatrixTransform& RpgGameObject::GetWorldTransformMatrix() const noexcept
+RpgMatrixTransform RpgGameObject::GetWorldTransformMatrix() const noexcept
 {
 	RPG_Check(!IsNull());
 	return Level->GameObject_GetWorldTransformMatrix(*this);

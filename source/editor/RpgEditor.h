@@ -23,7 +23,6 @@ public:
 	void TickUpdate(float deltaTime) noexcept;
 	void Render2d(RpgRenderer2D& r2d) noexcept;
 
-	void SaveLevel(const RpgName& name) noexcept;
 	void LevelLoaded(RpgWorld* world) noexcept;
 
 	void ImportTexture(RpgSharedTexture2D& out_Texture, const RpgEditorImportSetting_Texture& setting) noexcept;

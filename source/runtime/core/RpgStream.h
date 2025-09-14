@@ -144,11 +144,11 @@ public:
 
 
 	template<typename T, int N>
-	inline void Read(RpgStreamReader& reader, RpgSet<T, N>& dataSet) noexcept
+	inline void Read(RpgSet<T, N>& dataSet) noexcept
 	{
 		// count
 		int count = 0;
-		reader.Read(count);
+		Read(count);
 
 		if (count > 0)
 		{

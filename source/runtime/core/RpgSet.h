@@ -40,6 +40,15 @@ public:
 
 
 public:
+	inline bool Exists(const T& value) const noexcept
+	{
+		const uint64_t hash = Rpg::GetHash<T>(value);
+		RPG_Assert(hash > 0);
+
+		return Hashes.FindIndexByValue(hash) != RPG_INDEX_INVALID;
+	}
+
+
 	inline void Reserve(int in_Capacity) noexcept
 	{
 		Hashes.Reserve(in_Capacity);
@@ -49,23 +58,27 @@ public:
 
 	inline bool Add(const T& in_Value) noexcept
 	{
-		const uint64_t hash = Rpg_GetHash(in_Value);
+		const uint64_t hash = Rpg::GetHash<T>(in_Value);
+		RPG_Assert(hash > 0);
 
 		const int index = Hashes.FindIndexByValue(hash);
-		if (index != RPG_INDEX_INVALID)
+		bool bAdded = false;
+
+		if (index == RPG_INDEX_INVALID)
 		{
-			return false;
+			Hashes.AddValue(hash);
+			Values.AddValue(in_Value);
+			bAdded = true;
+		}
+		else
+		{
+		#ifndef RPG_BUILD_SHIPPING
+			const int checkCollisionIndex = Values.FindIndexByValue(in_Value);
+			RPG_CheckV(checkCollisionIndex != RPG_INDEX_INVALID, "RpgSet collision!");
+		#endif // !RPG_BUILD_SHIPPING
 		}
 
-	#ifndef RPG_BUILD_SHIPPING
-		const int checkCollisionIndex = Values.FindIndexByValue(in_Value);
-		RPG_CheckV(checkCollisionIndex != RPG_INDEX_INVALID, "RpgSet collision!");
-	#endif // !RPG_BUILD_SHIPPING
-
-		Hashes.AddValue(hash);
-		Values.AddValue(in_Value);
-
-		return true;
+		return bAdded;
 	}
 
 
@@ -100,6 +113,12 @@ public:
 	inline int GetCount() const noexcept
 	{
 		return Hashes.GetCount();
+	}
+
+
+	inline bool IsEmpty() const noexcept
+	{
+		return Hashes.GetCount() == 0;
 	}
 
 

@@ -9,6 +9,7 @@ RPG_LOG_DECLARE_CATEGORY_EXTERN(RpgLogWorld)
 
 class RpgWorld;
 class RpgWorldSubsystem;
+class RpgWorldTask_LoadLevel;
 class RpgRenderer;
 
 
@@ -65,6 +66,8 @@ class RpgWorld
 
 public:
 	RpgWorld(const RpgName& in_Name) noexcept;
+	virtual ~RpgWorld() noexcept;
+
 	virtual void Initialize() noexcept;
 
 	void BeginFrame(int frameIndex) noexcept;
@@ -145,8 +148,9 @@ private:
 // 	Level interface
 // --------------------------------------------------------------------------------------------------------------------------------------------- //
 public:
+	void ClearLevels() noexcept;
 	void SaveLevel(const RpgName& name) noexcept;
-	void LoadLevelAsync(const RpgString& path) noexcept;
+	RpgLevel* LoadLevelAsync(const RpgString& levelAssetPath) noexcept;
 	
 
 	// Create gameobject. This is only allocate the gameobject in memory, to actually spawn it call RpgGameObject::SpawnAtTransform after finished (e.g. add component/script/attach to parent)
@@ -156,15 +160,15 @@ public:
 	// @return Gameobject handle
 	[[nodiscard]] RpgGameObject CreateGameObject(const RpgName& name, RpgLevel* opt_Level = nullptr, bool opt_bIsTransient = false) noexcept;
 
+	int GetGameObjectCount() const noexcept;
+
 
 protected:
 	virtual void RegisterComponents(RpgLevel* level) noexcept {}
 
 
 private:
-	RpgArray<uint64_t> LevelStreamingHashes;
-	RpgArray<RpgString> LevelStreamingPaths;
-	RpgArray<RpgUniquePtr<RpgLevel>> LevelLoadeds;
+	RpgArray<RpgSharedLevel> Levels;
 
 
 private:
@@ -343,11 +347,14 @@ public:
 	inline FComponentIterator<TComponent> ComponentIterator() noexcept
 	{
 		RpgArray<typename RpgFreeList<TComponent>::Iterator> levelCompIterators;
-		levelCompIterators.Reserve(LevelLoadeds.GetCount());
+		levelCompIterators.Reserve(Levels.GetCount());
 
-		for (int i = 0; i < LevelLoadeds.GetCount(); ++i)
+		for (int i = 0; i < Levels.GetCount(); ++i)
 		{
-			levelCompIterators.AddValue(LevelLoadeds[i]->Component_Iterator<TComponent>());
+			if (Levels[i]->IsLoaded())
+			{
+				levelCompIterators.AddValue(Levels[i]->Component_Iterator<TComponent>());
+			}
 		}
 
 		return FComponentIterator<TComponent>(levelCompIterators);
@@ -358,11 +365,14 @@ public:
 	inline FComponentConstIterator<TComponent> ComponentConstIterator() const noexcept
 	{
 		RpgArray<typename RpgFreeList<TComponent>::ConstIterator> levelCompIterators;
-		levelCompIterators.Reserve(LevelLoadeds.GetCount());
+		levelCompIterators.Reserve(Levels.GetCount());
 
-		for (int i = 0; i < LevelLoadeds.GetCount(); ++i)
+		for (int i = 0; i < Levels.GetCount(); ++i)
 		{
-			levelCompIterators.AddValue(LevelLoadeds[i]->Component_ConstIterator<TComponent>());
+			if (Levels[i]->IsLoaded())
+			{
+				levelCompIterators.AddValue(Levels[i]->Component_ConstIterator<TComponent>());
+			}
 		}
 
 		return FComponentConstIterator<TComponent>(levelCompIterators);

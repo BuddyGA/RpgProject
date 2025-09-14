@@ -46,7 +46,122 @@ public:												\
 
 
 
-namespace RpgType
+class RpgType
+{
+public:
+	constexpr RpgType(const char* in_Name, uint32_t in_SizeBytes, const RpgType* in_ArrayType, const RpgType* in_PointerType, bool in_bIsIntegral, bool in_bIsFloat, bool in_bIsString) noexcept
+		: Name(in_Name)
+		, SizeBytes(in_SizeBytes)
+		, ArrayType(in_ArrayType)
+		, PointerType(in_PointerType)
+		, bIsIntegral(in_bIsIntegral)
+		, bIsFloat(in_bIsFloat)
+		, bIsString(in_bIsString)
+	{
+	}
+
+
+	constexpr RpgType(const char* in_Name, uint32_t in_SizeBytes) noexcept
+		: Name(in_Name)
+		, SizeBytes(in_SizeBytes)
+		, ArrayType(nullptr)
+		, PointerType(nullptr)
+		, bIsIntegral(false)
+		, bIsFloat(false)
+		, bIsString(false)
+	{
+	}
+
+
+public:
+	constexpr inline bool operator==(const RpgType& rhs) const noexcept
+	{
+		return Name == rhs.Name && SizeBytes == rhs.SizeBytes && ArrayType == rhs.ArrayType && PointerType == rhs.PointerType &&
+			bIsIntegral == rhs.bIsIntegral && bIsFloat == rhs.bIsFloat && bIsString == rhs.bIsString;
+	}
+
+
+	constexpr inline bool operator!=(const RpgType& rhs) const noexcept
+	{
+		return !(*this == rhs);
+	}
+
+
+public:
+	constexpr inline const char* GetName() const noexcept
+	{
+		return Name;
+	}
+
+
+	constexpr inline uint32_t GetSizeBytes() const noexcept
+	{
+		return SizeBytes;
+	}
+
+
+	constexpr inline const RpgType* GetArrayType() const noexcept
+	{
+		return ArrayType;
+	}
+
+
+	constexpr inline const RpgType* GetPointerType() const noexcept
+	{
+		return PointerType;
+	}
+
+
+	constexpr inline bool IsIntegral() const noexcept
+	{
+		return bIsIntegral;
+	}
+
+
+	constexpr inline bool IsFloat() const noexcept
+	{
+		return bIsFloat;
+	}
+
+
+	constexpr inline bool IsString() const noexcept
+	{
+		return bIsString;
+	}
+
+
+	constexpr inline bool IsArray() const noexcept
+	{
+		return ArrayType != nullptr;
+	}
+
+
+	constexpr inline bool IsPointer() const noexcept
+	{
+		return PointerType != nullptr;
+	}
+
+
+	constexpr inline bool IsNumeric() const noexcept
+	{
+		return bIsIntegral || bIsFloat;
+	}
+
+
+private:
+	const char* Name;
+	uint32_t SizeBytes;
+	const RpgType* ArrayType;
+	const RpgType* PointerType;
+	bool bIsIntegral;
+	bool bIsFloat;
+	bool bIsString;
+
+};
+
+
+
+namespace RpgTypeTraits
 {
 	template<typename T> struct IsIntegral { static constexpr bool Value = false; };
 	template<> struct IsIntegral<int8_t> { static constexpr bool Value = true; };
@@ -71,33 +186,16 @@ namespace RpgType
 		static constexpr bool Value = IsIntegral<T>::Value || IsFloat<T>::Value;
 	};
 
-
-	template<typename T>
-	constexpr inline void BitSetCondition(T& out_Flags, T bitFlags, bool bCondition) noexcept
-	{
-		static_assert(IsIntegral<T>::Value, "RpgType::BitSetCondition type of <T> must be integral type!");
-		out_Flags = (static_cast<T>(out_Flags) & ~static_cast<T>(bitFlags)) | (-static_cast<T>(bCondition) & static_cast<T>(bitFlags));
-	}
+}; // RpgTypeTraits
 
 
-	constexpr inline uint32_t Align(uint32_t offset, uint32_t alignment) noexcept
-	{
-		return (offset + (alignment - 1) & ~(alignment - 1));
-	}
-
-	constexpr inline int Align(int offset, int alignment) noexcept
-	{
-		return (offset + (alignment - 1) & ~(alignment - 1));
-	}
-
-};
 
 
 
 template<typename T>
 class RpgPoint
 {
-	static_assert(RpgType::IsArithmetic<T>::Value, "RpgPoint type of <T> must be arithmetic type!");
+	static_assert(RpgTypeTraits::IsArithmetic<T>::Value, "RpgPoint type of <T> must be arithmetic type!");
 
 public:
 	T X;
@@ -123,7 +221,7 @@ public:
 	template<typename U>
 	explicit RpgPoint(const RpgPoint<U>& other) noexcept
 	{
-		static_assert(RpgType::IsArithmetic<T>::Value, "RpgPoint type of <U> must be arithmetic type!");
+		static_assert(RpgTypeTraits::IsArithmetic<T>::Value, "RpgPoint type of <U> must be arithmetic type!");
 
 		X = static_cast<T>(other.X);
 		Y = static_cast<T>(other.Y);
@@ -200,7 +298,7 @@ typedef RpgPoint<float> RpgPointFloat;
 template<typename T>
 class RpgRect
 {
-	static_assert(RpgType::IsArithmetic<T>::Value, "RpgRect type of <T> must be arithmetic type!");
+	static_assert(RpgTypeTraits::IsArithmetic<T>::Value, "RpgRect type of <T> must be arithmetic type!");
 
 public:
 	T Left;
@@ -229,7 +327,7 @@ public:
 	template<typename U>
 	explicit RpgRect(const RpgRect<U>& other) noexcept
 	{
-		static_assert(RpgType::IsArithmetic<T>::Value, "RpgRect type of <U> must be arithmetic type!");
+		static_assert(RpgTypeTraits::IsArithmetic<T>::Value, "RpgRect type of <U> must be arithmetic type!");
 
 		Left = static_cast<T>(other.Left);
 		Top = static_cast<T>(other.Top);
@@ -500,6 +598,137 @@ public:
 	}
 
 };
+
+
+
+namespace Rpg
+{
+	template<typename T>
+	inline uint64_t GetHash(const T& value) noexcept
+	{
+		return 0;
+	}
+
+
+	template<typename T>
+	constexpr inline void BitSetCondition(T& out_Flags, T bitFlags, bool bCondition) noexcept
+	{
+		static_assert(RpgTypeTraits::IsIntegral<T>::Value, "Rpg::BitSetCondition type of <T> must be integral type!");
+		out_Flags = (static_cast<T>(out_Flags) & ~static_cast<T>(bitFlags)) | (-static_cast<T>(bCondition) & static_cast<T>(bitFlags));
+	}
+
+
+	template<typename T>
+	constexpr inline bool IsPowerOfTwo(T value) noexcept
+	{
+		static_assert(RpgTypeTraits::IsIntegral<T>::Value, "RpgAlgorithm IsPowerOfTwo type of <T> must be integral type!");
+
+		return (value > 0) && !(value & (value - 1));
+	}
+
+
+	constexpr inline uint32_t Align(uint32_t offset, uint32_t alignment) noexcept
+	{
+		return (offset + (alignment - 1) & ~(alignment - 1));
+	}
+
+	constexpr inline int Align(int offset, int alignment) noexcept
+	{
+		return (offset + (alignment - 1) & ~(alignment - 1));
+	}
+
+
+	template<typename T>
+	struct Type
+	{
+		static constexpr RpgType Value = RpgType("void", 0);
+	};
+
+	template<typename T>
+	struct Type<T*>
+	{
+		static constexpr RpgType Value = RpgType("pointer", sizeof(T*), nullptr, &Type<T>::Value, false, false, false);
+	};
+
+	template<>
+	struct Type<bool>
+	{
+		static constexpr RpgType Value = RpgType("bool", sizeof(bool));
+	};
+
+	template<>
+	struct Type<float>
+	{
+		static constexpr RpgType Value = RpgType("float", sizeof(float), nullptr, nullptr, false, true, false);
+	};
+
+	template<>
+	struct Type<double>
+	{
+		static constexpr RpgType Value = RpgType("double", sizeof(double), nullptr, nullptr, false, true, false);
+	};
+
+	template<>
+	struct Type<int8_t>
+	{
+		static constexpr RpgType Value = RpgType("int8_t", sizeof(int8_t), nullptr, nullptr, true, false, false);
+	};
+
+	template<>
+	struct Type<int16_t>
+	{
+		static constexpr RpgType Value = RpgType("int16_t", sizeof(int16_t), nullptr, nullptr, true, false, false);
+	};
+
+	template<>
+	struct Type<int32_t>
+	{
+		static constexpr RpgType Value = RpgType("int32_t", sizeof(int32_t), nullptr, nullptr, true, false, false);
+	};
+
+	template<>
+	struct Type<int64_t>
+	{
+		static constexpr RpgType Value = RpgType("int64_t", sizeof(int64_t), nullptr, nullptr, true, false, false);
+	};
+
+	template<>
+	struct Type<uint8_t>
+	{
+		static constexpr RpgType Value = RpgType("uint8_t", sizeof(uint8_t), nullptr, nullptr, true, false, false);
+	};
+
+	template<>
+	struct Type<uint16_t>
+	{
+		static constexpr RpgType Value = RpgType("uint16_t", sizeof(uint16_t), nullptr, nullptr, true, false, false);
+	};
+
+	template<>
+	struct Type<uint32_t>
+	{
+		static constexpr RpgType Value = RpgType("uint32_t", sizeof(uint32_t), nullptr, nullptr, true, false, false);
+	};
+
+	template<>
+	struct Type<uint64_t>
+	{
+		static constexpr RpgType Value = RpgType("uint64_t", sizeof(uint64_t), nullptr, nullptr, true, false, false);
+	};
+
+	template<>
+	struct Type<RpgColor>
+	{
+		static constexpr RpgType Value = RpgType("RpgColor", sizeof(RpgColor));
+	};
+
+	template<>
+	struct Type<RpgColorLinear>
+	{
+		static constexpr RpgType Value = RpgType("RpgColorLinear", sizeof(RpgColorLinear));
+	};
+
+}; // Rpg
 
 
 

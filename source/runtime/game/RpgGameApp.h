@@ -37,7 +37,7 @@ public:
 	void FrameTick(uint64_t frameCounter, float deltaTime) noexcept;
 	void RequestExit(bool bAskConfirmation) noexcept;
 
-	void OpenLevel(const RpgString& path) noexcept;
+	void OpenLevel(const RpgString& levelAssetPath) noexcept;
 	void SetMainCamera(RpgGameObject cameraObject) noexcept;
 
 
@@ -141,6 +141,8 @@ private:
 
 	// Main camera object
 	RpgGameObject MainCameraObject;
+
+	RpgLevel* LoadingLevel;
 
 
 public:

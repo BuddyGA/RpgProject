@@ -2,8 +2,14 @@
 
 #include "RpgComponent.h"
 #include "../asset/RpgAssetTypes.h"
+#include "../RpgPointer.h"
 
 
+extern void Rpg_RegisterComponents(RpgLevel* level) noexcept;
+
+
+
+typedef RpgSharedPtr<RpgLevel> RpgSharedLevel;
 
 class RpgLevel : public RpgAssetObject
 {
@@ -32,11 +38,22 @@ public:
 	void StartPlay() noexcept;
 	void StopPlay() noexcept;
 	void TickUpdate(float deltaTime) noexcept;
+	float GetLoadingProgress() const noexcept;
 
 
 	inline const RpgBoundingAABB& GetBound() const noexcept
 	{
 		return Bound;
+	}
+
+	inline bool IsLoading() const noexcept
+	{
+		return LoadingStatus.State == STATE_LOADING;
+	}
+
+	inline bool IsLoaded() const noexcept
+	{
+		return LoadingStatus.State == STATE_LOADED;
 	}
 
 
@@ -59,7 +76,15 @@ private:
 		STATE_LOADING,
 		STATE_LOADED
 	};
-	EState State;
+
+
+	struct FLoadingStatus
+	{
+		int TotalGameObjectCount{ 0 };
+		int LoadedGameObjectCount{ 0 };
+		uint8_t State = STATE_NONE;
+	};
+	FLoadingStatus LoadingStatus;
 
 
 	bool bHasStartedPlay;
@@ -146,21 +171,25 @@ public:
 		GameObject_UpdateTransform(gameObject);
 
 		FGameObjectTransform& transform = GameObjectTransforms[gameObject.Index];
-		transform.LocalTransformMatrix = localTransform.ToMatrixTransform();
+		//transform.LocalTransformMatrix = localTransform.ToMatrixTransform();
+		transform.LocalTransform = localTransform;
 		transform.Dirty = DIRTY_WORLD;
 	}
 
 
-	inline RpgTransform GameObject_GetLocalTransform(RpgGameObject gameObject) noexcept
+	inline const RpgTransform& GameObject_GetLocalTransform(RpgGameObject gameObject) noexcept
 	{
 		RPG_Check(GameObject_IsValid(gameObject));
 
 		GameObject_UpdateTransform(gameObject);
 		
+		/*
 		RpgTransform transform;
 		GameObjectTransforms[gameObject.Index].LocalTransformMatrix.Decompose(transform.Position, transform.Rotation, transform.Scale);
 
 		return transform;
+		*/
+		return GameObjectTransforms[gameObject.Index].LocalTransform;
 	}
 
 
@@ -171,31 +200,33 @@ public:
 		GameObject_UpdateTransform(gameObject);
 
 		FGameObjectTransform& transform = GameObjectTransforms[gameObject.Index];
-		transform.WorldTransformMatrix = worldTransform.ToMatrixTransform();
-		transform.InverseWorldTransformMatrix = transform.WorldTransformMatrix.GetInverse();
+		//transform.WorldTransformMatrix = worldTransform.ToMatrixTransform();
+		//transform.InverseWorldTransformMatrix = transform.WorldTransformMatrix.GetInverse();
+		transform.WorldTransform = worldTransform;
 		transform.Dirty = DIRTY_LOCAL;
 	}
 
 
-	inline RpgTransform GameObject_GetWorldTransform(RpgGameObject gameObject) noexcept
+	inline const RpgTransform& GameObject_GetWorldTransform(RpgGameObject gameObject) noexcept
 	{
 		RPG_Check(GameObject_IsValid(gameObject));
 
 		GameObject_UpdateTransform(gameObject);
 
-		RpgTransform transform;
-		GameObjectTransforms[gameObject.Index].WorldTransformMatrix.Decompose(transform.Position, transform.Rotation, transform.Scale);
+		//RpgTransform transform;
+		//GameObjectTransforms[gameObject.Index].WorldTransformMatrix.Decompose(transform.Position, transform.Rotation, transform.Scale);
 
-		return transform;
+		//return transform;
+		return GameObjectTransforms[gameObject.Index].WorldTransform;
 	}
 
 
-	inline const RpgMatrixTransform& GameObject_GetWorldTransformMatrix(RpgGameObject gameObject) noexcept
+	inline RpgMatrixTransform GameObject_GetWorldTransformMatrix(RpgGameObject gameObject) noexcept
 	{
 		RPG_Check(GameObject_IsValid(gameObject));
 
 		GameObject_UpdateTransform(gameObject);
-		return GameObjectTransforms[gameObject.Index].WorldTransformMatrix;
+		return GameObjectTransforms[gameObject.Index].WorldTransform.ToMatrixTransform();
 	}
 
 
@@ -272,6 +303,12 @@ public:
 	}
 
 
+	inline int GameObject_GetCount() const noexcept
+	{
+		return GameObjectStates.GetCount();
+	}
+
+
 	void GameObject_AttachScript(RpgGameObject gameObject, RpgGameObjectScript* script) noexcept;
 	void GameObject_DetachScript(RpgGameObject gameObject, RpgGameObjectScript* script) noexcept;
 
@@ -281,8 +318,7 @@ private:
 	void GameObject_InternalDetachFromParent(RpgGameObject gameObject, bool bIsDestroying) noexcept;
 	void GameObject_UpdateTransform(RpgGameObject gameObject) noexcept;
 	void GameObject_GetExternalAssetReferences(int id, RpgAssetReferences& out_AssetRefs) const noexcept;
-	bool GameObject_IsLoaded(int id) noexcept;
-
+	
 
 	inline void GameObjectScript_StartPlay(int index) noexcept
 	{
@@ -347,9 +383,8 @@ private:
 
 	struct FGameObjectTransform
 	{
-		RpgMatrixTransform LocalTransformMatrix;
-		RpgMatrixTransform WorldTransformMatrix;
-		RpgMatrixTransform InverseWorldTransformMatrix;
+		RpgTransform LocalTransform;
+		RpgTransform WorldTransform;
 		RpgGameObject Parent;
 		RpgArrayInline<RpgGameObject, 8> Children;
 		uint8_t Dirty;
@@ -363,5 +398,8 @@ private:
 		int16_t ScriptIndex;
 	};
 	RpgFreeList<FGameObjectComponentScript> GameObjectComponentScripts;
+
+
+	friend RpgWorld;
 
 };

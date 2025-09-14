@@ -24,6 +24,9 @@ RpgGameApp::RpgGameApp() noexcept
 {
 	WindowState = RpgPlatformWindowSizeState::DEFAULT;
 
+	SceneViewport.bIsMainViewport = true;
+	LoadingLevel = nullptr;
+
 	// fps info
 	FpsLimit = 60;
 	FpsSampleTimer = 0.0f;
@@ -171,11 +174,30 @@ void RpgGameApp::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 
 		MainWorld->BeginFrame(frameIndex);
 
-		RpgRenderComponent_Camera* mainCameraComp = !MainCameraObject.IsNull() ? MainCameraObject.GetComponent<RpgRenderComponent_Camera>() : nullptr;
-
-		if (mainCameraComp && WindowState != RpgPlatformWindowSizeState::MINIMIZED)
+		if (LoadingLevel)
 		{
-			mainCameraComp->RenderTargetDimension = WindowDimension;
+			RPG_LogDebug(RpgLogGame, "Loading progress: %.2f", LoadingLevel->GetLoadingProgress());
+
+			if (LoadingLevel->IsLoaded())
+			{
+			#ifndef RPG_BUILD_SHIPPING
+				g_Editor->LevelLoaded(MainWorld);
+			#endif // !RPG_BUILD_SHIPPING
+
+				LoadingLevel = nullptr;
+			}
+
+			SceneViewport.GetFrameMeshes(frameIndex).Clear();
+			SceneViewport.GetFrameLights(frameIndex).Clear();
+		}
+		else
+		{
+			RpgRenderComponent_Camera* mainCameraComp = !MainCameraObject.IsNull() ? MainCameraObject.GetComponent<RpgRenderComponent_Camera>() : nullptr;
+
+			if (mainCameraComp && WindowState != RpgPlatformWindowSizeState::MINIMIZED)
+			{
+				mainCameraComp->RenderTargetDimension = WindowDimension;
+			}
 		}
 	}
 
@@ -215,7 +237,12 @@ void RpgGameApp::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 		{
 			MainRenderer->RegisterWorld(MainWorld);
 
-			// Setup renderer default final texture
+			if (LoadingLevel)
+			{
+				MainRenderer->AddWorldSceneViewport(frameIndex, MainWorld, &SceneViewport);
+			}
+
+			// Setup renderer final texture
 			MainRenderer->SetFinalTexture(frameIndex, SceneViewport.GetTextureRenderTarget(frameIndex).CastStatic<RpgTexture2D>());
 
 			// Dispatch render
@@ -249,6 +276,14 @@ void RpgGameApp::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 				renderer2d.AddText(*FpsString, FpsString.GetLength(), fpsTextPos, fpsTextColor);
 			}
 
+			// Loading info
+			if (LoadingLevel)
+			{
+				static RpgString loadingString = RpgString::Format("Loading: %.2f", LoadingLevel->GetLoadingProgress());
+				const RpgPointFloat loadingTextPos(16.0f, static_cast<float>(renderer2d.GetViewportDimension().Y) - 160.0f);
+				renderer2d.AddText(*loadingString, loadingString.GetLength(), loadingTextPos, RpgColor::WHITE);
+			}
+
 			// GUI
 			GuiCanvas.Render(GuiContext, renderer2d, 255, windowClipRect);
 		}
@@ -279,13 +314,19 @@ void RpgGameApp::RequestExit(bool bAskConfirmation) noexcept
 }
 
 
-void RpgGameApp::OpenLevel(const RpgString& path) noexcept
+void RpgGameApp::OpenLevel(const RpgString& levelAssetPath) noexcept
 {
-	RPG_CONSOLE_Log(RpgLogGame, "Open level (%s)", *path);
+	if (levelAssetPath.IsEmpty())
+	{
+		return;
+	}
 
-	// TODO: Create loading screen
+	RPG_CONSOLE_Log(RpgLogGame, "Open level (%s)", *levelAssetPath);
 
-	RPG_NotImplementedYet();
+	// TODO: Show loading screen
+	MainCameraObject = RpgGameObject();
+	MainWorld->ClearLevels();
+	LoadingLevel = MainWorld->LoadLevelAsync(levelAssetPath);
 }
 
 

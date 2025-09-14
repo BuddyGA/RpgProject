@@ -25,6 +25,69 @@ typedef volatile long 			RpgAtomicInt;
 typedef volatile unsigned long	RpgAtomicUint;
 
 
+// ========================================================================================================================= //
+// PLATFORM - SYNCRHONIZATION
+// ========================================================================================================================= //
+class RpgPlatformMutex
+{
+public:
+	RpgPlatformMutex() noexcept
+	{
+		InitializeCriticalSection(&CS);
+	}
+
+	~RpgPlatformMutex() noexcept
+	{
+		DeleteCriticalSection(&CS);
+	}
+
+	inline void Lock() noexcept
+	{
+		EnterCriticalSection(&CS);
+	}
+
+	inline bool TryLock() noexcept
+	{
+		return TryEnterCriticalSection(&CS);
+	}
+
+	inline void Unlock() noexcept
+	{
+		LeaveCriticalSection(&CS);
+	}
+
+
+private:
+	CRITICAL_SECTION CS;
+
+};
+
+
+
+class RpgScopedLock
+{
+public:
+	RpgScopedLock(RpgPlatformMutex& in_Mutex) noexcept
+		: Mutex(in_Mutex)
+	{
+		Mutex.Lock();
+	}
+
+
+	~RpgScopedLock() noexcept
+	{
+		Mutex.Unlock();
+	}
+
+
+private:
+	RpgPlatformMutex& Mutex;
+
+};
+
+#define RPG_PLATFORM_ScopedLock(mutex) RpgScopedLock __scoped_lock(mutex)
+
+
 
 // ========================================================================================================================= //
 // PLATFORM - MEMORY

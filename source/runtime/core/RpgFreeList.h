@@ -197,6 +197,30 @@ public:
 	}
 
 
+	void Resize(int in_Count, int* optOut_Indices = nullptr) noexcept
+	{
+		RPG_Check(in_Count >= Count);
+
+		if (Count == in_Count)
+		{
+			return;
+		}
+
+		Reserve(in_Count);
+
+		int added = 0;
+		while (Count < in_Count)
+		{
+			const int id = Add();
+
+			if (optOut_Indices)
+			{
+				optOut_Indices[added++] = id;
+			}
+		}
+	}
+
+
 	template<typename... TConstructorArgs>
 	[[nodiscard]] inline int Add(TConstructorArgs&&... args) noexcept
 	{
@@ -320,6 +344,17 @@ public:
 	inline bool IsEmpty() const noexcept
 	{
 		return Count == 0;
+	}
+
+
+	inline T* GetData() noexcept
+	{
+		return DataArray;
+	}
+
+	inline const T* GetData() const noexcept
+	{
+		return DataArray;
 	}
 
 

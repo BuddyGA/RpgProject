@@ -16,15 +16,6 @@ namespace RpgAlgorithm
 
 
 	template<typename T>
-	constexpr inline bool IsPowerOfTwo(T value) noexcept
-	{
-		static_assert(RpgType::IsIntegral<T>::Value, "RpgAlgorithm IsPowerOfTwo type of <T> must be integral type!");
-
-		return (value > 0) && !(value & (value - 1));
-	}
-
-
-	template<typename T>
 	inline void Array_CopyElements(int copyCount, T* dstDataArray, int dstDataCount, int dstCopyIndex, const T* srcDataArray, int srcDataCount, int srcCopyIndex) noexcept
 	{
 		RPG_Check(copyCount > 0);

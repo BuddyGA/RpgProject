@@ -294,7 +294,7 @@
     <ClCompile Include="source\runtime\game\script\RpgGameScript_PlayerController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\core\asset\RpgAssetTypes.cpp">
+    <ClCompile Include="source\runtime\core\RpgObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -576,6 +576,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\core\RpgSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\core\RpgObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

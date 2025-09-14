@@ -6,30 +6,12 @@
 #include "../RpgSet.h"
 
 
-// Asset file extension
-#define RPG_ASSET_FILE_EXT						".rpga"
-
-// Magic number for asset file header
-#define RPG_ASSET_FILE_HEADER					0x41475052U // (RPGA)
-
-// Magic number for external asset 
-#define RPG_ASSET_FILE_ASSET_EXT				0x45475052U // (RPGE)
-
-// Magic number for data asset
-#define RPG_ASSET_FILE_ASSET_DATA				0x44475052U // (RPGD)
-
-// Magic number for end of file
-#define RPG_ASSET_FILE_EOF						0x41475052U // (RPGA)
-
-
-
-RPG_LOG_DECLARE_CATEGORY_EXTERN(RpgLogAsset)
-
 
 class RpgAssetObject;
 class RpgAssetSystem;
 class RpgAssetTask_Loader;
 
+typedef RpgSharedPtr<RpgAssetObject> RpgSharedAsset;
 typedef RpgSet<RpgString, 8> RpgAssetReferences;
 
 
@@ -66,6 +48,7 @@ static_assert(sizeof(RPG_ASSET_FILE_TYPE_NAMES) / sizeof(const char*) == static_
 
 
 
+
 struct RpgAssetFileHeader
 {
 	uint32_t Magix{ 0 };
@@ -83,8 +66,8 @@ static_assert(std::is_trivially_copyable<RpgAssetFileHeader>::value, "RpgAssetFi
 
 struct RpgAssetInfo
 {
-	// Asset class name
-	RpgName ClassName;
+	// Asset class
+	RpgName Class;
 
 	// Asset path
 	RpgString Path;
@@ -95,15 +78,13 @@ struct RpgAssetInfo
 
 	inline bool IsValid() const noexcept
 	{
-		return !ClassName.IsEmpty() && !Path.IsEmpty() && Type != RpgAssetFileType::NONE;
+		return !Class.IsEmpty() && !Path.IsEmpty() && Type != RpgAssetFileType::NONE;
 	}
 
 };
 
 
 
-
-typedef RpgSharedPtr<RpgAssetObject> RpgSharedAsset;
 
 class RpgAssetObject
 {
@@ -166,16 +147,6 @@ private:
 
 
 
-namespace RpgAssetStream
-{
-	extern RpgFilePath Write(RpgAssetObject* asset, const char* dstFolder) noexcept;
-	extern void Read(RpgAssetObject* asset) noexcept;
-
-};
-
-
-
-
 #define RPG_ASSET_CLASS(classType, fileType, fileVersion)													\
 public:																										\
 	static constexpr RpgAssetFileType FILE_TYPE = fileType;													\
@@ -186,8 +157,9 @@ public:																										\
 		static classType defaultObject(#classType##"__default");											\
 		return &defaultObject;																				\
 	}																										\
-public:																										\
+protected:																									\
 	virtual RpgAssetObject* CreateAsset() const noexcept override { return new classType(#classType); }		\
+public:																										\
 	virtual RpgName GetAssetClassName() const noexcept override { return #classType; }						\
 	virtual RpgAssetFileType GetAssetFileType() const noexcept override	{ return FILE_TYPE;	}				\
 	virtual uint16_t GetAssetFileVersion() const noexcept override { return FILE_VERSION; }

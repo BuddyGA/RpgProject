@@ -23,25 +23,27 @@ RpgEditorScript_Camera::RpgEditorScript_Camera() noexcept
 
 void RpgEditorScript_Camera::AttachedToGameObject() noexcept
 {
-	if (!bInitialized)
-	{
-		bInitialized = true;
+	RpgTransform transform = GameObject.GetWorldTransform();
+	transform.Position = RpgVector3(0.0f, 800.0f, 0.0f);
+	transform.Rotation = RpgQuaternion::FromPitchYawRollDegree(PitchValue, 45.0f, 0.0f);
 
-		RpgTransform transform = GameObject.GetWorldTransform();
-		transform.Position = RpgVector3(0.0f, 800.0f, 0.0f);
-		transform.Rotation = RpgQuaternion::FromPitchYawRollDegree(PitchValue, 45.0f, 0.0f);
+	GameObject.SetWorldTransform(transform);
 
-		GameObject.SetWorldTransform(transform);
+	Flashlight = &GameObject.AddComponent<RpgRenderComponent_Light>();
+	Flashlight->Type = RpgRenderLight::TYPE_SPOT_LIGHT;
+	Flashlight->ColorIntensity = RpgColorLinear(1.0f, 1.0f, 1.0f, 2.0f);
+	Flashlight->AttenuationRadius = 1600.0f;
+	Flashlight->SpotInnerConeDegree = 20.0f;
+	Flashlight->SpotOuterConeDegree = 40.0f;
+	Flashlight->bCastShadow = false;
+	Flashlight->bIsVisible = false;
+}
 
-		Flashlight = &GameObject.AddComponent<RpgRenderComponent_Light>();
-		Flashlight->Type = RpgRenderLight::TYPE_SPOT_LIGHT;
-		Flashlight->ColorIntensity = RpgColorLinear(1.0f, 1.0f, 1.0f, 2.0f);
-		Flashlight->AttenuationRadius = 1600.0f;
-		Flashlight->SpotInnerConeDegree = 20.0f;
-		Flashlight->SpotOuterConeDegree = 40.0f;
-		Flashlight->bCastShadow = false;
-		Flashlight->bIsVisible = false;
-	}
+
+void RpgEditorScript_Camera::DetachedFromGameObject() noexcept
+{
+	GameObject.RemoveComponent<RpgRenderComponent_Light>();
+	Flashlight = nullptr;
 }
 
 
@@ -111,6 +113,9 @@ void RpgEditorScript_Camera::TickUpdate(float deltaTime) noexcept
 
 	if (g_InputSystem->IsKeyButtonPressed(RpgInputKey::KEYBOARD_F))
 	{
-		Flashlight->bIsVisible = !Flashlight->bIsVisible;
+		if (Flashlight)
+		{
+			Flashlight->bIsVisible = !Flashlight->bIsVisible;
+		}
 	}
 }

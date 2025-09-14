@@ -9,7 +9,7 @@ class RpgSceneViewport
 {
 public:
 	RpgPointInt RenderTargetDimension;
-	
+	bool bIsMainViewport;
 
 
 public:

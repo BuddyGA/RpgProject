@@ -37,11 +37,11 @@ RpgRenderer::RpgRenderer(HWND in_WindowHandle, bool bEnableVsync) noexcept
 		FFrameData& frame = FrameDatas[f];
 		RPG_D3D12_Validate(RpgD3D12::GetDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frame.Fence)));
 		frame.FenceValue = 0;
-		frame.MaterialResource = RpgPointer::MakeUnique<RpgMaterialResource>();
-		frame.MeshResource = RpgPointer::MakeUnique<RpgMeshResource>();
-		frame.MeshSkinnedResource = RpgPointer::MakeUnique<RpgMeshSkinnedResource>();
-		frame.TaskCopy = RpgPointer::MakeUnique<RpgRenderTask_Copy>();
-		frame.TaskCompute = RpgPointer::MakeUnique<RpgRenderTask_Compute>();
+		//frame.MaterialResource = RpgPointer::MakeUnique<RpgMaterialResource>();
+		//frame.MeshResource = RpgPointer::MakeUnique<RpgMeshResource>();
+		//frame.MeshSkinnedResource = RpgPointer::MakeUnique<RpgMeshSkinnedResource>();
+		//frame.TaskCopy = RpgPointer::MakeUnique<RpgRenderTask_Copy>();
+		//frame.TaskCompute = RpgPointer::MakeUnique<RpgRenderTask_Compute>();
 		RPG_D3D12_Validate(RpgD3D12::GetDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&frame.SwapChainCmdAlloc)));
 		RPG_D3D12_Validate(RpgD3D12::GetDevice()->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&frame.SwapChainCmdList)));
 
@@ -68,9 +68,9 @@ void RpgRenderer::BeginRender(int frameIndex, float deltaTime) noexcept
 	WaitFrameFinished(frameIndex);
 
 	FFrameData& frame = FrameDatas[frameIndex];
-	frame.MaterialResource->Reset();
-	frame.MeshResource->Reset();
-	frame.MeshSkinnedResource->Reset();
+	frame.MaterialResource.Reset();
+	frame.MeshResource.Reset();
+	frame.MeshSkinnedResource.Reset();
 
 	for (int i = 0; i < frame.WorldContexts.GetCount(); ++i)
 	{
@@ -102,9 +102,9 @@ void RpgRenderer::Execute(uint64_t frameCounter, int frameIndex, float deltaTime
 	frameContext.Counter = frameCounter;
 	frameContext.Index = frameIndex;
 	frameContext.DeltaTime = deltaTime;
-	frameContext.MaterialResource = frame.MaterialResource.Get();
-	frameContext.MeshResource = frame.MeshResource.Get();
-	frameContext.MeshSkinnedResource = frame.MeshSkinnedResource.Get();
+	frameContext.MaterialResource = &frame.MaterialResource;
+	frameContext.MeshResource = &frame.MeshResource;
+	frameContext.MeshSkinnedResource = &frame.MeshSkinnedResource;
 	frameContext.ShadowQuality = ShadowQuality;
 	frameContext.AntiAliasingMode = AntiAliasingMode;
 
@@ -153,7 +153,7 @@ void RpgRenderer::Execute(uint64_t frameCounter, int frameIndex, float deltaTime
 	}
 
 	// async copy
-	RpgRenderTask_Copy* taskCopy = frame.TaskCopy.Get();
+	RpgRenderTask_Copy* taskCopy = &frame.TaskCopy;
 	{
 		taskCopy->Reset();
 		taskCopy->FenceSignal = frame.Fence.Get();
@@ -171,7 +171,7 @@ void RpgRenderer::Execute(uint64_t frameCounter, int frameIndex, float deltaTime
 
 
 	// async compute
-	RpgRenderTask_Compute* taskCompute = frame.TaskCompute.Get();
+	RpgRenderTask_Compute* taskCompute = &frame.TaskCompute;
 	{
 		taskCompute->Reset();
 		taskCompute->FenceSignal = frame.Fence.Get();
@@ -246,6 +246,8 @@ void RpgRenderer::Execute(uint64_t frameCounter, int frameIndex, float deltaTime
 			if (frame.FinalTexture->IsRenderTarget() || frame.FinalTexture->IsDepthStencil())
 			{
 				ID3D12Resource* textureResource = frame.FinalTexture->GPU_GetResource();
+
+				const D3D12_RESOURCE_STATES beforeState = frame.FinalTexture->GPU_GetState();
 
 				RpgD3D12Command::TransitionAllSubresources(cmdList, textureResource,
 					frame.FinalTexture->IsRenderTarget() ? D3D12_RESOURCE_STATE_RENDER_TARGET : D3D12_RESOURCE_STATE_DEPTH_WRITE,

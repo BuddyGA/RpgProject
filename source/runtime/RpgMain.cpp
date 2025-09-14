@@ -338,6 +338,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		g_AssetSystem->RegisterAssetClass<RpgMesh>();
 		g_AssetSystem->RegisterAssetClass<RpgTexture2D>();
 		g_AssetSystem->RegisterAssetClass<RpgMaterial>();
+		g_AssetSystem->RegisterAssetClass<RpgLevel>();
 
 	#ifndef RPG_BUILD_SHIPPING
 		// add engine assets

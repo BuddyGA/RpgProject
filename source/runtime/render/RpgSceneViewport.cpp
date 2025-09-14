@@ -40,7 +40,7 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 	{
 		if (!frame.TextureRenderTarget)
 		{
-			frame.TextureRenderTarget = RpgPointer::MakeShared<RpgTextureRenderTarget>("texrt_scn_vprt", RpgTextureFormat::TEX_RT_RGBA, RenderTargetDimension.X, RenderTargetDimension.Y);
+			frame.TextureRenderTarget = RpgPointer::MakeShared<RpgTextureRenderTarget>(RpgName::Format("texrt_scn_vprt_%s_%i", bIsMainViewport ? "main" : "secondary", frameContext.Index), RpgTextureFormat::TEX_RT_RGBA, RenderTargetDimension.X, RenderTargetDimension.Y);
 		}
 
 		frame.TextureRenderTarget->Resize(RenderTargetDimension.X, RenderTargetDimension.Y);

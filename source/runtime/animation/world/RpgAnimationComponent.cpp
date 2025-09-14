@@ -18,3 +18,10 @@ RPG_COMPONENT_STATIC_GetExternalAssetReferences(RpgAnimationComponent_AnimSkelet
 {
 	RPG_NotImplementedYet();
 }
+
+
+RPG_COMPONENT_STATIC_IsLoaded(RpgAnimationComponent_AnimSkeletonPose)
+{
+	RPG_NotImplementedYet();
+	return true;
+}

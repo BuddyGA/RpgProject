@@ -83,7 +83,10 @@ public:
 
 	inline const TValue& operator[](const TKey& key) const noexcept
 	{
-		const int index = FindIndex(Rpg_GetHash(key));
+		const uint64_t hash = Rpg::GetHash<TKey>(key);
+		RPG_Assert(hash > 0);
+
+		const int index = FindIndex(hash);
 		RPG_ValidateV(index != RPG_INDEX_INVALID, "RpgMap key not found!");
 
 		return Values[index];
@@ -101,7 +104,9 @@ public:
 
 	inline TValue& Add(const TKey& key, int* optOut_Index = nullptr) noexcept
 	{
-		const uint64_t hash = Rpg_GetHash(key);
+		const uint64_t hash = Rpg::GetHash<TKey>(key);
+		RPG_Assert(hash > 0);
+
 		int index = FindIndex(hash);
 
 		if (index == RPG_INDEX_INVALID)
@@ -130,7 +135,9 @@ public:
 
 	inline int AddValue(const TKey& key, const TValue& in_Value) noexcept
 	{
-		const uint64_t hash = Rpg_GetHash(key);
+		const uint64_t hash = Rpg::GetHash<TKey>(key);
+		RPG_Assert(hash > 0);
+
 		int index = FindIndex(hash);
 
 		if (index == RPG_INDEX_INVALID)
@@ -157,7 +164,9 @@ public:
 	template<typename...TConstructorArgs>
 	inline void AddConstruct(const TKey& key, TConstructorArgs&&... args) noexcept
 	{
-		const uint64_t hash = Rpg_GetHash(key);
+		const uint64_t hash = Rpg::GetHash<TKey>(key);
+		RPG_Assert(hash > 0);
+
 		int index = FindIndex(hash);
 
 		if (index == RPG_INDEX_INVALID)
@@ -181,7 +190,10 @@ public:
 
 	inline void Remove(const TKey& key, bool bKeepOrder = false) noexcept
 	{
-		const int index = FindIndex(Rpg_GetHash(key));
+		const uint64_t hash = Rpg::GetHash<TKey>(key);
+		RPG_Assert(hash > 0);
+
+		const int index = FindIndex(hash);
 
 		if (index != RPG_INDEX_INVALID)
 		{
@@ -202,7 +214,10 @@ public:
 
 	inline bool Exists(const TKey& key, int* optOut_Index = nullptr) const noexcept
 	{
-		const int index = FindIndex(Rpg_GetHash(key));
+		const uint64_t hash = Rpg::GetHash<TKey>(key);
+		RPG_Assert(hash > 0);
+
+		const int index = FindIndex(hash);
 
 		if (optOut_Index)
 		{
@@ -221,7 +236,10 @@ public:
 
 	inline TValue* FindValue(const TKey& key) noexcept
 	{
-		const int index = FindIndex(Rpg_GetHash(key));
+		const uint64_t hash = Rpg::GetHash<TKey>(key);
+		RPG_Assert(hash > 0);
+
+		const int index = FindIndex(hash);
 
 		if (index == RPG_INDEX_INVALID)
 		{
@@ -234,7 +252,10 @@ public:
 
 	inline const TValue* FindValue(const TKey& key) const noexcept
 	{
-		const int index = FindIndex(Rpg_GetHash(key));
+		const uint64_t hash = Rpg::GetHash<TKey>(key);
+		RPG_Assert(hash > 0);
+
+		const int index = FindIndex(hash);
 
 		if (index == RPG_INDEX_INVALID)
 		{

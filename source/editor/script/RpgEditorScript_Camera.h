@@ -30,6 +30,7 @@ public:
 
 protected:
 	virtual void AttachedToGameObject() noexcept override;
+	virtual void DetachedFromGameObject() noexcept override;
 	virtual void TickUpdate(float deltaTime) noexcept override;
 
 

@@ -209,7 +209,7 @@ copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(
     <ClCompile Include="source\runtime\animation\RpgAnimationPose.cpp" />
     <ClCompile Include="source\runtime\animation\world\RpgAnimationComponent.cpp" />
     <ClCompile Include="source\runtime\animation\world\RpgAnimationWorldSubsystem.cpp" />
-    <ClCompile Include="source\runtime\core\asset\RpgAssetTypes.cpp" />
+    <ClCompile Include="source\runtime\core\RpgObject.cpp" />
     <ClCompile Include="source\runtime\core\world\RpgGameObject.cpp" />
     <ClCompile Include="source\runtime\core\asset\RpgAssetSystem.cpp" />
     <ClCompile Include="source\runtime\core\world\RpgLevel.cpp" />
@@ -307,6 +307,7 @@ copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(
     <ClInclude Include="source\runtime\animation\world\RpgAnimationWorldSubsystem.h" />
     <ClInclude Include="source\runtime\animation\RpgAnimationTypes.h" />
     <ClInclude Include="source\editor\task\RpgAssimpTypes.h" />
+    <ClInclude Include="source\runtime\core\RpgObject.h" />
     <ClInclude Include="source\runtime\core\RpgSet.h" />
     <ClInclude Include="source\runtime\core\world\RpgComponent.h" />
     <ClInclude Include="source\runtime\core\world\RpgGameObject.h" />

@@ -59,10 +59,10 @@ public:
 	void AttachScript(RpgGameObjectScript* script) noexcept;
 	void DetachScript(RpgGameObjectScript* script) noexcept;
 	void SetLocalTransform(const RpgTransform& transform) noexcept;
-	RpgTransform GetLocalTransform() const noexcept;
+	const RpgTransform& GetLocalTransform() const noexcept;
 	void SetWorldTransform(const RpgTransform& transform) noexcept;
-	RpgTransform GetWorldTransform() const noexcept;
-	const RpgMatrixTransform& GetWorldTransformMatrix() const noexcept;
+	const RpgTransform& GetWorldTransform() const noexcept;
+	RpgMatrixTransform GetWorldTransformMatrix() const noexcept;
 	
 
 

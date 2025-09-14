@@ -10,7 +10,7 @@
 template<typename T, int CAPACITY_ALIGNMENT = 1>
 class RpgArray
 {
-	static_assert(RpgAlgorithm::IsPowerOfTwo(CAPACITY_ALIGNMENT), "RpgArray: CAPACITY_ALIGNMENT must be power of two!");
+	static_assert(Rpg::IsPowerOfTwo(CAPACITY_ALIGNMENT), "RpgArray: CAPACITY_ALIGNMENT must be power of two!");
 
 public:
 	RpgArray(int in_Count = 0) noexcept
@@ -299,7 +299,7 @@ public:
 			return;
 		}
 
-		const int alignedCapacity = RpgType::Align(in_Capacity, CAPACITY_ALIGNMENT);
+		const int alignedCapacity = Rpg::Align(in_Capacity, CAPACITY_ALIGNMENT);
 		RPG_Check(alignedCapacity >= in_Capacity);
 
 		T* NewData = reinterpret_cast<T*>(RpgPlatformMemory::MemRealloc(Data, sizeof(T) * alignedCapacity));
@@ -643,6 +643,17 @@ private:
 	T* Data;
 	int Capacity;
 	int Count;
+
+};
+
+
+namespace Rpg
+{
+	template<typename T>
+	struct Type<RpgArray<T>>
+	{
+		static constexpr RpgType Value = RpgType("RpgArray", sizeof(RpgArray<T>), &Type<T>::Value, nullptr, false, false, false);
+	};
 
 };
 

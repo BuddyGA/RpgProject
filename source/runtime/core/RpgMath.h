@@ -58,7 +58,7 @@ namespace RpgMath
 	template<typename T>
 	constexpr inline T Abs(T value) noexcept
 	{
-		static_assert(RpgType::IsArithmetic<T>::Value, "Type of <T> must be arithmetic type!");
+		static_assert(RpgTypeTraits::IsArithmetic<T>::Value, "Type of <T> must be arithmetic type!");
 		return std::abs(value);
 	}
 
@@ -72,7 +72,7 @@ namespace RpgMath
 	template<typename T>
 	constexpr inline T Clamp(T value, T minValue, T maxValue) noexcept
 	{
-		static_assert(RpgType::IsArithmetic<T>::Value, "Type of <T> must be arithmetic type!");
+		static_assert(RpgTypeTraits::IsArithmetic<T>::Value, "Type of <T> must be arithmetic type!");
 
 		if (value < minValue) return minValue;
 		if (value > maxValue) return maxValue;
@@ -97,7 +97,7 @@ namespace RpgMath
 	template<typename T>
 	constexpr inline T Min(T a, T b) noexcept
 	{
-		static_assert(RpgType::IsArithmetic<T>::Value, "Type of <T> must be arithmetic type!");
+		static_assert(RpgTypeTraits::IsArithmetic<T>::Value, "Type of <T> must be arithmetic type!");
 		return a < b ? a : b;
 	}
 
@@ -105,7 +105,7 @@ namespace RpgMath
 	template<typename T>
 	constexpr inline T Max(T a, T b) noexcept
 	{
-		static_assert(RpgType::IsArithmetic<T>::Value, "Type of <T> must be arithmetic type!");
+		static_assert(RpgTypeTraits::IsArithmetic<T>::Value, "Type of <T> must be arithmetic type!");
 		return a > b ? a : b;
 	}
 
@@ -113,7 +113,7 @@ namespace RpgMath
 	template<typename T>
 	constexpr inline T Sqrt(T value) noexcept
 	{
-		static_assert(RpgType::IsArithmetic<T>::Value, "Type of <T> must be arithmetic type!");
+		static_assert(RpgTypeTraits::IsArithmetic<T>::Value, "Type of <T> must be arithmetic type!");
 		return sqrt(value);
 	}
 
@@ -252,10 +252,12 @@ public:
 		return *this;
 	}
 
+
 	inline RpgVector3 operator+(const RpgVector3& rhs) const noexcept
 	{
 		return DirectX::XMVectorAdd(Xmm, rhs.Xmm);
 	}
+
 
 	inline RpgVector3 operator+(float rhs) const noexcept
 	{
@@ -268,26 +270,57 @@ public:
 		return *this;
 	}
 
+
 	inline RpgVector3 operator-(const RpgVector3& rhs) const noexcept
 	{
 		return DirectX::XMVectorSubtract(Xmm, rhs.Xmm);
 	}
 
+
 	inline RpgVector3 operator-(float rhs) const noexcept
 	{
 		return DirectX::XMVectorSubtract(Xmm, DirectX::XMVectorSet(rhs, rhs, rhs, 0.0f));
 	}
+
+
+	inline RpgVector3 operator*(const RpgVector3& rhs) const noexcept
+	{
+		return DirectX::XMVectorMultiply(Xmm, rhs.Xmm);
+	}
+
+
+	inline RpgVector3& operator*=(const RpgVector3& rhs) noexcept
+	{
+		Xmm = DirectX::XMVectorMultiply(Xmm, rhs.Xmm);
+		return *this;
+	}
+
 	
 	inline RpgVector3 operator*(float rhs) const noexcept
 	{
 		return DirectX::XMVectorMultiply(Xmm, DirectX::XMVectorSet(rhs, rhs, rhs, 0.0f));
 	}
 
+
 	inline RpgVector3& operator*=(float rhs) noexcept
 	{
 		Xmm = DirectX::XMVectorMultiply(Xmm, DirectX::XMVectorSet(rhs, rhs, rhs, 0.0f));
 		return *this;
 	}
+
+
+	inline RpgVector3 operator/(const RpgVector3& rhs) const noexcept
+	{
+		return DirectX::XMVectorDivide(Xmm, rhs.Xmm);
+	}
+
+
+	inline RpgVector3& operator/=(const RpgVector3& rhs) noexcept
+	{
+		Xmm = DirectX::XMVectorDivide(Xmm, rhs.Xmm);
+		return *this;
+	}
+
 
 	inline RpgVector3 operator-() const noexcept
 	{
@@ -303,6 +336,7 @@ public:
 		return magSqr;
 	}
 
+
 	inline float GetMagnitude() const noexcept
 	{
 		float mag = 0.0f;
@@ -310,10 +344,12 @@ public:
 		return mag;
 	}
 
+
 	inline void Normalize() noexcept
 	{
 		Xmm = DirectX::XMVector3Normalize(Xmm);
 	}
+
 
 	inline RpgVector3 GetNormalize() const noexcept
 	{
@@ -323,15 +359,18 @@ public:
 	}
 
 
+public:
 	static inline RpgVector3 Min(const RpgVector3& vecA, const RpgVector3& vecB) noexcept
 	{
 		return DirectX::XMVectorMin(vecA.Xmm, vecB.Xmm);
 	}
 
+
 	static inline RpgVector3 Max(const RpgVector3& vecA, const RpgVector3& vecB) noexcept
 	{
 		return DirectX::XMVectorMax(vecA.Xmm, vecB.Xmm);
 	}
+
 
 	static inline float DotProduct(const RpgVector3& vecA, const RpgVector3& vecB) noexcept
 	{
@@ -340,30 +379,36 @@ public:
 		return dot;
 	}
 
+
 	static inline RpgVector3 CrossProduct(const RpgVector3& a, const RpgVector3& b) noexcept
 	{
 		return DirectX::XMVector3Cross(a.Xmm, b.Xmm);
 	}
 
-	static inline RpgVector3 Reflect(const RpgVector3& v, const RpgVector3& n) noexcept
+
+	static inline RpgVector3 Type(const RpgVector3& v, const RpgVector3& n) noexcept
 	{
 		return DirectX::XMVector3Reflect(v.Xmm, n.Xmm);
 	}
+
 
 	static inline RpgVector3 Lerp(const RpgVector3& a, const RpgVector3& b, float t) noexcept
 	{
 		return DirectX::XMVectorLerp(a.Xmm, b.Xmm, t);
 	}
 
+
 	static inline float DistanceSqr(const RpgVector3& a, const RpgVector3& b) noexcept
 	{
 		return (b - a).GetMagnitudeSqr();
 	}
 
+
 	static inline float Distance(const RpgVector3& a, const RpgVector3& b) noexcept
 	{
 		return (b - a).GetMagnitude();
 	}
+
 
 	static inline float AngleBetweenRadian(const RpgVector3& a, const RpgVector3& b) noexcept
 	{
@@ -372,10 +417,12 @@ public:
 		return radian;
 	}
 
+
 	static inline RpgVector3 ProjectOnNormal(const RpgVector3& v, const RpgVector3& n) noexcept
 	{
 		return n * DotProduct(v, n);
 	}
+
 
 	static inline RpgVector3 ProjectOnPlane(const RpgVector3& v, const RpgVector3& n) noexcept
 	{
@@ -438,6 +485,7 @@ public:
 		return DirectX::XMVectorAdd(Xmm, rhs.Xmm);
 	}
 
+
 	inline RpgVector4& operator+=(const RpgVector4& rhs) noexcept
 	{
 		Xmm = DirectX::XMVectorAdd(Xmm, rhs.Xmm);
@@ -473,6 +521,7 @@ public:
 		return DirectX::XMVectorMin(vecA.Xmm, vecB.Xmm);
 	}
 
+
 	static inline RpgVector4 Max(const RpgVector4& vecA, const RpgVector4& vecB) noexcept
 	{
 		return DirectX::XMVectorMax(vecA.Xmm, vecB.Xmm);
@@ -505,32 +554,73 @@ public:
 		Xmm = DirectX::XMVectorSet(in_X, in_Y, in_Z, in_W);
 	}
 
+
+public:
+	inline RpgQuaternion operator*(const RpgQuaternion& rhs) const noexcept
+	{
+		return DirectX::XMQuaternionNormalize(DirectX::XMQuaternionMultiply(Xmm, rhs.Xmm));
+	}
+
+
+	inline RpgQuaternion& operator*=(const RpgQuaternion& rhs) noexcept
+	{
+		Xmm = DirectX::XMQuaternionNormalize(DirectX::XMQuaternionMultiply(Xmm, rhs.Xmm));
+		return *this;
+	}
+
+
+	inline RpgVector3 operator*(const RpgVector3& rhs) const noexcept
+	{
+		return RotateVector(*this, rhs);
+	}
+
+
 public:
 	inline void Normalize() noexcept
 	{
 		Xmm = DirectX::XMQuaternionNormalize(Xmm);
 	}
 
-	RpgQuaternion GetNormalize() const noexcept
+
+	inline RpgQuaternion GetNormalize() const noexcept
 	{
 		return DirectX::XMQuaternionNormalize(Xmm);
 	}
 
+
+	inline RpgQuaternion GetInverse() const noexcept
+	{
+		return DirectX::XMQuaternionInverse(Xmm);
+	}
+
+
+	inline RpgQuaternion GetConjugate() const noexcept
+	{
+		return DirectX::XMQuaternionConjugate(Xmm);
+	}
+
+
 public:
 	static inline RpgQuaternion FromPitchYawRollDegree(float pitchDeg, float yawDeg, float rollDeg) noexcept
 	{
-		return DirectX::XMQuaternionRotationRollPitchYaw(RpgMath::DegToRad(pitchDeg), RpgMath::DegToRad(yawDeg), RpgMath::DegToRad(rollDeg));
+		DirectX::XMVECTOR r = DirectX::XMQuaternionRotationRollPitchYaw(RpgMath::DegToRad(pitchDeg), RpgMath::DegToRad(yawDeg), RpgMath::DegToRad(rollDeg));
+		return DirectX::XMQuaternionNormalize(r);
 	}
+
 
 	static inline RpgQuaternion FromPitchYawRollDegree(const RpgVector3& pitchYawRollDeg) noexcept
 	{
-		return DirectX::XMQuaternionRotationRollPitchYaw(RpgMath::DegToRad(pitchYawRollDeg.X), RpgMath::DegToRad(pitchYawRollDeg.Y), RpgMath::DegToRad(pitchYawRollDeg.Z));
+		DirectX::XMVECTOR r = DirectX::XMQuaternionRotationRollPitchYaw(RpgMath::DegToRad(pitchYawRollDeg.X), RpgMath::DegToRad(pitchYawRollDeg.Y), RpgMath::DegToRad(pitchYawRollDeg.Z));
+		return DirectX::XMQuaternionNormalize(r);
 	}
+
 
 	static inline RpgQuaternion Slerp(const RpgQuaternion& a, const RpgQuaternion& b, float t) noexcept
 	{
-		return DirectX::XMQuaternionSlerp(a.Xmm, b.Xmm, t);
+		DirectX::XMVECTOR r = DirectX::XMQuaternionSlerp(a.Xmm, b.Xmm, t);
+		return DirectX::XMQuaternionNormalize(r);
 	}
+
 
 	static inline RpgVector3 RotateVector(const RpgQuaternion& q, const RpgVector3& v) noexcept
 	{
@@ -1320,3 +1410,41 @@ private:
 
 };
 
+
+
+namespace Rpg
+{
+	template<> 
+	struct Type<RpgVector2> 
+	{ 
+		static constexpr RpgType Value = RpgType("RpgVector2", sizeof(RpgVector2)); 
+	};
+
+
+	template<> 
+	struct Type<RpgVector3> 
+	{ 
+		static constexpr RpgType Value = RpgType("RpgVector3", sizeof(RpgVector3)); 
+	};
+
+	template<> 
+	struct Type<RpgVector4> 
+	{ 
+		static constexpr RpgType Value = RpgType("RpgVector4", sizeof(RpgVector4)); 
+	};
+
+
+	template<> 
+	struct Type<RpgQuaternion> 
+	{ 
+		static constexpr RpgType Value = RpgType("RpgQuaternion", sizeof(RpgQuaternion)); 
+	};
+
+
+	template<> 
+	struct Type<RpgTransform> 
+	{ 
+		static constexpr RpgType Value = RpgType("RpgTransform", sizeof(RpgTransform)); 
+	};
+
+}; // Rpg
