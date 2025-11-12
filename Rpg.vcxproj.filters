@@ -225,16 +225,16 @@
     <ClCompile Include="source\test\core\RpgTestCore_String.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\test\core\RpgTestCore_DSA_Array.cpp">
+    <ClCompile Include="source\test\core\RpgTestCore_Array.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\test\core\RpgTestCore_DSA_FreeList.cpp">
+    <ClCompile Include="source\test\core\RpgTestCore_FreeList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\test\core\RpgTestCore_DSA_Algorithm.cpp">
+    <ClCompile Include="source\test\core\RpgTestCore_Algorithm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\test\core\RpgTestCore_DSA_Map.cpp">
+    <ClCompile Include="source\test\core\RpgTestCore_Map.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\test\core\RpgTestCore_FilePath.cpp">
@@ -295,6 +295,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\core\RpgObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\core\RpgString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -476,7 +479,7 @@
     <ClInclude Include="source\runtime\core\input\RpgInputSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\game\world\RpgAttributeComponent.h">
+    <ClInclude Include="source\runtime\game\world\RpgGameComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\game\world\RpgGameWorldSubsystem.h">
@@ -579,6 +582,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\core\RpgObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\RpgTerrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

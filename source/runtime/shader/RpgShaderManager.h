@@ -1,13 +1,9 @@
 #pragma once
 
 #include "core/RpgString.h"
-
-#include <wrl/client.h>
-using namespace Microsoft::WRL;
-
-#include <dxcapi.h>
-
 #include "RpgShaderTypes.h"
+#include <wrl/client.h>
+#include <dxcapi.h>
 
 
 

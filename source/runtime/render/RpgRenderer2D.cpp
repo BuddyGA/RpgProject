@@ -41,7 +41,7 @@ int RpgRenderer2D::GetOrAddMaterialInstanceId(const RpgSharedMaterial& material,
 		materialInstanceIndex = MaterialInstanceTextures.GetCount();
 
 		FMaterialInstanceTexture& instance = MaterialInstanceTextures.Add();
-		instance.Material = RpgMaterial::s_CreateSharedInstance(RpgName::Format("%s_inst_%i", *material->GetName(), material.GetRefCount()), material);
+		instance.Material = RpgMaterial::CreateSharedInstance(RpgName::Format("%s_inst_%i", *material->GetName(), material.GetRefCount()), material);
 		instance.Texture = textureToCheck;
 		instance.Material->SetParameterTextureValue(bIsText ? RpgMaterialParameterTexture::OPACITY_MASK : RpgMaterialParameterTexture::BASE_COLOR, instance.Texture);
 	}
@@ -54,16 +54,16 @@ void RpgRenderer2D::Begin(int frameIndex, RpgPointInt viewportDimension) noexcep
 {
 	if (!DefaultMaterialMesh)
 	{
-		DefaultMaterialMesh = RpgMaterial::s_GetDefault(RpgMaterialDefault::GUI);
-		DefaultTexture = RpgTexture2D::s_GetDefault_White();
+		DefaultMaterialMesh = RpgMaterial::GetDefault(RpgMaterialDefault::GUI);
+		DefaultTexture = RpgTexture2D::GetDefault_White();
 
 		GetOrAddMaterialInstanceId(DefaultMaterialMesh, DefaultTexture, false);
 	}
 
 	if (!DefaultMaterialFont)
 	{
-		DefaultMaterialFont = RpgMaterial::s_GetDefault(RpgMaterialDefault::FONT);
-		DefaultFont = RpgFont::s_GetDefault_Roboto();
+		DefaultMaterialFont = RpgMaterial::GetDefault(RpgMaterialDefault::FONT);
+		DefaultFont = RpgFont::GetDefault_Roboto();
 		GetOrAddMaterialInstanceId(DefaultMaterialFont, DefaultFont->GetTexture(), true);
 	}
 
@@ -396,7 +396,7 @@ void RpgRenderer2D::PreRender(RpgRenderFrameContext& frameContext) noexcept
 		RPG_D3D12_SetDebugNameAllocation(frame.LineIndexBuffer, "RES_R2D_LineIdxBuffer");
 
 		FDrawBatchLine& batchDrawLine = frame.BatchDrawLine;
-		batchDrawLine.MaterialId = frameContext.MaterialResource->AddMaterial(RpgMaterial::s_GetDefault(RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_2D));
+		batchDrawLine.MaterialId = frameContext.MaterialResource->AddMaterial(RpgMaterial::GetDefault(RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_2D));
 		batchDrawLine.IndexCount = frame.LineIndices.GetCount();
 		batchDrawLine.IndexStart = 0;
 		batchDrawLine.IndexVertexOffset = 0;
@@ -431,11 +431,11 @@ void RpgRenderer2D::CommandCopy(const RpgRenderFrameContext& frameContext, ID3D1
 		{
 			RPG_Assert(meshIdxSizeBytes > 0);
 
-			RpgPlatformMemory::MemCopy(stagingMap + stagingOffset, frame.BatchMeshVertices.GetData(), meshVtxSizeBytes);
+			RpgPlatformMemory::Copy(stagingMap + stagingOffset, frame.BatchMeshVertices.GetData(), meshVtxSizeBytes);
 			cmdList->CopyBufferRegion(frame.MeshVertexBuffer->GetResource(), 0, stagingResource, stagingOffset, meshVtxSizeBytes);
 			stagingOffset += meshVtxSizeBytes;
 
-			RpgPlatformMemory::MemCopy(stagingMap + stagingOffset, frame.BatchMeshIndices.GetData(), meshIdxSizeBytes);
+			RpgPlatformMemory::Copy(stagingMap + stagingOffset, frame.BatchMeshIndices.GetData(), meshIdxSizeBytes);
 			cmdList->CopyBufferRegion(frame.MeshIndexBuffer->GetResource(), 0, stagingResource, stagingOffset, meshIdxSizeBytes);
 			stagingOffset += meshIdxSizeBytes;
 		}
@@ -444,11 +444,11 @@ void RpgRenderer2D::CommandCopy(const RpgRenderFrameContext& frameContext, ID3D1
 		{
 			RPG_Assert(lineIdxSizeBytes > 0);
 
-			RpgPlatformMemory::MemCopy(stagingMap + stagingOffset, frame.LineVertices.GetData(), lineVtxSizeBytes);
+			RpgPlatformMemory::Copy(stagingMap + stagingOffset, frame.LineVertices.GetData(), lineVtxSizeBytes);
 			cmdList->CopyBufferRegion(frame.LineVertexBuffer->GetResource(), 0, stagingResource, stagingOffset, lineVtxSizeBytes);
 			stagingOffset += lineVtxSizeBytes;
 
-			RpgPlatformMemory::MemCopy(stagingMap + stagingOffset, frame.LineIndices.GetData(), lineIdxSizeBytes);
+			RpgPlatformMemory::Copy(stagingMap + stagingOffset, frame.LineIndices.GetData(), lineIdxSizeBytes);
 			cmdList->CopyBufferRegion(frame.LineIndexBuffer->GetResource(), 0, stagingResource, stagingOffset, lineIdxSizeBytes);
 			stagingOffset += lineIdxSizeBytes;
 		}

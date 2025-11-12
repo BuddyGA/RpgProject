@@ -233,7 +233,7 @@ void RpgTexture2D::InitializeMips() noexcept
 static RpgArray<RpgSharedTexture2D> DefaultTextures;
 
 
-void RpgTexture2D::s_CreateDefaults() noexcept
+void RpgTexture2D::CreateDefaults() noexcept
 {
 	RPG_LogDebug(RpgLogTexture, "Create default textures...");
 
@@ -243,7 +243,7 @@ void RpgTexture2D::s_CreateDefaults() noexcept
 		
 		FMipData mipData;
 		uint8_t* pixelData = defWhite->MipWriteLock(0, mipData);
-		RpgPlatformMemory::MemSet(pixelData, 255, mipData.SizeBytes);
+		RpgPlatformMemory::Set(pixelData, 255, mipData.SizeBytes);
 		defWhite->MipWriteUnlock(0);
 
 		DefaultTextures.AddValue(defWhite);
@@ -251,13 +251,13 @@ void RpgTexture2D::s_CreateDefaults() noexcept
 }
 
 
-void RpgTexture2D::s_DestroyDefaults() noexcept
+void RpgTexture2D::DestroyDefaults() noexcept
 {
 	DefaultTextures.Clear(true);
 }
 
 
-const RpgSharedTexture2D& RpgTexture2D::s_GetDefault_White() noexcept
+const RpgSharedTexture2D& RpgTexture2D::GetDefault_White() noexcept
 {
 	return DefaultTextures[0];
 }

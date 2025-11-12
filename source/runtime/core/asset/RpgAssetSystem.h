@@ -55,13 +55,12 @@ public:
 	}
 
 
-	// Load asset
+	// Load asset synchronously
 	// @param assetPath - Asset path relative to asset directory
 	// @return SharedPtr to asset
 	RpgSharedAsset LoadAsset(const RpgString& assetPath) noexcept;
 
-
-	// Load asset
+	// Load asset synchronously
 	// @param path - Asset path relative to asset directory
 	// @return SharedPtr to asset if path is valid and asset is loaded
 	template<typename TAsset>
@@ -113,7 +112,7 @@ public:
 	// @param path - Asset path relative to asset directory
 	// @param optOut_AssetInfo - (Optional) Asset info result if found in registry
 	// @return TRUE if asset exists in registry, FALSE otherwise
-	inline bool DoesAssetExists(const RpgString& assetPath, RpgAssetInfo* optOut_AssetInfo = nullptr) const noexcept
+	inline bool IsAssetRegistered(const RpgString& assetPath, RpgAssetInfo* optOut_AssetInfo = nullptr) const noexcept
 	{
 		const RpgAssetInfo* assetInfo = Registry.AssetInfoTable.FindValue(assetPath);
 		if (assetInfo == nullptr)

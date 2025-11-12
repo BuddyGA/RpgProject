@@ -19,12 +19,13 @@ namespace RpgGameObjectFlag
 		None				= (0),
 		Allocated			= (1 << 0),
 		Transient			= (1 << 1),
-		Loading				= (1 << 2),
-		Loaded				= (1 << 3),
-		Spawned				= (1 << 4),
-		Visible				= (1 << 5),
-		TransformUpdated	= (1 << 6),
-		PendingDestroy		= (1 << 7),
+		Root				= (1 << 2),
+		Loading				= (1 << 3),
+		Loaded				= (1 << 4),
+		Spawned				= (1 << 5),
+		Visible				= (1 << 6),
+		TransformUpdated	= (1 << 7),
+		PendingDestroy		= (1 << 8),
 	};
 };
 
@@ -122,13 +123,7 @@ private:
 };
 
 
-
-enum class RpgTickUpdateOption : uint8_t
-{
-	NO_UPDATE = 0,
-	STARTED_PLAY,
-	ALWAYS
-};
+typedef RpgArrayInline<RpgGameObject, 8> RpgGameObjectChildrenArray;
 
 
 
@@ -136,11 +131,20 @@ class RpgGameObjectScript
 {
 	RPG_NOCOPY(RpgGameObjectScript)
 
+public:
+	enum ETickUpdateOption : uint8_t
+	{
+		TICK_UPDATE_NONE = 0,
+		TICK_UPDATE_START_PLAY,
+		TICK_UPDATE_ALWAYS
+	};
+
+
 protected:
 	RpgGameObjectScript() noexcept
 	{
 		AttachedScriptIndex = RPG_INDEX_INVALID;
-		TickUpdateOption = RpgTickUpdateOption::STARTED_PLAY;
+		TickUpdateOption = TICK_UPDATE_START_PLAY;
 		bHasStartedPlay = false;
 	}
 
@@ -157,7 +161,7 @@ public:
 
 protected:
 	RpgGameObject GameObject;
-	RpgTickUpdateOption TickUpdateOption;
+	ETickUpdateOption TickUpdateOption;
 
 
 private:

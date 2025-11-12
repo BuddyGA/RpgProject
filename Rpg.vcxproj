@@ -210,6 +210,7 @@ copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(
     <ClCompile Include="source\runtime\animation\world\RpgAnimationComponent.cpp" />
     <ClCompile Include="source\runtime\animation\world\RpgAnimationWorldSubsystem.cpp" />
     <ClCompile Include="source\runtime\core\RpgObject.cpp" />
+    <ClCompile Include="source\runtime\core\RpgString.cpp" />
     <ClCompile Include="source\runtime\core\world\RpgGameObject.cpp" />
     <ClCompile Include="source\runtime\core\asset\RpgAssetSystem.cpp" />
     <ClCompile Include="source\runtime\core\world\RpgLevel.cpp" />
@@ -228,10 +229,10 @@ copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(
     <ClCompile Include="source\runtime\gui\RpgGuiTypes.cpp" />
     <ClCompile Include="source\runtime\physics\task\RpgPhysicsTask_TestOverlapPair.cpp" />
     <ClCompile Include="source\runtime\render\world\RpgRenderComponent.cpp" />
-    <ClCompile Include="source\test\core\RpgTestCore_DSA_Algorithm.cpp" />
-    <ClCompile Include="source\test\core\RpgTestCore_DSA_Array.cpp" />
-    <ClCompile Include="source\test\core\RpgTestCore_DSA_FreeList.cpp" />
-    <ClCompile Include="source\test\core\RpgTestCore_DSA_Map.cpp" />
+    <ClCompile Include="source\test\core\RpgTestCore_Algorithm.cpp" />
+    <ClCompile Include="source\test\core\RpgTestCore_Array.cpp" />
+    <ClCompile Include="source\test\core\RpgTestCore_FreeList.cpp" />
+    <ClCompile Include="source\test\core\RpgTestCore_Map.cpp" />
     <ClCompile Include="source\test\core\RpgTestCore_FilePath.cpp" />
     <ClCompile Include="source\test\core\RpgTestCore_Pointer.cpp" />
     <ClCompile Include="source\test\core\RpgTestCore_String.cpp" />
@@ -328,6 +329,7 @@ copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(
     <ClInclude Include="source\runtime\gui\widget\RpgGuiConsole.h" />
     <ClInclude Include="source\runtime\gui\RpgGuiTypes.h" />
     <ClInclude Include="source\runtime\physics\task\RpgPhysicsTask_TestOverlapPair.h" />
+    <ClInclude Include="source\runtime\render\RpgTerrain.h" />
     <ClInclude Include="source\test\core\RpgTestCore.h" />
     <ClInclude Include="source\test\game\RpgTestGame.h" />
     <ClInclude Include="source\test\gui\RpgTestGui.h" />
@@ -354,7 +356,7 @@ copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(
     <ClInclude Include="source\runtime\core\RpgStream.h" />
     <ClInclude Include="source\editor\RpgEditorAssetBrowser.h" />
     <ClInclude Include="source\editor\script\RpgEditorScript_Camera.h" />
-    <ClInclude Include="source\runtime\game\world\RpgAttributeComponent.h" />
+    <ClInclude Include="source\runtime\game\world\RpgGameComponent.h" />
     <ClInclude Include="source\runtime\game\world\RpgGameWorldSubsystem.h" />
     <ClInclude Include="source\runtime\core\input\RpgInputSystem.h" />
     <ClInclude Include="source\runtime\core\input\RpgInputTypes.h" />

@@ -7,7 +7,7 @@
 
 RpgEditorScript_Camera::RpgEditorScript_Camera() noexcept
 {
-	TickUpdateOption = RpgTickUpdateOption::ALWAYS;
+	TickUpdateOption = TICK_UPDATE_ALWAYS;
 
 	Flashlight = nullptr;
 	PitchValue = 75.0f;

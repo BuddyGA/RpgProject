@@ -170,13 +170,13 @@ void RpgMaterial::SetAssetLoading() noexcept
 }
 
 
-RpgSharedMaterial RpgMaterial::s_CreateShared(const RpgName& name, const RpgRenderPipelineState& renderState, const RpgMaterialParameterLayout& parameterLayout) noexcept
+RpgSharedMaterial RpgMaterial::CreateShared(const RpgName& name, const RpgRenderPipelineState& renderState, const RpgMaterialParameterLayout& parameterLayout) noexcept
 {
 	return RpgSharedMaterial(new RpgMaterial(name, renderState, parameterLayout));
 }
 
 
-RpgSharedMaterial RpgMaterial::s_CreateSharedInstance(const RpgName& name, const RpgSharedMaterial& parentMaterial) noexcept
+RpgSharedMaterial RpgMaterial::CreateSharedInstance(const RpgName& name, const RpgSharedMaterial& parentMaterial) noexcept
 {
 	return RpgSharedMaterial(new RpgMaterial(name, parentMaterial));
 }
@@ -186,7 +186,7 @@ RpgSharedMaterial RpgMaterial::s_CreateSharedInstance(const RpgName& name, const
 static RpgArray<RpgSharedMaterial> DefaultMaterials;
 
 
-void RpgMaterial::s_CreateDefaults() noexcept
+void RpgMaterial::CreateDefaults() noexcept
 {
 	RPG_LogDebug(RpgLogMaterial, "Create default materials...");
 
@@ -200,7 +200,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.BlendMode = RpgRenderColorBlendMode::TRANSPARENCY;
 		renderState.RasterMode = RpgRenderRasterMode::SOLID;
 
-		DefaultMaterials[RpgMaterialDefault::GUI] = s_CreateShared("mat_def_gui", renderState);
+		DefaultMaterials[RpgMaterialDefault::GUI] = CreateShared("mat_def_gui", renderState);
 		DefaultMaterials[RpgMaterialDefault::GUI]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
@@ -212,7 +212,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.BlendMode = RpgRenderColorBlendMode::TRANSPARENCY;
 		renderState.RasterMode = RpgRenderRasterMode::SOLID;
 
-		DefaultMaterials[RpgMaterialDefault::FONT] = s_CreateShared("mat_def_font", renderState);
+		DefaultMaterials[RpgMaterialDefault::FONT] = CreateShared("mat_def_font", renderState);
 		DefaultMaterials[RpgMaterialDefault::FONT]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
@@ -232,7 +232,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		paramLayout.AddScalar("shininess", 32.0f);
 		paramLayout.AddScalar("opacity", 1.0f);
 
-		DefaultMaterials[RpgMaterialDefault::MESH_PHONG] = s_CreateShared("mat_def_mesh_phong", renderState, paramLayout);
+		DefaultMaterials[RpgMaterialDefault::MESH_PHONG] = CreateShared("mat_def_mesh_phong", renderState, paramLayout);
 		DefaultMaterials[RpgMaterialDefault::MESH_PHONG]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
@@ -249,7 +249,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		RpgMaterialParameterLayout paramLayout{};
 		paramLayout.AddScalar("gamma", 2.2f);
 
-		DefaultMaterials[RpgMaterialDefault::POSTPROCESS_FULLSCREEN] = s_CreateShared("mat_def_postprocess_fullscreen", renderState, paramLayout);
+		DefaultMaterials[RpgMaterialDefault::POSTPROCESS_FULLSCREEN] = CreateShared("mat_def_postprocess_fullscreen", renderState, paramLayout);
 		DefaultMaterials[RpgMaterialDefault::POSTPROCESS_FULLSCREEN]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
@@ -262,7 +262,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.BlendMode = RpgRenderColorBlendMode::NONE;
 		renderState.RasterMode = RpgRenderRasterMode::LINE;
 
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_2D] = s_CreateShared("mat_def_dbg_prim_line_2d", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_2D] = CreateShared("mat_def_dbg_prim_line_2d", renderState);
 		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_2D]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
@@ -274,7 +274,7 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.BlendMode = RpgRenderColorBlendMode::NONE;
 		renderState.RasterMode = RpgRenderRasterMode::SOLID;
 
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_2D] = s_CreateShared("mat_def_dbg_prim_mesh_2d", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_2D] = CreateShared("mat_def_dbg_prim_mesh_2d", renderState);
 		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_2D]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
@@ -288,14 +288,14 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.bDepthTest = true;
 		renderState.bDepthWrite = false;
 
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE] = s_CreateShared("mat_def_dbg_prim_line", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE] = CreateShared("mat_def_dbg_prim_line", renderState);
 		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 
 		// no-depth
 		renderState.BlendMode = RpgRenderColorBlendMode::FADE;
 		renderState.bDepthTest = false;
 
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_NO_DEPTH] = s_CreateShared("mat_def_dbg_prim_line_no_depth", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_NO_DEPTH] = CreateShared("mat_def_dbg_prim_line_no_depth", renderState);
 		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_NO_DEPTH]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 
@@ -309,26 +309,26 @@ void RpgMaterial::s_CreateDefaults() noexcept
 		renderState.bDepthTest = true;
 		renderState.bDepthWrite = false;
 
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH] = s_CreateShared("mat_def_dbg_prim_mesh", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH] = CreateShared("mat_def_dbg_prim_mesh", renderState);
 		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 
 		// no-depth
 		renderState.BlendMode = RpgRenderColorBlendMode::FADE;
 		renderState.bDepthTest = false;
 
-		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_NO_DEPTH] = s_CreateShared("mat_def_dbg_prim_mesh_no_depth", renderState);
+		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_NO_DEPTH] = CreateShared("mat_def_dbg_prim_mesh_no_depth", renderState);
 		DefaultMaterials[RpgMaterialDefault::DEBUG_PRIMITIVE_MESH_NO_DEPTH]->Flags |= FLAG_Default | FLAG_Runtime_Loaded;
 	}
 }
 
 
-void RpgMaterial::s_DestroyDefaults() noexcept
+void RpgMaterial::DestroyDefaults() noexcept
 {
 	DefaultMaterials.Clear(true);
 }
 
 
-const RpgSharedMaterial& RpgMaterial::s_GetDefault(RpgMaterialDefault::EType type) noexcept
+const RpgSharedMaterial& RpgMaterial::GetDefault(RpgMaterialDefault::EType type) noexcept
 {
 	return DefaultMaterials[type];
 }

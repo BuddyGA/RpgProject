@@ -67,7 +67,7 @@ public:
 	}
 
 
-	void DestroyWorld(RpgWorld* world) noexcept
+	inline void DestroyWorld(RpgWorld* world) noexcept
 	{
 		RPG_Check(world);
 
@@ -75,7 +75,6 @@ public:
 		if (index != RPG_INDEX_INVALID)
 		{
 			Worlds.RemoveAt(index);
-			world = nullptr;
 
 			return;
 		}

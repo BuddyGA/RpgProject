@@ -398,11 +398,11 @@ private:
 
 
 public:
-	[[nodiscard]] static RpgSharedMaterial s_CreateShared(const RpgName& name, const RpgRenderPipelineState& renderState, const RpgMaterialParameterLayout& parameterLayout = RpgMaterialParameterLayout()) noexcept;
-	[[nodiscard]] static RpgSharedMaterial s_CreateSharedInstance(const RpgName& name, const RpgSharedMaterial& parentMaterial) noexcept;
+	[[nodiscard]] static RpgSharedMaterial CreateShared(const RpgName& name, const RpgRenderPipelineState& renderState, const RpgMaterialParameterLayout& parameterLayout = RpgMaterialParameterLayout()) noexcept;
+	[[nodiscard]] static RpgSharedMaterial CreateSharedInstance(const RpgName& name, const RpgSharedMaterial& parentMaterial) noexcept;
 
-	static void s_CreateDefaults() noexcept;
-	static void s_DestroyDefaults() noexcept;
-	static const RpgSharedMaterial& s_GetDefault(RpgMaterialDefault::EType type) noexcept;
+	static void CreateDefaults() noexcept;
+	static void DestroyDefaults() noexcept;
+	static const RpgSharedMaterial& GetDefault(RpgMaterialDefault::EType type) noexcept;
 
 };

@@ -35,7 +35,7 @@ public:
 	inline void AddLogMessageFormat(RpgColor color, const char* format, TVarArgs&&... args) noexcept
 	{
 		char message[RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT];
-		RpgPlatformMemory::MemZero(message, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT);
+		RpgPlatformMemory::Zero(message, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT);
 		snprintf(message, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT, format, std::forward<TVarArgs>(args)...);
 
 		AddLogMessage(message, color);
@@ -46,7 +46,7 @@ public:
 	inline void AddLogCategoryMessageFormat(const RpgPlatformLog::FCategory& category, RpgPlatformLog::EVerbosity verbosity, const char* format, TVarArgs&&... args) noexcept
 	{
 		char message[RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT];
-		RpgPlatformMemory::MemZero(message, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT);
+		RpgPlatformMemory::Zero(message, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT);
 
 		snprintf(message, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT, format, std::forward<TVarArgs>(args)...);
 

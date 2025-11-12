@@ -69,12 +69,12 @@ void RpgCommandLine::Initialize(const char* commandArgs) noexcept
 				if (nameLength > 0)
 				{
 					FArgument& arg = ArgumentArray[ArgumentCount++];
-					RpgPlatformMemory::MemZero(&arg, sizeof(FArgument));
-					RpgPlatformMemory::MemCopy(&arg.Name, commandArgs + nameIndex, nameLength);
+					RpgPlatformMemory::Zero(&arg, sizeof(FArgument));
+					RpgPlatformMemory::Copy(&arg.Name, commandArgs + nameIndex, nameLength);
 
 					if (valueLength > 0)
 					{
-						RpgPlatformMemory::MemCopy(&arg.Value, commandArgs + valueIndex, valueLength);
+						RpgPlatformMemory::Copy(&arg.Value, commandArgs + valueIndex, valueLength);
 					}
 					else
 					{

@@ -359,7 +359,7 @@ private:
 
 
 private:
-	RpgGameObject Root;
+	RpgTransform WorldTransform;
 	RpgArray<RpgGameObjectScript*> AttachedScripts;
 
 
@@ -386,7 +386,7 @@ private:
 		RpgTransform LocalTransform;
 		RpgTransform WorldTransform;
 		RpgGameObject Parent;
-		RpgArrayInline<RpgGameObject, 8> Children;
+		RpgGameObjectChildrenArray Children;
 		uint8_t Dirty;
 	};
 	RpgFreeList<FGameObjectTransform> GameObjectTransforms;

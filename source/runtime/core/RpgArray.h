@@ -302,7 +302,7 @@ public:
 		const int alignedCapacity = Rpg::Align(in_Capacity, CAPACITY_ALIGNMENT);
 		RPG_Check(alignedCapacity >= in_Capacity);
 
-		T* NewData = reinterpret_cast<T*>(RpgPlatformMemory::MemRealloc(Data, sizeof(T) * alignedCapacity));
+		T* NewData = reinterpret_cast<T*>(RpgPlatformMemory::Realloc(Data, sizeof(T) * alignedCapacity));
 		RPG_Check(NewData);
 
 		Data = NewData;
@@ -328,7 +328,7 @@ public:
 
 			if constexpr (std::is_trivially_copyable<T>::value)
 			{
-				RpgPlatformMemory::MemZero(Data + startIndex, sizeof(T) * addCount);
+				RpgPlatformMemory::Zero(Data + startIndex, sizeof(T) * addCount);
 			}
 			else
 			{
@@ -589,7 +589,7 @@ public:
 
 		if (Data && bFreeMemory)
 		{
-			RpgPlatformMemory::MemFree(Data);
+			RpgPlatformMemory::Free(Data);
 			Data = nullptr;
 			Capacity = 0;
 		}

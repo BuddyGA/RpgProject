@@ -102,7 +102,7 @@ namespace RpgCompressonator
 				{
 					const size_t dstOffset = static_cast<size_t>(r * dstMipData.Subresource.Footprint.RowPitch);
 					const size_t srcOffset = static_cast<size_t>(r * dstMipData.RowBytes);
-					RpgPlatformMemory::MemCopy(dstPixelData + dstOffset, srcMipData->m_pbData + srcOffset, dstMipData.RowBytes);
+					RpgPlatformMemory::Copy(dstPixelData + dstOffset, srcMipData->m_pbData + srcOffset, dstMipData.RowBytes);
 				}
 			}
 			out_Texture->MipWriteUnlock(m);

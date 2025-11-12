@@ -28,6 +28,9 @@ enum class RpgAssetFileType : uint16_t
 	FONT,
 	MATERIAL,
 	AUDIO,
+	ANIM_SKEL,
+	ANIM_CLIP,
+	ACTOR,
 	LEVEL,
 
 	MAX_COUNT
@@ -41,6 +44,9 @@ constexpr const char* RPG_ASSET_FILE_TYPE_NAMES[] =
 	"Font",
 	"Material",
 	"Audio",
+	"Anim Clip",
+	"Anim Skel",
+	"Actor",
 	"Level"
 };
 

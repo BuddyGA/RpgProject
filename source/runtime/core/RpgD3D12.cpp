@@ -60,12 +60,12 @@ namespace RpgD3D12
 
     static void* D3D12MA_Alloc(size_t size, size_t alignment, void*) noexcept
     {
-        return RpgPlatformMemory::MemMallocAligned(size, alignment);
+        return RpgPlatformMemory::MallocAligned(size, alignment);
     }
 
     static void D3D12MA_Free(void* data, void*) noexcept
     {
-        RpgPlatformMemory::MemFree(data);
+        RpgPlatformMemory::Free(data);
     }
 
 };
@@ -451,7 +451,7 @@ ComPtr<D3D12MA::Allocation> RpgD3D12::CreateRenderTarget(DXGI_FORMAT format, D3D
 
     D3D12_CLEAR_VALUE clearValue{};
     clearValue.Format = format;
-    RpgPlatformMemory::MemCopy(clearValue.Color, &clearColor, sizeof(float) * 4);
+    RpgPlatformMemory::Copy(clearValue.Color, &clearColor, sizeof(float) * 4);
 
     ComPtr<D3D12MA::Allocation> allocation;
     RPG_D3D12_Validate(MemoryAllocator->CreateResource(&allocDesc, &renderTargetDesc, initialState, &clearValue, &allocation, IID_NULL, nullptr));

@@ -85,7 +85,7 @@ void RpgConsoleSystem::AddLogCategoryMessage(const RpgPlatformLog::FCategory& ca
 	}
 
 	char output[RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT];
-	RpgPlatformMemory::MemZero(output, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT);
+	RpgPlatformMemory::Zero(output, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT);
 	snprintf(output, RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT, "<%s>: %s", category.Name, message);
 
 	AddLogMessage(output, color);
@@ -120,12 +120,12 @@ void RpgConsoleSystem::ExecuteCommand(const char* commandArgs) noexcept
 
 		if (name.IsEmpty())
 		{
-			RpgPlatformMemory::MemCopy(name.GetData(), src, sizeof(char) * count);
+			RpgPlatformMemory::Copy(name.GetData(), src, sizeof(char) * count);
 		}
 		else
 		{
 			RpgName& param = params.Add();
-			RpgPlatformMemory::MemCopy(param.GetData(), src, sizeof(char) * count);
+			RpgPlatformMemory::Copy(param.GetData(), src, sizeof(char) * count);
 		}
 	};
 	

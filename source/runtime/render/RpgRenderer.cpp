@@ -129,7 +129,7 @@ void RpgRenderer::Execute(uint64_t frameCounter, int frameIndex, float deltaTime
 	// Default material fullscreen
 	RpgMaterialResource::FMaterialID fullscreenMaterialResourceId;
 	{
-		RpgSharedMaterial defMatFullscreen = RpgMaterial::s_GetDefault(RpgMaterialDefault::POSTPROCESS_FULLSCREEN);
+		RpgSharedMaterial defMatFullscreen = RpgMaterial::GetDefault(RpgMaterialDefault::POSTPROCESS_FULLSCREEN);
 		if (frame.FinalTexture)
 		{
 			defMatFullscreen->SetParameterTextureValue(RpgMaterialParameterTexture::BASE_COLOR, frame.FinalTexture);

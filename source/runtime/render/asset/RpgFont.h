@@ -82,12 +82,12 @@ private:
 
 
 public:
-	[[nodiscard]] static RpgSharedFont s_CreateShared(const RpgName& name, const RpgString& ttfFilePath, float sizePx, int unicodeStart, int unicodeCount) noexcept;
+	[[nodiscard]] static RpgSharedFont CreateShared(const RpgName& name, const RpgString& ttfFilePath, float sizePx, int unicodeStart, int unicodeCount) noexcept;
 
-	static void s_CreateDefaults() noexcept;
-	static void s_DestroyDefaults() noexcept;
+	static void CreateDefaults() noexcept;
+	static void DestroyDefaults() noexcept;
 
-	static const RpgSharedFont& s_GetDefault_Roboto() noexcept;
-	static const RpgSharedFont& s_GetDefault_ShareTechMono() noexcept;
+	static const RpgSharedFont& GetDefault_Roboto() noexcept;
+	static const RpgSharedFont& GetDefault_ShareTechMono() noexcept;
 
 };

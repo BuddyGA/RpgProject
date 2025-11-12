@@ -178,7 +178,7 @@ void RpgWorldResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept
 	// Local function helper to copy data to staging buffer and command copy buffer
 	auto LocalFunc_CopyStaging_CopyBuffer = [&](const void* data, size_t sizeBytes, ID3D12Resource* dstResource, size_t dstOffset)
 	{
-		RpgPlatformMemory::MemCopy(stagingMap + stagingOffset, data, sizeBytes);
+		RpgPlatformMemory::Copy(stagingMap + stagingOffset, data, sizeBytes);
 		cmdList->CopyBufferRegion(dstResource, dstOffset, stagingResource, stagingOffset, sizeBytes);
 		stagingOffset += sizeBytes;
 	};

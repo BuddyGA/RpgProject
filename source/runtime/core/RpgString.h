@@ -253,7 +253,7 @@ public:
 		const int copyLength = (srcLength == RPG_STRING_MAX_LENGTH) ? RpgPlatformString::CStringLength(srcStr) : srcLength;
 		const int prevLength = GetLength();
 		Resize(prevLength + copyLength);
-		RpgPlatformMemory::MemCopy(CharArray.GetData() + prevLength, srcStr, sizeof(char) * copyLength);
+		RpgPlatformMemory::Copy(CharArray.GetData() + prevLength, srcStr, sizeof(char) * copyLength);
 	}
 
 	inline void AppendInPlace(const RpgString& other) noexcept
@@ -315,7 +315,7 @@ public:
 
 		RpgString temp;
 		temp.Resize(copyLength);
-		RpgPlatformMemory::MemCopy(*temp, &CharArray[index], sizeof(char) * copyLength);
+		RpgPlatformMemory::Copy(*temp, &CharArray[index], sizeof(char) * copyLength);
 
 		return temp;
 	}
@@ -512,7 +512,7 @@ public:
 private:
 	inline void CopyFromCstr(const char* cstr) noexcept
 	{
-		RpgPlatformMemory::MemZero(CharArray, RPG_NAME_MAX_COUNT);
+		RpgPlatformMemory::Zero(CharArray, RPG_NAME_MAX_COUNT);
 
 		if (cstr && RpgPlatformString::CStringLength(cstr) > 0)
 		{
@@ -554,5 +554,125 @@ namespace Rpg
 	{
 		return RpgPlatformString::CStringHash(*value);
 	}
+
+};
+
+
+
+class RpgStringPool
+{
+	RPG_SINGLETON(RpgStringPool)
+
+public:
+	void Allocate(const char* cstr, int& out_Index, bool bIsInstance, int* optOut_Instance = nullptr) noexcept;
+	RpgString ConstructString(int index, int instance) const noexcept;
+
+
+private:
+	struct FEntry
+	{
+		int Index{ RPG_INDEX_INVALID };
+		int Count{ 0 };
+		int Instance{ 0 };
+	};
+
+
+private:
+	mutable SRWLOCK Lock;
+
+	RpgArray<uint64_t> Hashes;
+	RpgArray<FEntry> Entries;
+	RpgArray<char, 64> Pool;
+
+};
+
+
+
+
+class RpgStringID
+{
+public:
+	RpgStringID(const char* cstr = nullptr) noexcept
+		: PoolIndex(RPG_INDEX_INVALID)
+		, Instance(0)
+	{
+		if (cstr)
+		{
+			RpgStringPool::Get().Allocate(cstr, PoolIndex, false);
+		}
+	}
+
+
+	RpgStringID(const char* cstr, bool bIsInstance) noexcept
+		: PoolIndex(RPG_INDEX_INVALID)
+		, Instance(0)
+	{
+		if (cstr)
+		{
+			RpgStringPool::Get().Allocate(cstr, PoolIndex, bIsInstance, &Instance);
+		}
+	}
+
+
+	RpgStringID(const RpgStringID& other) noexcept
+		: PoolIndex(other.PoolIndex)
+		, Instance(other.Instance)
+	{
+	}
+
+
+public:
+	inline RpgStringID& operator=(const char* rhs) noexcept
+	{
+		PoolIndex = RPG_INDEX_INVALID;
+		Instance = 0;
+
+		if (rhs)
+		{
+			RpgStringPool::Get().Allocate(rhs, PoolIndex, false);
+		}
+
+		return *this;
+	}
+
+
+	inline RpgStringID& operator=(const RpgStringID& rhs) noexcept
+	{
+		PoolIndex = rhs.PoolIndex;
+		Instance = rhs.Instance;
+
+		return *this;
+
+	}
+
+
+	inline bool operator==(const RpgStringID& rhs) const noexcept
+	{
+		return PoolIndex == rhs.PoolIndex;
+	}
+
+
+	inline bool operator!=(const RpgStringID& rhs) const noexcept
+	{
+		return PoolIndex != rhs.PoolIndex;
+	}
+
+
+public:
+	inline bool IsEmpty() const noexcept
+	{
+		return PoolIndex == RPG_INDEX_INVALID;
+	}
+
+
+	inline RpgString ToString() const noexcept
+	{
+		return (PoolIndex != RPG_INDEX_INVALID) ? RpgStringPool::Get().ConstructString(PoolIndex, Instance) : RpgString();
+	}
+
+
+private:
+	int PoolIndex;
+	int Instance;
 
 };

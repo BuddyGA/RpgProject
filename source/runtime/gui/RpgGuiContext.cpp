@@ -12,8 +12,8 @@ RpgGuiContext::RpgGuiContext() noexcept
 	WidgetReleased = nullptr;
 	WidgetFocused = nullptr;
 
-	RpgPlatformMemory::MemZero(KeyButtonDown, sizeof(bool) * RpgInputKey::MAX_COUNT);
-	RpgPlatformMemory::MemZero(KeyButtonUp, sizeof(bool) * RpgInputKey::MAX_COUNT);
+	RpgPlatformMemory::Zero(KeyButtonDown, sizeof(bool) * RpgInputKey::MAX_COUNT);
+	RpgPlatformMemory::Zero(KeyButtonUp, sizeof(bool) * RpgInputKey::MAX_COUNT);
 }
 
 
@@ -184,6 +184,6 @@ void RpgGuiContext::End() noexcept
 	MouseScrollValue = RpgPointFloat();
 	TextInputChar = '\0';
 
-	RpgPlatformMemory::MemZero(KeyButtonDown, sizeof(bool) * RpgInputKey::MAX_COUNT);
-	RpgPlatformMemory::MemZero(KeyButtonUp, sizeof(bool) * RpgInputKey::MAX_COUNT);
+	RpgPlatformMemory::Zero(KeyButtonDown, sizeof(bool) * RpgInputKey::MAX_COUNT);
+	RpgPlatformMemory::Zero(KeyButtonUp, sizeof(bool) * RpgInputKey::MAX_COUNT);
 }

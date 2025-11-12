@@ -23,7 +23,7 @@ static void TestLevel_AddBlocker(RpgWorld* world, RpgVector3 center, RpgVector3 
 		RpgSharedMesh& mesh = model->GetMeshLod(0, 0);
 		mesh->UpdateVertexData(vertexPositions.GetCount(), vertexPositions.GetData(), vertexNormalTangents.GetData(), vertexTexCoords.GetData(), nullptr, indices.GetCount(), indices.GetData());
 
-		model->SetMaterial(0, RpgMaterial::s_GetDefault(RpgMaterialDefault::MESH_PHONG));
+		model->SetMaterial(0, RpgMaterial::GetDefault(RpgMaterialDefault::MESH_PHONG));
 	}
 
 	static int Counter = 0;
@@ -49,7 +49,7 @@ static void TestLevel_AddCube(RpgWorld* world, const RpgTransform& transform) no
 		// Add render component
 		RpgRenderComponent_Mesh& meshComp = box.AddComponent<RpgRenderComponent_Mesh>();
 		meshComp.Mesh = g_AssetSystem->LoadAsset<RpgMesh>(RpgString("game/mesh/cube_x100_y100_z100"));
-		meshComp.Material = RpgMaterial::s_GetDefault(RpgMaterialDefault::MESH_PHONG);
+		meshComp.Material = RpgMaterial::GetDefault(RpgMaterialDefault::MESH_PHONG);
 		meshComp.bIsVisible = true;
 	}
 	box.SpawnAtTransform(transform);

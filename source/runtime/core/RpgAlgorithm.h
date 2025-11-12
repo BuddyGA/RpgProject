@@ -26,7 +26,7 @@ namespace RpgAlgorithm
 
 		if constexpr (std::is_trivially_copyable<T>::value)
 		{
-			RpgPlatformMemory::MemCopy(dstDataArray + dstCopyIndex, srcDataArray + srcCopyIndex, sizeof(T) * copyCount);
+			RpgPlatformMemory::Copy(dstDataArray + dstCopyIndex, srcDataArray + srcCopyIndex, sizeof(T) * copyCount);
 		}
 		else
 		{
@@ -48,7 +48,7 @@ namespace RpgAlgorithm
 
 		if constexpr (std::is_trivially_copyable<T>::value)
 		{
-			RpgPlatformMemory::MemMove(dataArray + dstIndex, dataArray + srcIndex, sizeof(T) * shiftCount);
+			RpgPlatformMemory::Move(dataArray + dstIndex, dataArray + srcIndex, sizeof(T) * shiftCount);
 		}
 		else
 		{
@@ -130,7 +130,7 @@ namespace RpgAlgorithm
 
 		if constexpr (std::is_trivially_copyable<T>::value)
 		{
-			RpgPlatformMemory::MemCopy(dstDataArray + dstIndex, srcDataArray, sizeof(T) * srcDataCount);
+			RpgPlatformMemory::Copy(dstDataArray + dstIndex, srcDataArray, sizeof(T) * srcDataCount);
 		}
 		else
 		{

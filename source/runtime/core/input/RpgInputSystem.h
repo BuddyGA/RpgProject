@@ -91,14 +91,6 @@ public:
 
 
 private:
-	struct FKeyButtonState
-	{
-		bool bIsDown{ false };
-		bool bIsRepeat{ false };
-	};
-
-
-private:
 	// Mouse cursor position (prev and current frame)
 	RpgPointFloat MouseCursorPosition[2];
 
@@ -111,6 +103,7 @@ private:
 	// Key button states
 	// [0]: Previous, [1]: Current
 	bool KeyButtonDown[2][RpgInputKey::MAX_COUNT];
+
 };
 
 

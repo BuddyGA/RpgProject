@@ -16,7 +16,7 @@ RpgRectFloat RpgGuiText::UpdateRect(const RpgGuiContext& context, const RpgRectF
 {
 	if (bDirtyDimension)
 	{
-		const RpgSharedFont& useFont = Font.IsValid() ? Font : RpgFont::s_GetDefault_Roboto();
+		const RpgSharedFont& useFont = Font.IsValid() ? Font : RpgFont::GetDefault_Roboto();
 		Dimension = useFont->CalculateTextDimension(*TextValue, TextValue.GetLength());
 		bDirtyDimension = false;
 	}

@@ -94,15 +94,15 @@ private:
 // ========================================================================================================================= //
 namespace RpgPlatformMemory
 {
-	[[nodiscard]] extern void* MemMalloc(size_t sizeBytes) noexcept;
-	[[nodiscard]] extern void* MemMallocAligned(size_t sizeBytes, size_t alignmentBytes) noexcept;
-	[[nodiscard]] extern void* MemRealloc(void* prevAlloc, size_t newSizeBytes) noexcept;
-	[[nodiscard]] extern void* MemRecalloc(void* prevAlloc, int count, size_t sizeBytes) noexcept;
-	extern void MemFree(void* alloc) noexcept;
-	extern void MemCopy(void* dst, const void* src, size_t sizeBytes) noexcept;
-	extern void MemMove(void* dst, const void* src, size_t sizeBytes) noexcept;
-	extern void MemSet(void* data, int value, size_t sizeBytes) noexcept;
-	extern void MemZero(void* data, size_t sizeBytes) noexcept;
+	[[nodiscard]] extern void* Malloc(size_t sizeBytes) noexcept;
+	[[nodiscard]] extern void* MallocAligned(size_t sizeBytes, size_t alignmentBytes) noexcept;
+	[[nodiscard]] extern void* Realloc(void* prevAlloc, size_t newSizeBytes) noexcept;
+	[[nodiscard]] extern void* Recalloc(void* prevAlloc, int count, size_t sizeBytes) noexcept;
+	extern void Free(void* alloc) noexcept;
+	extern void Copy(void* dst, const void* src, size_t sizeBytes) noexcept;
+	extern void Move(void* dst, const void* src, size_t sizeBytes) noexcept;
+	extern void Set(void* data, int value, size_t sizeBytes) noexcept;
+	extern void Zero(void* data, size_t sizeBytes) noexcept;
 
 }; // RpgPlatformMemory
 

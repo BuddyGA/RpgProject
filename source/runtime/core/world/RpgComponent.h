@@ -63,7 +63,6 @@ public:
 
 		TComponent& data = Components[id];
 		data.GameObject = gameObject;
-		data.Index = id;
 		data.Flags = flags;
 
 		return id;
@@ -72,7 +71,7 @@ public:
 	virtual void* Get(int id, RpgGameObject gameObject) noexcept override
 	{
 		TComponent& data = Components[id];
-		RPG_Check(data.GameObject == gameObject && data.Index == id);
+		RPG_Check(data.GameObject == gameObject);
 
 		return &data;
 	}
@@ -80,10 +79,9 @@ public:
 	virtual void Remove(int id, RpgGameObject gameObject) noexcept override
 	{
 		TComponent& data = Components[id];
-		RPG_Check(data.GameObject == gameObject && data.Index == id);
+		RPG_Check(data.GameObject == gameObject);
 		data.Destroy();
 		data.GameObject = RpgGameObject();
-		data.Index = RPG_INDEX_INVALID;
 		data.Flags = RpgGameObjectFlag::None;
 
 		Components.RemoveAt(id);
@@ -92,21 +90,21 @@ public:
 	virtual void SetFlags(int id, RpgGameObject gameObject, uint32_t flags) noexcept override
 	{
 		TComponent& data = Components[id];
-		RPG_Check(data.GameObject == gameObject && data.Index == id);
+		RPG_Check(data.GameObject == gameObject);
 		data.Flags = flags;
 	}
 
 	virtual void StreamWrite(int id, RpgGameObject gameObject, RpgStreamWriter& writer) const noexcept override
 	{
 		const TComponent& data = Components[id];
-		RPG_Check(data.GameObject == gameObject && data.Index == id);
+		RPG_Check(data.GameObject == gameObject);
 		TComponent::StreamWrite(writer, data);
 	}
 
 	virtual void StreamRead(int id, RpgGameObject gameObject, RpgStreamReader& reader) noexcept override
 	{
 		TComponent& data = Components[id];
-		RPG_Check(data.GameObject == gameObject && data.Index == id);
+		RPG_Check(data.GameObject == gameObject);
 		TComponent::StreamRead(reader, data);
 	}
 
@@ -119,7 +117,7 @@ public:
 	virtual bool IsLoaded(int id, RpgGameObject gameObject) noexcept override
 	{
 		TComponent& data = Components[id];
-		RPG_Check(data.GameObject == gameObject && data.Index == id);
+		RPG_Check(data.GameObject == gameObject);
 		return TComponent::IsLoaded(data);
 	}
 
@@ -161,22 +159,21 @@ inline RpgGameObject GetGameObject() const noexcept																						\
 }																																		\
 inline bool IsGameObjectSpawned() const noexcept																						\
 {																																		\
-	RPG_Check(Index != RPG_INDEX_INVALID);																								\
+	RPG_Check(!GameObject.IsNull());																									\
 	return (Flags & RpgGameObjectFlag::Loaded) && (Flags & RpgGameObjectFlag::Spawned) && !(Flags & RpgGameObjectFlag::PendingDestroy);	\
 }																																		\
 inline bool IsGameObjectVisible() const noexcept																						\
 {																																		\
-	RPG_Check(Index != RPG_INDEX_INVALID);																								\
+	RPG_Check(!GameObject.IsNull());																									\
 	return (Flags & RpgGameObjectFlag::Visible);																						\
 }																																		\
 inline bool IsGameObjectTransformUpdated() const noexcept																				\
 {																																		\
-	RPG_Check(Index != RPG_INDEX_INVALID);																								\
+	RPG_Check(!GameObject.IsNull());																									\
 	return (Flags & RpgGameObjectFlag::TransformUpdated);																				\
 }																																		\
 private:																																\
 	RpgGameObject GameObject;																											\
-	int Index{ RPG_INDEX_INVALID };																										\
 	uint32_t Flags{ RpgGameObjectFlag::None };																							
 
 

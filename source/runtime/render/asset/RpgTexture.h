@@ -7,7 +7,7 @@
 // Minimum texture dimension
 #define RPG_TEXTURE_MIN_DIM		64
 
-// Maxiimum texture dimension
+// Maximum texture dimension
 #define RPG_TEXTURE_MAX_DIM		4096
 
 // Maximum texture mip count
@@ -242,9 +242,9 @@ protected:
 
 
 public:
-	static void s_CreateDefaults() noexcept;
-	static void s_DestroyDefaults() noexcept;
-	static const RpgSharedTexture2D& s_GetDefault_White() noexcept;
+	static void CreateDefaults() noexcept;
+	static void DestroyDefaults() noexcept;
+	static const RpgSharedTexture2D& GetDefault_White() noexcept;
 
 };
 

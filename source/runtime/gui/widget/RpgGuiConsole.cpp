@@ -44,7 +44,7 @@ void RpgGuiConsole::Initialize() noexcept
 
 	InputTextCommand = AddContentChild<RpgGuiInputText>("console/command");
 	InputTextCommand->bExitFocusOnEnter = false;
-	InputTextCommand->TextFont = RpgFont::s_GetDefault_ShareTechMono();
+	InputTextCommand->TextFont = RpgFont::GetDefault_ShareTechMono();
 	InputTextCommand->BackgroundColor = RpgColor(15, 15, 15);
 	InputTextCommand->BackgroundColorFocused = RpgColor(30, 30, 30);
 	InputTextCommand->EventCommitted.AddObjectFunction(this, &RpgGuiConsole::Callback_InputTextCommand_Committed);
@@ -80,7 +80,7 @@ void RpgGuiConsole::OnUpdate(RpgGuiContext& context, RpgGuiWidget* parentLayout)
 			const char* message = g_ConsoleSystem->GetLogMessage(i, nullptr, &color);
 
 			RpgGuiText* logText = LayoutLog->AddChild<RpgGuiText>(RpgName::Format("console/logs/entry_%i", i));
-			logText->Font = RpgFont::s_GetDefault_ShareTechMono();
+			logText->Font = RpgFont::GetDefault_ShareTechMono();
 			logText->Color = color;
 			logText->SetTextValue(RpgString(message));
 		}

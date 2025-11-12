@@ -5,9 +5,9 @@
 
 
 
-class RpgAttributeComponent
+class RpgGameComponent_Attribute
 {
-	RPG_COMPONENT(RpgAttributeComponent, 16);
+	RPG_COMPONENT(RpgGameComponent_Attribute, 16);
 
 public:
 	float Base[RpgAttribute::MAX_COUNT];
@@ -16,7 +16,7 @@ public:
 
 
 public:
-	RpgAttributeComponent() noexcept
+	RpgGameComponent_Attribute() noexcept
 		: Base()
 		, Modifier()
 		, Final()

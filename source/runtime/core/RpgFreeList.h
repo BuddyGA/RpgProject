@@ -122,10 +122,10 @@ private:
 		NextFreeIndex = otherNextFreeIndex;
 
 		// Copy valid index array
-		RpgPlatformMemory::MemCopy(ValidIndexArray, otherValidIndexArray, sizeof(bool) * Capacity);
+		RpgPlatformMemory::Copy(ValidIndexArray, otherValidIndexArray, sizeof(bool) * Capacity);
 
 		// Copy to get the value of first 4 bytes (the NextFreeIndex) from each empty element
-		RpgPlatformMemory::MemCopy(DataArray, otherDataArray, sizeof(T) * Capacity);
+		RpgPlatformMemory::Copy(DataArray, otherDataArray, sizeof(T) * Capacity);
 
 		// (Non-POD) actual deep copy for valid element only
 		if constexpr (!std::is_trivially_copyable<T>::value)
@@ -157,11 +157,11 @@ private:
 
 		Reserve(initCount);
 		Count = initCount;
-		RpgPlatformMemory::MemSet(ValidIndexArray, 1, sizeof(bool) * Count);
+		RpgPlatformMemory::Set(ValidIndexArray, 1, sizeof(bool) * Count);
 
 		if constexpr (std::is_trivially_copyable<T>::value)
 		{
-			RpgPlatformMemory::MemCopy(DataArray, initializerList.begin(), sizeof(T) * Count);
+			RpgPlatformMemory::Copy(DataArray, initializerList.begin(), sizeof(T) * Count);
 		}
 		else
 		{
@@ -189,10 +189,10 @@ public:
 
 		const int addedCapacity = in_Capacity - Capacity;
 
-		ValidIndexArray = reinterpret_cast<bool*>(RpgPlatformMemory::MemRealloc(ValidIndexArray, sizeof(bool) * in_Capacity));
-		RpgPlatformMemory::MemZero(ValidIndexArray + Capacity, sizeof(bool) * addedCapacity);
+		ValidIndexArray = reinterpret_cast<bool*>(RpgPlatformMemory::Realloc(ValidIndexArray, sizeof(bool) * in_Capacity));
+		RpgPlatformMemory::Zero(ValidIndexArray + Capacity, sizeof(bool) * addedCapacity);
 
-		DataArray = reinterpret_cast<T*>(RpgPlatformMemory::MemRealloc(DataArray, sizeof(T) * in_Capacity));
+		DataArray = reinterpret_cast<T*>(RpgPlatformMemory::Realloc(DataArray, sizeof(T) * in_Capacity));
 		Capacity = in_Capacity;
 	}
 
@@ -263,7 +263,7 @@ public:
 
 	#ifdef RPG_BUILD_DEBUG
 		// Fill data with garbage values
-		RpgPlatformMemory::MemSet(DataArray + index, 0x0000DEAD, sizeof(T));
+		RpgPlatformMemory::Set(DataArray + index, 0x0000DEAD, sizeof(T));
 	#endif // !RPG_BUILD_DEBUG
 
 		// Interpret the first 4 bytes of removed element as (int) and set its value from NextFreeIndex
@@ -301,15 +301,15 @@ public:
 			{
 				Capacity = 0;
 
-				RpgPlatformMemory::MemFree(ValidIndexArray);
+				RpgPlatformMemory::Free(ValidIndexArray);
 				ValidIndexArray = nullptr;
 
-				RpgPlatformMemory::MemFree(DataArray);
+				RpgPlatformMemory::Free(DataArray);
 				DataArray = nullptr;
 			}
 			else
 			{
-				RpgPlatformMemory::MemZero(ValidIndexArray, sizeof(bool) * Capacity);
+				RpgPlatformMemory::Zero(ValidIndexArray, sizeof(bool) * Capacity);
 			}
 		}
 	}

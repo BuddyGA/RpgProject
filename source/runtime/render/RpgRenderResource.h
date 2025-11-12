@@ -425,7 +425,7 @@ public:
 	inline void SetAmbientColorStrength(RpgColorLinear color) noexcept
 	{
 		static_assert(sizeof(RpgShaderFloat4) == sizeof(RpgColorLinear), "Size not equals!");
-		RpgPlatformMemory::MemCopy(&WorldData.AmbientColorStrength, &color, sizeof(RpgColorLinear));
+		RpgPlatformMemory::Copy(&WorldData.AmbientColorStrength, &color, sizeof(RpgColorLinear));
 	}
 
 

@@ -241,7 +241,7 @@ void RpgGuiInputText::OnRender(RpgRenderer2D& renderer) const noexcept
 	}
 
 
-	const RpgSharedFont& font = TextFont ? TextFont : RpgFont::s_GetDefault_Roboto();
+	const RpgSharedFont& font = TextFont ? TextFont : RpgFont::GetDefault_Roboto();
 	const float pixelHeight = font->GetPixelHeight();
 
 

@@ -191,7 +191,7 @@ void RpgMeshSkinnedResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noe
 
 		// skeleton bone skinning
 		const size_t srcOffsetSkeletonBoneSkinning = stagingOffset;
-		RpgPlatformMemory::MemCopy(stagingMap + stagingOffset, SkeletonBoneSkinningTransforms.GetData(), skeletonBoneSkinningSizeBytes);
+		RpgPlatformMemory::Copy(stagingMap + stagingOffset, SkeletonBoneSkinningTransforms.GetData(), skeletonBoneSkinningSizeBytes);
 		cmdList->CopyBufferRegion(SkeletonBoneSkinningBuffer->GetResource(), 0, stagingResource, srcOffsetSkeletonBoneSkinning, skeletonBoneSkinningSizeBytes);
 		stagingOffset += skeletonBoneSkinningSizeBytes;
 

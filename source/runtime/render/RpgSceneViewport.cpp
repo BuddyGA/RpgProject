@@ -83,7 +83,7 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 		const bool bHasSkin = data.Mesh->HasSkin();
 		bool bIsStaticMesh = true;
 
-		const RpgSharedMaterial& useMaterial = data.Material && data.Material->IsAssetLoaded() ? data.Material : RpgMaterial::s_GetDefault(RpgMaterialDefault::MESH_PHONG);
+		const RpgSharedMaterial& useMaterial = data.Material && data.Material->IsAssetLoaded() ? data.Material : RpgMaterial::GetDefault(RpgMaterialDefault::MESH_PHONG);
 
 		RpgDrawIndexed draw;
 		draw.Material = materialResource->AddMaterial(useMaterial);
@@ -172,8 +172,8 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 
 #ifndef RPG_BUILD_SHIPPING
 	FFrameDebug& debug = FrameDebugs[frameContext.Index];
-	debug.LineMaterialId = materialResource->AddMaterial(RpgMaterial::s_GetDefault(RpgMaterialDefault::DEBUG_PRIMITIVE_LINE));
-	debug.LineNoDepthMaterialId = materialResource->AddMaterial(RpgMaterial::s_GetDefault(RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_NO_DEPTH));
+	debug.LineMaterialId = materialResource->AddMaterial(RpgMaterial::GetDefault(RpgMaterialDefault::DEBUG_PRIMITIVE_LINE));
+	debug.LineNoDepthMaterialId = materialResource->AddMaterial(RpgMaterial::GetDefault(RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_NO_DEPTH));
 	debug.CameraId = cameraId;
 #endif // !RPG_BUILD_SHIPPING
 

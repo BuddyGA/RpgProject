@@ -50,7 +50,7 @@ RpgString RpgFilePath::GetDirectoryPath() const noexcept
 	}
 
 	char tempDirPath[MAX_PATH];
-	RpgPlatformMemory::MemCopy(tempDirPath, DirectoryPath.GetData(), length);
+	RpgPlatformMemory::Copy(tempDirPath, DirectoryPath.GetData(), length);
 	tempDirPath[length] = '\0';
 
 	return RpgString(tempDirPath);
@@ -71,7 +71,7 @@ RpgName RpgFilePath::GetDirectoryName() const noexcept
 	}
 
 	char tempDirName[RPG_NAME_MAX_COUNT];
-	RpgPlatformMemory::MemCopy(tempDirName, DirectoryName.GetData(), length);
+	RpgPlatformMemory::Copy(tempDirName, DirectoryName.GetData(), length);
 	tempDirName[length] = '\0';
 
 	return tempDirName;
@@ -92,7 +92,7 @@ RpgName RpgFilePath::GetFileName() const noexcept
 	}
 
 	char tempFileName[RPG_NAME_MAX_COUNT];
-	RpgPlatformMemory::MemCopy(tempFileName, FileName.GetData(), length);
+	RpgPlatformMemory::Copy(tempFileName, FileName.GetData(), length);
 	tempFileName[length] = '\0';
 
 	return tempFileName;
@@ -113,7 +113,7 @@ RpgName RpgFilePath::GetFileExtension() const noexcept
 	}
 
 	char tempFileExt[RPG_NAME_MAX_COUNT];
-	RpgPlatformMemory::MemCopy(tempFileExt, FileExt.GetData(), length);
+	RpgPlatformMemory::Copy(tempFileExt, FileExt.GetData(), length);
 	tempFileExt[length] = '\0';
 
 	return tempFileExt;
@@ -241,7 +241,7 @@ void RpgFileSystem::Initialize() noexcept
 
 	// User/AppData/Local
 	{
-		RpgPlatformMemory::MemZero(tempDirPath, MAX_PATH);
+		RpgPlatformMemory::Zero(tempDirPath, MAX_PATH);
 
 		PWSTR wPath;
 		SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &wPath);

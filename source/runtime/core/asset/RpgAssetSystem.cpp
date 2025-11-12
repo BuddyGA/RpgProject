@@ -263,6 +263,7 @@ RpgAssetSystem::~RpgAssetSystem() noexcept
 
 void RpgAssetSystem::Update() noexcept
 {
+	// Trying to remove unreferenced assets
 	{
 		RPG_PLATFORM_ScopedLock(LoadedMutex);
 
@@ -281,7 +282,6 @@ void RpgAssetSystem::Update() noexcept
 			}
 		}
 	}
-	
 
 	// update loading assets
 	{
@@ -419,7 +419,7 @@ RpgSharedAsset RpgAssetSystem::LoadAsset(const RpgString& assetPath) noexcept
 
 	// check if exists in registry
 	RpgAssetInfo assetInfo;
-	if (!DoesAssetExists(assetPath, &assetInfo))
+	if (!IsAssetRegistered(assetPath, &assetInfo))
 	{
 		RPG_CONSOLE_Error(RpgLogAsset, "Fail to load asset (%s). Asset not found in registry!", *assetPath);
 		return RpgSharedAsset();
@@ -469,7 +469,7 @@ RpgSharedAsset RpgAssetSystem::LoadAssetAsync(const RpgString& assetPath) noexce
 
 		// check if exists in registry
 		RpgAssetInfo assetInfo;
-		if (!DoesAssetExists(assetPath, &assetInfo))
+		if (!IsAssetRegistered(assetPath, &assetInfo))
 		{
 			RPG_CONSOLE_Error(RpgLogAsset, "Fail to load asset (%s). Asset not found in registry!", *assetPath);
 			return RpgSharedAsset();

@@ -7,55 +7,55 @@
 // ========================================================================================================================= //
 // PLATFORM - MEMORY
 // ========================================================================================================================= //
-void* RpgPlatformMemory::MemMalloc(size_t sizeBytes) noexcept
+void* RpgPlatformMemory::Malloc(size_t sizeBytes) noexcept
 {
 	return mi_malloc(sizeBytes);
 }
 
 
-void* RpgPlatformMemory::MemMallocAligned(size_t sizeBytes, size_t alignmentBytes) noexcept
+void* RpgPlatformMemory::MallocAligned(size_t sizeBytes, size_t alignmentBytes) noexcept
 {
 	return mi_malloc_aligned(sizeBytes, alignmentBytes);
 }
 
 
-void* RpgPlatformMemory::MemRealloc(void* prevAlloc, size_t newSizeBytes) noexcept
+void* RpgPlatformMemory::Realloc(void* prevAlloc, size_t newSizeBytes) noexcept
 {
 	return mi_realloc(prevAlloc, newSizeBytes);
 }
 
 
-void* RpgPlatformMemory::MemRecalloc(void* prevAlloc, int count, size_t sizeBytes) noexcept
+void* RpgPlatformMemory::Recalloc(void* prevAlloc, int count, size_t sizeBytes) noexcept
 {
 	return mi_recalloc(prevAlloc, count, sizeBytes);
 }
 
 
-void RpgPlatformMemory::MemFree(void* alloc) noexcept
+void RpgPlatformMemory::Free(void* alloc) noexcept
 {
 	mi_free(alloc);
 }
 
 
-void RpgPlatformMemory::MemCopy(void* dst, const void* src, size_t sizeBytes) noexcept
+void RpgPlatformMemory::Copy(void* dst, const void* src, size_t sizeBytes) noexcept
 {
 	memcpy(dst, src, sizeBytes);
 }
 
 
-void RpgPlatformMemory::MemMove(void* dst, const void* src, size_t sizeBytes) noexcept
+void RpgPlatformMemory::Move(void* dst, const void* src, size_t sizeBytes) noexcept
 {
 	memmove(dst, src, sizeBytes);
 }
 
 
-void RpgPlatformMemory::MemSet(void* data, int value, size_t sizeBytes) noexcept
+void RpgPlatformMemory::Set(void* data, int value, size_t sizeBytes) noexcept
 {
 	memset(data, value, sizeBytes);
 }
 
 
-void RpgPlatformMemory::MemZero(void* data, size_t sizeBytes) noexcept
+void RpgPlatformMemory::Zero(void* data, size_t sizeBytes) noexcept
 {
 	memset(data, 0, sizeBytes);
 }
@@ -68,7 +68,7 @@ void RpgPlatformMemory::MemZero(void* data, size_t sizeBytes) noexcept
 // ========================================================================================================================= //
 int RpgPlatformString::CStringLength(const char* cstr) noexcept
 {
-	return static_cast<int>(strlen(cstr));
+	return cstr ? static_cast<int>(strlen(cstr)) : 0;
 }
 
 
@@ -409,18 +409,18 @@ RPG_LOG_DEFINE_CATEGORY(RpgLogSystem, VERBOSITY_LOG)
 // ========================================================================================================================= //
 // PLATFORM - PROCESS
 // ========================================================================================================================= //
-static void Rpg_MimallocOutput(const char* msg, void* arg)
-{
-	RpgPlatformLog::OutputMessage(RpgPlatformConsole::OUTPUT_COLOR_GREEN, msg);
-}
-
-
-
 namespace RpgPlatformProcess
 {
 	static uint32_t MainThreadId;
 	static HWND MainWindowHandle;
 	static bool bInitialized;
+
+
+	static void MimallocOutput(const char* msg, void* arg)
+	{
+		RpgPlatformLog::OutputMessage(RpgPlatformConsole::OUTPUT_COLOR_GREEN, msg);
+	}
+
 };
 
 
@@ -433,15 +433,14 @@ void RpgPlatformProcess::Initialize() noexcept
 
 	RPG_Log(RpgLogSystem, "Initialize platform process [WINDOWS]");
 
+	// mimalloc options
 	mi_option_enable(mi_option_allow_large_os_pages);
 
-
 #ifndef RPG_BUILD_SHIPPING
-	mi_register_output(Rpg_MimallocOutput, nullptr);
+	mi_register_output(MimallocOutput, nullptr);
 	mi_version();
 	mi_stats_reset();
 #endif // !RPG_BUILD_SHIPPING
-
 
 	MainThreadId = GetCurrentThreadId();
 	SetThreadAffinityMask(GetCurrentThread(), (DWORD_PTR)(1 << 0));
@@ -553,7 +552,7 @@ bool RpgPlatformFile::FolderDelete(const char* folderPath) noexcept
 		do
 		{
 			char fileName[MAX_PATH];
-			RpgPlatformMemory::MemZero(fileName, MAX_PATH);
+			RpgPlatformMemory::Zero(fileName, MAX_PATH);
 			strcpy(fileName, fileData.cFileName);
 
 			if (fileName[0] == '.' || fileName[1] == '.')
@@ -562,7 +561,7 @@ bool RpgPlatformFile::FolderDelete(const char* folderPath) noexcept
 			}
 
 			char filePath[MAX_PATH];
-			RpgPlatformMemory::MemZero(filePath, MAX_PATH);
+			RpgPlatformMemory::Zero(filePath, MAX_PATH);
 			snprintf(filePath, MAX_PATH, "%s/%s", folderPath, fileName);
 
 			if (fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)

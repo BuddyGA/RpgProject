@@ -101,7 +101,7 @@ RpgLevel::RpgLevel(const RpgName& in_Name) noexcept
 RpgLevel::~RpgLevel() noexcept
 {
 	RPG_LogDebug(RpgLogLevel, "Destroy level (%s)", *GetAssetName());
-
+	
 	for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
 	{
 		if (ComponentStorages[compType])
@@ -502,7 +502,7 @@ void RpgLevel::TickUpdate(float deltaTime) noexcept
 		RpgGameObjectScript* script = AttachedScripts[i];
 		RPG_Check(script);
 
-		if (script->TickUpdateOption == RpgTickUpdateOption::NO_UPDATE || (script->TickUpdateOption == RpgTickUpdateOption::STARTED_PLAY && !bHasStartedPlay))
+		if (script->TickUpdateOption == RpgGameObjectScript::TICK_UPDATE_NONE || (script->TickUpdateOption == RpgGameObjectScript::TICK_UPDATE_START_PLAY && !bHasStartedPlay))
 		{
 			continue;
 		}
@@ -556,7 +556,7 @@ RpgGameObject RpgLevel::GameObject_Create(const RpgName& name, bool bIsTransient
 	transform.Dirty = EDirty::DIRTY_NONE;
 
 	FGameObjectComponentScript& compScript = GameObjectComponentScripts[compId];
-	RpgPlatformMemory::MemSet(compScript.Components, RPG_INDEX_INVALID, sizeof(int16_t) * RPG_COMPONENT_TYPE_MAX_COUNT);
+	RpgPlatformMemory::Set(compScript.Components, RPG_INDEX_INVALID, sizeof(int16_t) * RPG_COMPONENT_TYPE_MAX_COUNT);
 	compScript.ScriptIndex = RPG_INDEX_INVALID;
 
 	return RpgGameObject(this, nameId, state.Gen);

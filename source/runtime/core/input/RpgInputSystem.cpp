@@ -10,8 +10,8 @@ RpgInputSystem* g_InputSystem = nullptr;
 
 RpgInputSystem::RpgInputSystem() noexcept
 {
-	RpgPlatformMemory::MemZero(KeyButtonDown[0], sizeof(bool) * RpgInputKey::MAX_COUNT);
-	RpgPlatformMemory::MemZero(KeyButtonDown[1], sizeof(bool) * RpgInputKey::MAX_COUNT);
+	RpgPlatformMemory::Zero(KeyButtonDown[0], sizeof(bool) * RpgInputKey::MAX_COUNT);
+	RpgPlatformMemory::Zero(KeyButtonDown[1], sizeof(bool) * RpgInputKey::MAX_COUNT);
 }
 
 
@@ -52,5 +52,5 @@ void RpgInputSystem::Flush() noexcept
 	MouseCursorPosition[0] = MouseCursorPosition[1];
 	MouseCursorDeltaPosition = RpgPointFloat();
 	MouseScrollValue = RpgPointFloat();
-	RpgPlatformMemory::MemCopy(KeyButtonDown[0], KeyButtonDown[1], sizeof(bool) * RpgInputKey::MAX_COUNT);
+	RpgPlatformMemory::Copy(KeyButtonDown[0], KeyButtonDown[1], sizeof(bool) * RpgInputKey::MAX_COUNT);
 }

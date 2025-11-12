@@ -250,7 +250,7 @@ private:
 		AcquireSRWLockShared(&lock);
 		{
 			const size_t sizeBytes = sizeof(TVertex) * srcCount;
-			RpgPlatformMemory::MemCopy(reinterpret_cast<uint8_t*>(dst) + out_DstOffset, srcData, sizeBytes);
+			RpgPlatformMemory::Copy(reinterpret_cast<uint8_t*>(dst) + out_DstOffset, srcData, sizeBytes);
 			out_DstOffset += sizeBytes;
 		}
 		ReleaseSRWLockShared(&lock);

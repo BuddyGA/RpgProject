@@ -205,7 +205,7 @@ public:
 	{
 		const uint32_t offset = Bytes.GetCount();
 		Bytes.Resize(offset + dataSizeBytes);
-		RpgPlatformMemory::MemCopy(Bytes.GetData() + offset, data, dataSizeBytes);
+		RpgPlatformMemory::Copy(Bytes.GetData() + offset, data, dataSizeBytes);
 	}
 
 
@@ -251,7 +251,7 @@ public:
 
 	virtual void ReadData(void* outData, uint32_t dataSizeBytes) noexcept override
 	{
-		RpgPlatformMemory::MemCopy(outData, Bytes.GetData() + Offset, dataSizeBytes);
+		RpgPlatformMemory::Copy(outData, Bytes.GetData() + Offset, dataSizeBytes);
 		Offset += dataSizeBytes;
 	}
 

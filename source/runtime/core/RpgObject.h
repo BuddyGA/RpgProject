@@ -1,21 +1,20 @@
 #pragma once
 
-#include "RpgString.h"
-#include "RpgMath.h"
 #include "RpgPointer.h"
+#include "RpgStream.h"
 
 
 
-class RpgObjectProperty;
-class RpgObjectClass;
+class RpgProperty;
+class RpgClass;
 class RpgObject;
 
 
 
-class RpgObjectProperty
+class RpgProperty
 {
 public:
-	RpgObjectProperty() noexcept
+	RpgProperty() noexcept
 	{
 		Name = nullptr;
 		Offset = UINT64_MAX;
@@ -24,7 +23,7 @@ public:
 	}
 
 
-	RpgObjectProperty(const char* in_Name, uint64_t in_Offset, const RpgType* in_Type, bool in_bIsTransient) noexcept
+	RpgProperty(const char* in_Name, uint64_t in_Offset, const RpgType* in_Type, bool in_bIsTransient) noexcept
 	{
 		Name = in_Name;
 		Offset = in_Offset;
@@ -33,7 +32,9 @@ public:
 	}
 
 
-	virtual ~RpgObjectProperty() noexcept = default;
+	virtual ~RpgProperty() noexcept = default;
+	virtual void StreamWrite(const RpgObject* obj, RpgStreamWriter& writer) const noexcept = 0;
+	virtual void StreamRead(RpgObject* obj, RpgStreamReader& reader) noexcept = 0;
 
 
 	inline const char* GetName() const noexcept
@@ -56,8 +57,41 @@ public:
 		return bIsTransient;
 	}
 
+	inline void* GetValuePointer(RpgObject* obj) noexcept
+	{
+		RPG_Assert(obj);
+		return reinterpret_cast<void*>(reinterpret_cast<uint8_t*>(obj) + Offset);
+	}
 
-private:
+	inline const void* GetValuePointer(const RpgObject* obj) const noexcept
+	{
+		RPG_Assert(obj);
+		return reinterpret_cast<const void*>(reinterpret_cast<const uint8_t*>(obj) + Offset);
+	}
+
+	template<typename T>
+	inline T* GetValue(RpgObject* obj) noexcept
+	{
+		return static_cast<T*>(GetValuePointer(obj));
+	}
+
+	template<typename T>
+	inline const T* GetValue(const RpgObject* obj) const noexcept
+	{
+		return static_cast<const T*>(GetValuePointer(obj));
+	}
+
+	inline RpgString ToString() const noexcept
+	{
+		return RpgString::Format("PropertyName: %s, PropertyType: %s, ArrayType: %s, PointerType: %s",
+			Name, Type->GetName(), 
+			Type->IsArray() ? Type->GetArrayType()->GetName() : "null",
+			Type->IsPointer() ? Type->GetPointerType()->GetName() : "null"
+		);
+	}
+
+
+protected:
 	const char* Name;
 	uint64_t Offset;
 	const RpgType* Type;
@@ -67,44 +101,53 @@ private:
 
 
 
-
-class RpgObjectClass
+template<typename T>
+class RpgPropertyType : public RpgProperty
 {
-	RPG_NOCOPY(RpgObjectClass)
-
-private:
-	static void Register(const RpgObjectClass* in_Class) noexcept;
-	static const RpgObjectClass* Find(const RpgName& name) noexcept;
-
+	static_assert(!std::is_pointer<T>::value, "Type must not a pointer!");
 
 public:
-	RpgObjectClass(const char* in_Name, const RpgObjectClass* in_Parent, const RpgObject* in_DefaultObject, RpgArray<RpgObjectProperty> in_Properties) noexcept
+	RpgPropertyType(const char* in_Name, uint32_t in_Offset, bool in_bIsTransient) noexcept
+		: RpgProperty(in_Name, in_Offset, &Rpg::Type<T>::Value, in_bIsTransient)
 	{
-		Name = in_Name;
-		Parent = in_Parent;
-		DefaultObject = in_DefaultObject;
-		Properties = in_Properties;
-
-		Register(this);
 	}
 
-	virtual ~RpgObjectClass() noexcept = default;
-
-
-	void GetProperties(RpgArray<const RpgObjectProperty*>& out_Properties) const noexcept
+	
+	virtual void StreamWrite(const RpgObject* obj, RpgStreamWriter& writer) const noexcept
 	{
-		if (Parent)
-		{
-			Parent->GetProperties(out_Properties);
-		}
+		RPG_Assert(!Type->IsPointer());
 
-		out_Properties.Reserve(out_Properties.GetCount() + Properties.GetCount());
-
-		for (const RpgObjectProperty& p : Properties)
-		{
-			out_Properties.AddValue(&p);
-		}
+		const T& value = *GetValue<T>(obj);
+		writer.Write(value);
 	}
+
+
+	virtual void StreamRead(RpgObject* obj, RpgStreamReader& reader) noexcept
+	{
+		RPG_Assert(!Type->IsPointer());
+
+		T& value = *GetValue<T>(obj);
+		reader.Read(value);
+	}
+
+};
+
+
+
+
+class RpgClass
+{
+	RPG_NOCOPY(RpgClass)
+
+public:
+	RpgClass(const char* in_Name, const RpgClass* in_Parent, const RpgObject* in_DefaultObject, RpgArray<RpgProperty*> in_Properties) noexcept;
+	virtual ~RpgClass() noexcept = default;
+
+	void GetProperties(RpgArray<RpgProperty*>& out_Properties) const noexcept;
+	bool IsParentOf(const RpgClass* childClass) const noexcept;
+
+	virtual RpgObject* CreateObject(const RpgName& in_Name) const noexcept = 0;
+	virtual void DestroyObject(RpgObject* obj) const noexcept = 0;
 
 
 	inline const char* GetName() const noexcept
@@ -113,7 +156,7 @@ public:
 	}
 
 
-	inline const RpgObjectClass* GetParent() const noexcept
+	inline const RpgClass* GetParent() const noexcept
 	{
 		return Parent;
 	}
@@ -125,58 +168,34 @@ public:
 	}
 
 
-	bool IsParentOf(const RpgObjectClass* childClass) const noexcept
-	{
-		if (childClass == nullptr)
-		{
-			return false;
-		}
-
-		const RpgObjectClass* checkClass = childClass;
-
-		do
-		{
-			if (this == checkClass)
-			{
-				return true;
-			}
-
-			checkClass = checkClass->Parent;
-		}
-		while (checkClass);
-
-		return false;
-	}
-
-
-	virtual RpgObject* CreateObject(const RpgName& in_Name) noexcept = 0;
-	virtual void DestroyObject(RpgObject* obj) noexcept = 0;
+private:
+	const char* Name;
+	const RpgClass* Parent;
+	const RpgObject* DefaultObject;
+	RpgArray<RpgProperty*> Properties;
 
 
 private:
-	const char* Name;
-	const RpgObjectClass* Parent;
-	const RpgObject* DefaultObject;
-	RpgArray<RpgObjectProperty> Properties;
+	static void Register(const RpgClass* in_Class) noexcept;
+	static const RpgClass* Find(const RpgName& name) noexcept;
 
 };
 
 
 template<typename T>
-class RpgClassType : public RpgObjectClass
+class RpgClassType : public RpgClass
 {
 public:
-	RpgClassType(const char* in_Name, const RpgObjectClass* in_Parent, const RpgObject* in_DefaultObject, RpgArray<RpgObjectProperty> in_Properties) noexcept
-		: RpgObjectClass(in_Name, in_Parent, in_DefaultObject, in_Properties)
+	RpgClassType(const char* in_Name, const RpgClass* in_Parent, const RpgObject* in_DefaultObject, RpgArray<RpgProperty*> in_Properties) noexcept
+		: RpgClass(in_Name, in_Parent, in_DefaultObject, in_Properties)
 	{
 	}
 
 
-	virtual RpgObject* CreateObject(const RpgName& in_Name) noexcept override;
-	virtual void DestroyObject(RpgObject* obj) noexcept override;
+	virtual RpgObject* CreateObject(const RpgName& in_Name) const noexcept override;
+	virtual void DestroyObject(RpgObject* obj) const noexcept override;
 
 };
-
 
 
 
@@ -185,13 +204,13 @@ class RpgObject
 	RPG_NOCOPY(RpgObject)
 
 public:
-	static const RpgObjectClass* Class() noexcept
+	static const RpgClass* Class() noexcept
 	{
 		static RpgObject __default("__default");
 
 		static RpgClassType<RpgObject> __class("RpgObject", nullptr, &__default,
 			{
-				RpgObjectProperty("Name", offsetof(RpgObject, Name), &Rpg::Type<RpgName>::Value, false)
+				new RpgPropertyType<RpgName>("Name", offsetof(RpgObject, Name), false)
 			}
 		);
 
@@ -201,7 +220,6 @@ public:
 
 private:
 	RpgObject(const RpgName& in_Name) noexcept
-		: RpgObject()
 	{
 		Name = in_Name;
 	}
@@ -211,8 +229,11 @@ public:
 	RpgObject() noexcept = default;
 	virtual ~RpgObject() noexcept = default;
 
+	virtual void StreamWrite(RpgStreamWriter& writer) const;
+	virtual void StreamRead(RpgStreamReader& reader);
 
-	virtual const RpgObjectClass* GetClass() const noexcept
+
+	virtual const RpgClass* GetClass() const noexcept
 	{
 		return Class();
 	}
@@ -221,8 +242,8 @@ public:
 	template<typename T>
 	inline bool IsClass() const noexcept
 	{
-		const RpgObjectClass* objClass = GetClass();
-		const RpgObjectClass* checkClass = T::Class();
+		const RpgClass* objClass = GetClass();
+		const RpgClass* checkClass = T::Class();
 
 		// try actual class
 		// try up-cast
@@ -238,9 +259,9 @@ public:
 
 
 template<typename T>
-inline RpgObject* RpgClassType<T>::CreateObject(const RpgName& in_Name) noexcept
+inline RpgObject* RpgClassType<T>::CreateObject(const RpgName& in_Name) const noexcept
 {
-	T* obj = reinterpret_cast<T*>(RpgPlatformMemory::MemMalloc(sizeof(T)));
+	T* obj = reinterpret_cast<T*>(RpgPlatformMemory::Malloc(sizeof(T)));
 	obj->Name = in_Name;
 	new (obj)T();
 
@@ -249,7 +270,7 @@ inline RpgObject* RpgClassType<T>::CreateObject(const RpgName& in_Name) noexcept
 
 
 template<typename T>
-inline void RpgClassType<T>::DestroyObject(RpgObject* obj) noexcept
+inline void RpgClassType<T>::DestroyObject(RpgObject* obj) const noexcept
 {
 	RPG_Assert(obj && obj->GetClass() == this);
 	delete static_cast<T*>(obj);
@@ -257,18 +278,19 @@ inline void RpgClassType<T>::DestroyObject(RpgObject* obj) noexcept
 
 
 
+
 #define RPG_CLASS_BEGIN(classType, parentClassType)										\
 	using ThisClass = classType;														\
 	using Super = parentClassType;														\
 public:																					\
-	static const RpgObjectClass* Class() noexcept												\
+	static const RpgClass* Class() noexcept												\
 	{																					\
 		static classType __default("__default");										\
 		static RpgClassType<classType> __class(#classType, Super::Class(), &__default,	\
 			{
 
-#define RPG_PROPERTY(propertyType, propertyName)					RpgObjectProperty(#propertyName, offsetof(ThisClass, propertyName), &Rpg::Type<propertyType>::Value, false)
-#define RPG_PROPERTY_Transient(propertyType, propertyName)			RpgObjectProperty(#propertyName, offsetof(ThisClass, propertyName), &Rpg::Type<propertyType>::Value, true)
+#define RPG_PROPERTY(type, name)			new RpgPropertyType<type>(#name, offsetof(ThisClass, name), false),
+#define RPG_PROPERTY_Transient(type, name)	new RpgPropertyType<type>(#name, offsetof(ThisClass, name), true),
 
 #define RPG_CLASS_END(classType) 													\
 			}																		\
@@ -276,8 +298,7 @@ public:																					\
 		return &__class;															\
 	}																				\
 public:																				\
-	classType() noexcept;															\
-	virtual const RpgObjectClass* GetClass() const noexcept override				\
+	virtual const RpgClass* GetClass() const noexcept override						\
 	{																				\
 		return Class();																\
 	}																				\
@@ -307,7 +328,7 @@ namespace Rpg
 			return;
 		}
 
-		RpgObjectClass* objClass = const_cast<RpgObjectClass*>(obj->GetClass());
+		RpgClass* objClass = const_cast<RpgClass*>(obj->GetClass());
 		objClass->DestroyObject(obj);
 	}
 	
@@ -320,26 +341,19 @@ namespace Rpg
 		return (obj && obj->IsClass<T>()) ? static_cast<T*>(obj) : nullptr;
 	}
 
-
-	template<typename T>
-	inline T* ObjectCastCheck(RpgObject* obj) noexcept
-	{
-		static_assert(std::is_base_of<RpgObject, T>::value, "Rpg::ObjectCast type of <T> must be derived from type <RpgObject>!");
-		
-		RPG_Check(obj && obj->IsClass<T>());
-
-		return static_cast<T*>(obj);
-	}
-
 };
 
 
 
-class RpgAsset : public RpgObject
+class RpgTestObject : public RpgObject
 {
-	RPG_CLASS_BEGIN(RpgAsset, RpgObject)
+	RPG_CLASS_BEGIN(RpgTestObject, RpgObject)
 		RPG_PROPERTY(RpgArray<RpgObject*>, Objects)
-	RPG_CLASS_END(RpgAsset)
+	RPG_CLASS_END(RpgTestObject)
+
+public:
+	RpgTestObject() noexcept = default;
+
 
 private:
 	RpgArray<RpgObject*> Objects;

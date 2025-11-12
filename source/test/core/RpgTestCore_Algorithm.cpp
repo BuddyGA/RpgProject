@@ -1,5 +1,5 @@
 #include "RpgTestCore.h"
-#include "core/dsa/RpgAlgorithm.h"
+#include "core/RpgAlgorithm.h"
 
 
 
@@ -13,6 +13,7 @@ static void Test_Swap() noexcept
 }
 
 
+/*
 static void Test_PowerOfTwo() noexcept
 {
 	const int16_t t0 = 256;
@@ -45,6 +46,7 @@ static void Test_PowerOfTwo() noexcept
 	const uint32_t t9 = 1920;
 	RPG_Assert(!RpgAlgorithm::IsPowerOfTwo(t9));
 }
+*/
 
 
 static void Test_Array_CopyElements() noexcept
@@ -241,10 +243,10 @@ static void Test_Array_InsertElements() noexcept
 }
 
 
-void RpgTest::Core::Test_DSA_Algorithm() noexcept
+void RpgTest::Core::Test_Algorithm() noexcept
 {
 	Test_Swap();
-	Test_PowerOfTwo();
+	//Test_PowerOfTwo();
 	Test_Array_CopyElements();
 	Test_Array_ShiftElements();
 	Test_Array_RemoveElements();

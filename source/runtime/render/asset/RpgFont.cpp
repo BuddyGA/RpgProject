@@ -26,7 +26,7 @@ RpgFont::RpgFont(const RpgName& in_Name, const RpgString& ttfFilePath, float in_
 
 	UnicodeRange.CodeStart = in_UnicodeStart;
 	UnicodeRange.CodeCount = in_UnicodeCount;
-	UnicodeRange.PackedChars = RpgPlatformMemory::MemMalloc(sizeof(stbtt_packedchar) * UnicodeRange.CodeCount);
+	UnicodeRange.PackedChars = RpgPlatformMemory::Malloc(sizeof(stbtt_packedchar) * UnicodeRange.CodeCount);
 
 	Metric.ScalePx = stbtt_ScaleForPixelHeight(&stbFontInfo, in_SizePx);
 
@@ -57,7 +57,7 @@ RpgFont::RpgFont(const RpgName& in_Name, const RpgString& ttfFilePath, float in_
 	{
 		RpgTexture2D::FMipData mipData;
 		uint8_t* pixelData = Texture->MipWriteLock(0, mipData);
-		RpgPlatformMemory::MemCopy(pixelData, texturePixels.GetData(), texturePixels.GetMemorySizeBytes_Allocated());
+		RpgPlatformMemory::Copy(pixelData, texturePixels.GetData(), texturePixels.GetMemorySizeBytes_Allocated());
 		Texture->MipWriteUnlock(0);
 	}
 }
@@ -67,7 +67,7 @@ RpgFont::~RpgFont() noexcept
 {
 	RPG_LogDebug(RpgLogFont, "Destroy font (%s)", *Name);
 
-	RpgPlatformMemory::MemFree(UnicodeRange.PackedChars);
+	RpgPlatformMemory::Free(UnicodeRange.PackedChars);
 }
 
 
@@ -309,36 +309,36 @@ int RpgFont::GenerateTextVertex(const char* text, int length, RpgPointFloat text
 static RpgArray<RpgSharedFont> DefaultFonts;
 
 
-RpgSharedFont RpgFont::s_CreateShared(const RpgName& name, const RpgString& ttfFilePath, float sizePx, int unicodeStart, int unicodeCount) noexcept
+RpgSharedFont RpgFont::CreateShared(const RpgName& name, const RpgString& ttfFilePath, float sizePx, int unicodeStart, int unicodeCount) noexcept
 {
 	return RpgSharedFont(new RpgFont(name, ttfFilePath, sizePx, unicodeStart, unicodeCount));
 }
 
 
-void RpgFont::s_CreateDefaults() noexcept
+void RpgFont::CreateDefaults() noexcept
 {
 	RPG_LogDebug(RpgLogFont, "Create default fonts...");
 
 	const RpgString fontAssetDirPath = RpgFileSystem::GetAssetRawDirPath() + "font/";
 
-	DefaultFonts.AddValue(s_CreateShared("FNT_DEF_Roboto", fontAssetDirPath + "Roboto-Regular.ttf", RPG_FONT_SIZE_MEDIUM, 32, 96));
-	DefaultFonts.AddValue(s_CreateShared("FNT_DEF_ShareTechMono", fontAssetDirPath + "ShareTechMono-Regular.ttf", RPG_FONT_SIZE_MEDIUM, 32, 96));
+	DefaultFonts.AddValue(CreateShared("FNT_DEF_Roboto", fontAssetDirPath + "Roboto-Regular.ttf", RPG_FONT_SIZE_MEDIUM, 32, 96));
+	DefaultFonts.AddValue(CreateShared("FNT_DEF_ShareTechMono", fontAssetDirPath + "ShareTechMono-Regular.ttf", RPG_FONT_SIZE_MEDIUM, 32, 96));
 }
 
 
-void RpgFont::s_DestroyDefaults() noexcept
+void RpgFont::DestroyDefaults() noexcept
 {
 	DefaultFonts.Clear(true);
 }
 
 
-const RpgSharedFont& RpgFont::s_GetDefault_Roboto() noexcept
+const RpgSharedFont& RpgFont::GetDefault_Roboto() noexcept
 {
 	return DefaultFonts[0];
 }
 
 
-const RpgSharedFont& RpgFont::s_GetDefault_ShareTechMono() noexcept
+const RpgSharedFont& RpgFont::GetDefault_ShareTechMono() noexcept
 {
 	return DefaultFonts[1];
 }

@@ -19,6 +19,7 @@
 
 #ifdef RPG_BUILD_DEBUG
 #include "../test/core/RpgTestCore.h"
+#include "core/RpgObject.h"
 #endif // RPG_BUILD_DEBUG
 
 
@@ -27,7 +28,7 @@ constexpr const char* RPG_WINDOW_CLASS_NAME = "RpgWindow";
 static RpgPointInt MousePrevPosition;
 
 
-static LRESULT CALLBACK RpgMainWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK Rpg_WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
@@ -299,6 +300,17 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	// Run tests
 	{
 		RpgTest::Core::Execute();
+
+		/*
+		const RpgClass* assetClass = RpgTestObject::Class();
+		RpgArray<RpgProperty*> properties;
+		assetClass->GetProperties(properties);
+
+		for (RpgProperty* p : properties)
+		{
+			RPG_LogDebug(RpgLogTemp, "%s", *p->ToString());
+		}
+		*/
 	}
 #endif // RPG_BUILD_DEBUG
 
@@ -313,9 +325,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	RpgShaderManager::Initialize();
 	RpgRenderPipeline::Initialize();
 
-	RpgTexture2D::s_CreateDefaults();
-	RpgFont::s_CreateDefaults();
-	RpgMaterial::s_CreateDefaults();
+	RpgTexture2D::CreateDefaults();
+	RpgFont::CreateDefaults();
+	RpgMaterial::CreateDefaults();
 
 	// Compile default materials
 	{
@@ -323,7 +335,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 		for (int m = 0; m < RpgMaterialDefault::MAX_COUNT; ++m)
 		{
-			defaultMaterials[m] = RpgMaterial::s_GetDefault(static_cast<RpgMaterialDefault::EType>(m));
+			defaultMaterials[m] = RpgMaterial::GetDefault(static_cast<RpgMaterialDefault::EType>(m));
 		}
 
 		RpgRenderPipeline::AddMaterials(defaultMaterials, RpgMaterialDefault::MAX_COUNT);
@@ -342,12 +354,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	#ifndef RPG_BUILD_SHIPPING
 		// add engine assets
-		RpgSharedTexture2D texDefWhite = RpgTexture2D::s_GetDefault_White();
+		RpgSharedTexture2D texDefWhite = RpgTexture2D::GetDefault_White();
 		g_AssetSystem->SaveAsset<RpgTexture2D>(texDefWhite, "engine/texture");
 
 		for (int i = 0; i < RpgMaterialDefault::MAX_COUNT; ++i)
 		{
-			RpgSharedMaterial material = RpgMaterial::s_GetDefault(static_cast<RpgMaterialDefault::EType>(i));
+			RpgSharedMaterial material = RpgMaterial::GetDefault(static_cast<RpgMaterialDefault::EType>(i));
 			g_AssetSystem->SaveAsset<RpgMaterial>(material, "engine/material");
 		}
 
@@ -360,7 +372,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	// Initialize input system
 	g_InputSystem = new RpgInputSystem();
 	
-	// Initialize game engine
+	// Initialize game app
 	g_GameApp = new RpgGameApp();
 
 	// main window
@@ -375,7 +387,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 		windowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 		windowClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-		windowClass.lpfnWndProc = RpgMainWndProc;
+		windowClass.lpfnWndProc = Rpg_WndProc;
 		windowClass.lpszMenuName = NULL;
 		windowClass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
 		RegisterClassExA(&windowClass);
@@ -503,9 +515,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	delete g_InputSystem;
 	delete g_AssetSystem;
 
-	RpgMaterial::s_DestroyDefaults();
-	RpgFont::s_DestroyDefaults();
-	RpgTexture2D::s_DestroyDefaults();
+	RpgMaterial::DestroyDefaults();
+	RpgFont::DestroyDefaults();
+	RpgTexture2D::DestroyDefaults();
 
 	RpgShaderManager::Shutdown();
 	RpgRenderPipeline::Shutdown();

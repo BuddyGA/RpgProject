@@ -239,6 +239,8 @@ void RpgGameApp::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 
 			if (LoadingLevel)
 			{
+				// Normally this is done in render-world-subsystem when camera-component referencing the main viewport
+				// since the level is loading and no camera gameobject yet, we call this manually
 				MainRenderer->AddWorldSceneViewport(frameIndex, MainWorld, &SceneViewport);
 			}
 

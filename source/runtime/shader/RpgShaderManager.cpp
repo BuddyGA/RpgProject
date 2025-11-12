@@ -2,6 +2,8 @@
 #include "core/RpgThreadPool.h"
 #include "core/RpgFilePath.h"
 
+using namespace Microsoft::WRL;
+
 
 #define RPG_SHADER_Check(hr)	RPG_Check((hr) == S_OK)
 
@@ -126,7 +128,7 @@ public:
 
 	#ifdef RPG_BUILD_DEBUG
 		const DWORD fileVersionSize = GetFileVersionInfoSizeA("dxcompiler.dll", NULL);
-		void* fileVersionData = RpgPlatformMemory::MemMalloc(fileVersionSize);
+		void* fileVersionData = RpgPlatformMemory::Malloc(fileVersionSize);
 		if (GetFileVersionInfoA("dxcompiler.dll", 0, fileVersionSize, fileVersionData))
 		{
 			VS_FIXEDFILEINFO* ffi = nullptr;
@@ -144,7 +146,7 @@ public:
 
 		if (fileVersionData)
 		{
-			RpgPlatformMemory::MemFree(fileVersionData);
+			RpgPlatformMemory::Free(fileVersionData);
 			fileVersionData = nullptr;
 		}
 	#endif // RPG_BUILD_DEBUG

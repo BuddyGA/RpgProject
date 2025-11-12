@@ -25,7 +25,7 @@ void RpgMaterialResource::UpdateResources(int frameIndex) noexcept
 		RpgSharedMaterial& material = Materials[m];
 
 		RpgShaderMaterialParameter& parameterRootConstant = ParameterRootConstants[m];
-		RpgPlatformMemory::MemSet(&parameterRootConstant, RPG_INDEX_INVALID, sizeof(RpgShaderMaterialParameter));
+		RpgPlatformMemory::Set(&parameterRootConstant, RPG_INDEX_INVALID, sizeof(RpgShaderMaterialParameter));
 		int* parameterRootConstantTextureIndexes = reinterpret_cast<int*>(&parameterRootConstant);
 
 
@@ -71,7 +71,7 @@ void RpgMaterialResource::UpdateResources(int frameIndex) noexcept
 		const RpgMaterialParameterVectorArray& materialVectors = material->ParameterVectorsReadLock();
 		for (int v = 0; v < materialVectors.GetCount(); ++v)
 		{
-			RpgPlatformMemory::MemCopy(vectorScalar.Vectors + v, &materialVectors[v].Value, sizeof(float) * 4);
+			RpgPlatformMemory::Copy(vectorScalar.Vectors + v, &materialVectors[v].Value, sizeof(float) * 4);
 		}
 		material->ParameterVectorsReadUnlock();
 
@@ -108,7 +108,7 @@ void RpgMaterialResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noexce
 		RPG_D3D12_SetDebugNameAllocation(MaterialStagingBuffer, "STG_MaterialVectorScalarData");
 
 		void* stagingMap = RpgD3D12::MapBuffer(MaterialStagingBuffer.Get());
-		RpgPlatformMemory::MemCopy(stagingMap, VectorScalarData.GetData(), materialVectorScalarSizeBytes);
+		RpgPlatformMemory::Copy(stagingMap, VectorScalarData.GetData(), materialVectorScalarSizeBytes);
 		cmdList->CopyBufferRegion(VectorScalarStructBuffer->GetResource(), 0, MaterialStagingBuffer->GetResource(), 0, materialVectorScalarSizeBytes);
 		RpgD3D12::UnmapBuffer(MaterialStagingBuffer.Get());
 	}

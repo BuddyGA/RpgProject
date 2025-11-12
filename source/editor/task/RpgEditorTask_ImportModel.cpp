@@ -29,7 +29,7 @@ namespace RpgAssimp
 	[[nodiscard]] inline static RpgMatrixTransform ToMatrixTransform(const aiMatrix4x4& assimpMatrix) noexcept
 	{
 		RpgMatrixTransform matrix;
-		RpgPlatformMemory::MemCopy(&matrix, &assimpMatrix, sizeof(RpgMatrixTransform));
+		RpgPlatformMemory::Copy(&matrix, &assimpMatrix, sizeof(RpgMatrixTransform));
 		matrix.TransposeInPlace();
 
 		return matrix;
@@ -154,7 +154,7 @@ void RpgEditorTask_ImportModel::Execute() noexcept
 
 
 	// process intermediate models
-	const RpgSharedMaterial& defaultMaterialMeshPhong = RpgMaterial::s_GetDefault(RpgMaterialDefault::MESH_PHONG);
+	const RpgSharedMaterial& defaultMaterialMeshPhong = RpgMaterial::GetDefault(RpgMaterialDefault::MESH_PHONG);
 
 	ImportedModels.Resize(IntermediateModels.GetCount());
 
@@ -180,7 +180,7 @@ void RpgEditorTask_ImportModel::Execute() noexcept
 			const int materialIndex = intModel.Materials[j];
 			const RpgAssimp::FMaterialPhong& intMat = IntermediateMaterialPhongs[materialIndex];
 
-			RpgSharedMaterial material = RpgMaterial::s_CreateSharedInstance(intMat.Name, defaultMaterialMeshPhong);
+			RpgSharedMaterial material = RpgMaterial::CreateSharedInstance(intMat.Name, defaultMaterialMeshPhong);
 			material->SetParameterVectorValue("base_color", intMat.ParamVectorBaseColor);
 			material->SetParameterVectorValue("specular_color", intMat.ParamVectorSpecularColor);
 			material->SetParameterScalarValue("shininess", intMat.ParamScalarShininess);
@@ -607,7 +607,7 @@ void RpgEditorTask_ImportModel::ExtractMeshesFromNode(const aiScene* assimpScene
 			{
 				const aiFace& assimpFace = assimpMesh->mFaces[f];
 				RPG_Check(assimpFace.mNumIndices == 3);
-				RpgPlatformMemory::MemCopy(tempIndices.GetData() + idx, assimpFace.mIndices, sizeof(uint32_t) * assimpFace.mNumIndices);
+				RpgPlatformMemory::Copy(tempIndices.GetData() + idx, assimpFace.mIndices, sizeof(uint32_t) * assimpFace.mNumIndices);
 				idx += assimpFace.mNumIndices;
 			}
 
