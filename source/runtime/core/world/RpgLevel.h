@@ -126,7 +126,7 @@ private:
 
 
 private:
-	RpgComponentStorageInterface* ComponentStorages[RPG_COMPONENT_TYPE_MAX_COUNT];
+	RpgComponentStorageInterface* ComponentStorages[RPG_COMPONENT_ID_MAX_COUNT];
 
 
 
@@ -250,7 +250,7 @@ public:
 	inline void* GameObject_GetComponent(RpgGameObject gameObject, int compType) const noexcept
 	{
 		RPG_Check(GameObject_IsValid(gameObject));
-		RPG_Check(compType >= 0 && compType < RPG_COMPONENT_TYPE_MAX_COUNT);
+		RPG_Check(compType >= 0 && compType < RPG_COMPONENT_ID_MAX_COUNT);
 
 		const int index = gameObject.Index;
 		const int compId = GameObjectComponentScripts[index].Components[compType];
@@ -262,7 +262,7 @@ public:
 	inline void* GameObject_AddComponent(RpgGameObject gameObject, int compType) noexcept
 	{
 		RPG_Check(GameObject_IsValid(gameObject));
-		RPG_Check(compType >= 0 && compType < RPG_COMPONENT_TYPE_MAX_COUNT);
+		RPG_Check(compType >= 0 && compType < RPG_COMPONENT_ID_MAX_COUNT);
 
 		const int index = gameObject.Index;
 		FGameObjectComponentScript& compScript = GameObjectComponentScripts[index];
@@ -285,7 +285,7 @@ public:
 	inline bool GameObject_RemoveComponent(RpgGameObject gameObject, int compType) noexcept
 	{
 		RPG_Check(GameObject_IsValid(gameObject));
-		RPG_Check(compType >= 0 && compType < RPG_COMPONENT_TYPE_MAX_COUNT);
+		RPG_Check(compType >= 0 && compType < RPG_COMPONENT_ID_MAX_COUNT);
 
 		const int index = gameObject.Index;
 		FGameObjectComponentScript& compScript = GameObjectComponentScripts[index];
@@ -394,7 +394,7 @@ private:
 
 	struct FGameObjectComponentScript
 	{
-		int16_t Components[RPG_COMPONENT_TYPE_MAX_COUNT];
+		int16_t Components[RPG_COMPONENT_ID_MAX_COUNT];
 		int16_t ScriptIndex;
 	};
 	RpgFreeList<FGameObjectComponentScript> GameObjectComponentScripts;

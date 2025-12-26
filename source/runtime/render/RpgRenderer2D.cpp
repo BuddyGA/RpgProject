@@ -314,24 +314,24 @@ void RpgRenderer2D::PreRender(RpgRenderFrameContext& frameContext) noexcept
 		{
 			FDrawBatch& draw = drawBatchArray[batchDrawIndex];
 			draw.VertexStart = frame.BatchMeshVertices.GetCount();
-			draw.VertexCount = 0;
+			draw.MeshVertexCount = 0;
 			draw.IndexStart = frame.BatchMeshIndices.GetCount();
-			draw.IndexCount = 0;
+			draw.MeshIndexCount = 0;
 		}
 
 		FDrawBatch& draw = drawBatchArray[batchDrawIndex];
 		RPG_Assert(draw.ShaderMaterialId == shaderMaterialId);
 
-		const uint32_t vertexOffset = static_cast<uint32_t>(draw.VertexStart + draw.VertexCount);
+		const uint32_t vertexOffset = static_cast<uint32_t>(draw.VertexStart + draw.MeshVertexCount);
 		if (vertexOffset > 0)
 		{
 			RpgVertexGeometryFactory::UpdateBatchIndices(frame.MeshIndices, vertexOffset, mesh.DataIndexStart, mesh.DataIndexCount);
 		}
 
-		draw.VertexCount += mesh.DataVertexCount;
-		draw.IndexCount += mesh.DataIndexCount;
+		draw.MeshVertexCount += mesh.DataVertexCount;
+		draw.MeshIndexCount += mesh.DataIndexCount;
 
-		if (draw.IndexCount == 120)
+		if (draw.MeshIndexCount == 120)
 		{
 			//RPG_DebugBreak();
 		}
@@ -397,7 +397,7 @@ void RpgRenderer2D::PreRender(RpgRenderFrameContext& frameContext) noexcept
 
 		FDrawBatchLine& batchDrawLine = frame.BatchDrawLine;
 		batchDrawLine.MaterialId = frameContext.MaterialResource->AddMaterial(RpgMaterial::GetDefault(RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_2D));
-		batchDrawLine.IndexCount = frame.LineIndices.GetCount();
+		batchDrawLine.MeshIndexCount = frame.LineIndices.GetCount();
 		batchDrawLine.IndexStart = 0;
 		batchDrawLine.IndexVertexOffset = 0;
 	}
@@ -419,13 +419,13 @@ void RpgRenderer2D::CommandCopy(const RpgRenderFrameContext& frameContext, ID3D1
 	const size_t lineIdxSizeBytes = frame.LineIndices.GetMemorySizeBytes_Allocated();
 	const size_t stagingSizeBytes = meshVtxSizeBytes + meshIdxSizeBytes + lineVtxSizeBytes + lineIdxSizeBytes;
 
-	RpgD3D12::ResizeBuffer(frame.StagingBuffer, stagingSizeBytes, true);
-	RPG_D3D12_SetDebugNameAllocation(frame.StagingBuffer, "STG_Mesh2D");
+	RpgD3D12::ResizeBuffer(frame.MeshStagingBuffer, stagingSizeBytes, true);
+	RPG_D3D12_SetDebugNameAllocation(frame.MeshStagingBuffer, "STG_Mesh2D");
 
-	uint8_t* stagingMap = RpgD3D12::MapBuffer<uint8_t>(frame.StagingBuffer.Get());
+	uint8_t* stagingMap = RpgD3D12::MapBuffer<uint8_t>(frame.MeshStagingBuffer.Get());
 	{
 		size_t stagingOffset = 0;
-		ID3D12Resource* stagingResource = frame.StagingBuffer->GetResource();
+		ID3D12Resource* stagingResource = frame.MeshStagingBuffer->GetResource();
 
 		if (meshVtxSizeBytes > 0)
 		{
@@ -455,7 +455,7 @@ void RpgRenderer2D::CommandCopy(const RpgRenderFrameContext& frameContext, ID3D1
 
 		RPG_Check(stagingOffset == stagingSizeBytes);
 	}
-	RpgD3D12::UnmapBuffer(frame.StagingBuffer.Get());
+	RpgD3D12::UnmapBuffer(frame.MeshStagingBuffer.Get());
 }
 
 
@@ -515,14 +515,14 @@ void RpgRenderer2D::CommandDraw(const RpgRenderFrameContext& frameContext, ID3D1
 					const FDrawBatch draw = batchDrawClip.BatchDraws[d];
 					materialResource->CommandBindMaterial(cmdList, draw.ShaderMaterialId);
 
-					cmdList->DrawIndexedInstanced(draw.IndexCount, 1, draw.IndexStart, 0, 0);
+					cmdList->DrawIndexedInstanced(draw.MeshIndexCount, 1, draw.IndexStart, 0, 0);
 				}
 			}
 		}
 	}
 	
 	
-	if (frame.BatchDrawLine.IndexCount > 0)
+	if (frame.BatchDrawLine.MeshIndexCount > 0)
 	{
 		RpgD3D12Command::SetScissor(cmdList, 0, 0, ViewportDimension.X, ViewportDimension.Y);
 
@@ -551,6 +551,6 @@ void RpgRenderer2D::CommandDraw(const RpgRenderFrameContext& frameContext, ID3D1
 
 		frameContext.MaterialResource->CommandBindMaterial(cmdList, frame.BatchDrawLine.MaterialId);
 
-		cmdList->DrawIndexedInstanced(frame.BatchDrawLine.IndexCount, 1, frame.BatchDrawLine.IndexStart, frame.BatchDrawLine.IndexVertexOffset, 0);
+		cmdList->DrawIndexedInstanced(frame.BatchDrawLine.MeshIndexCount, 1, frame.BatchDrawLine.IndexStart, frame.BatchDrawLine.IndexVertexOffset, 0);
 	}
 }

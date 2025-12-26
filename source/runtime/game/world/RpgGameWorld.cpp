@@ -12,9 +12,10 @@ void Rpg_RegisterComponents(RpgLevel* level) noexcept
 {
 	level->Component_Register<RpgPhysicsComponent_Filter>();
 	level->Component_Register<RpgPhysicsComponent_Collision>();
+	level->Component_Register<RpgRenderComponent_Camera>();
 	level->Component_Register<RpgRenderComponent_Mesh>();
 	level->Component_Register<RpgRenderComponent_Light>();
-	level->Component_Register<RpgRenderComponent_Camera>();
+	level->Component_Register<RpgRenderComponent_Terrain>();
 	level->Component_Register<RpgAnimationComponent_AnimSkeletonPose>();
 }
 

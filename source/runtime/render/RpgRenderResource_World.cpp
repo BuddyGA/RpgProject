@@ -167,11 +167,11 @@ void RpgWorldResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept
 #endif // !RPG_BUILD_SHIPPING
 
 
-	RpgD3D12::ResizeBuffer(StagingBuffer, stagingSizeBytes, true);
-	RPG_D3D12_SetDebugNameAllocation(StagingBuffer, "STG_WorldResource");
+	RpgD3D12::ResizeBuffer(MeshStagingBuffer, stagingSizeBytes, true);
+	RPG_D3D12_SetDebugNameAllocation(MeshStagingBuffer, "STG_WorldResource");
 
-	ID3D12Resource* stagingResource = StagingBuffer->GetResource();
-	uint8_t* stagingMap = RpgD3D12::MapBuffer<uint8_t>(StagingBuffer.Get());
+	ID3D12Resource* stagingResource = MeshStagingBuffer->GetResource();
+	uint8_t* stagingMap = RpgD3D12::MapBuffer<uint8_t>(MeshStagingBuffer.Get());
 	size_t stagingOffset = 0;
 
 
@@ -221,7 +221,7 @@ void RpgWorldResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept
 
 
 	RPG_Check(stagingSizeBytes == stagingOffset);
-	RpgD3D12::UnmapBuffer(StagingBuffer.Get());
+	RpgD3D12::UnmapBuffer(MeshStagingBuffer.Get());
 }
 
 

@@ -47,7 +47,7 @@ constexpr const char* RPG_ASSET_FILE_TYPE_NAMES[] =
 	"Anim Clip",
 	"Anim Skel",
 	"Actor",
-	"Level"
+	"Level",
 };
 
 static_assert(sizeof(RPG_ASSET_FILE_TYPE_NAMES) / sizeof(const char*) == static_cast<uint16_t>(RpgAssetFileType::MAX_COUNT), "Not equals!");

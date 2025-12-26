@@ -13,9 +13,69 @@ class RpgRenderTask_CaptureLight;
 
 
 
+class RpgRenderComponent_Camera
+{
+	RPG_COMPONENT(RpgRenderComponent_Camera, RPG_COMPONENT_ID_RENDER_0)
+
+public:
+	RpgPointInt RenderTargetDimension;
+	RpgRenderProjectionMode ProjectionMode;
+	float PerspectiveFoVDegree;
+	float NearClipZ;
+	float FarClipZ;
+	bool bActivated;
+	bool bFrustumCulling;
+
+	RpgSceneViewport* Viewport;
+
+
+public:
+	RpgRenderComponent_Camera() noexcept
+	{
+		RenderTargetDimension = RpgPointInt(1600, 900);
+		ProjectionMode = RpgRenderProjectionMode::PERSPECTIVE;
+		PerspectiveFoVDegree = 60.0f;
+		NearClipZ = 10.0f;
+		FarClipZ = 10000.0f;
+		bActivated = false;
+		bFrustumCulling = false;
+		Viewport = nullptr;
+	}
+
+
+	inline void Destroy() noexcept
+	{
+		// Nothing to do
+	}
+
+
+	inline RpgSceneViewport* GetSceneViewport() noexcept
+	{
+		if (Viewport)
+		{
+			return Viewport;
+		}
+
+		if (!SelfViewport)
+		{
+			SelfViewport = RpgPointer::MakeUnique<RpgSceneViewport>();
+		}
+
+		return SelfViewport.Get();
+	}
+
+
+private:
+	RpgUniquePtr<RpgSceneViewport> SelfViewport;
+
+};
+
+
+
+
 class RpgRenderComponent_Mesh
 {
-	RPG_COMPONENT(RpgRenderComponent_Mesh, 2);
+	RPG_COMPONENT(RpgRenderComponent_Mesh, RPG_COMPONENT_ID_RENDER_1)
 
 public:
 	RpgSharedMesh Mesh;
@@ -53,9 +113,10 @@ private:
 
 
 
+
 class RpgRenderComponent_Light
 {
-	RPG_COMPONENT(RpgRenderComponent_Light, 3);
+	RPG_COMPONENT(RpgRenderComponent_Light, RPG_COMPONENT_ID_RENDER_2)
 
 public:
 	// Light type (point light, spot light, directional light)
@@ -121,33 +182,25 @@ private:
 
 
 
-class RpgRenderComponent_Camera
+class RpgRenderComponent_Terrain
 {
-	RPG_COMPONENT(RpgRenderComponent_Camera, 4);
+	RPG_COMPONENT(RpgRenderComponent_Terrain, RPG_COMPONENT_ID_RENDER_3)
 
 public:
-	RpgPointInt RenderTargetDimension;
-	RpgRenderProjectionMode ProjectionMode;
-	float PerspectiveFoVDegree;
-	float NearClipZ;
-	float FarClipZ;
-	bool bActivated;
-	bool bFrustumCulling;
-
-	RpgSceneViewport* Viewport;
+	
 
 
 public:
-	RpgRenderComponent_Camera() noexcept
+	RpgSharedMaterial Material;
+	//RpgSharedTexture2D SplatTextures[4];
+	bool bIsVisible;
+
+
+public:
+	RpgRenderComponent_Terrain() noexcept
 	{
-		RenderTargetDimension = RpgPointInt(1600, 900);
-		ProjectionMode = RpgRenderProjectionMode::PERSPECTIVE;
-		PerspectiveFoVDegree = 60.0f;
-		NearClipZ = 10.0f;
-		FarClipZ = 10000.0f;
-		bActivated = false;
-		bFrustumCulling = false;
-		Viewport = nullptr;
+		bIsVisible = false;
+		WorldSize = 0.0f;
 	}
 
 
@@ -157,23 +210,72 @@ public:
 	}
 
 
-	inline RpgSceneViewport* GetSceneViewport() noexcept
+	void Generate(float in_WorldSize) noexcept;
+	const RpgVertexIndexArray& GetVertexIndices(const RpgBoundingFrustum* frustum) noexcept;
+
+
+	inline bool HasGenerated() const noexcept
 	{
-		if (Viewport)
-		{
-			return Viewport;
-		}
+		return VertexPositions.GetCount() > 0;
+	}
 
-		if (!SelfViewport)
-		{
-			SelfViewport = RpgPointer::MakeUnique<RpgSceneViewport>();
-		}
+	inline RpgVertexMeshPositionArray& GetVertexPositions() noexcept
+	{
+		return VertexPositions;
+	}
 
-		return SelfViewport.Get();
+	inline const RpgVertexMeshPositionArray& GetVertexPositions() const noexcept
+	{
+		return VertexPositions;
+	}
+
+	inline RpgVertexMeshNormalTangentArray& GetVertexNormalTangents() noexcept
+	{
+		return VertexNormalTangents;
+	}
+
+	inline const RpgVertexMeshNormalTangentArray& GetVertexNormalTangents() const noexcept
+	{
+		return VertexNormalTangents;
+	}
+
+	inline RpgVertexMeshTexCoordArray& GetVertexTexCoords() noexcept
+	{
+		return VertexTexCoords;
+	}
+
+	inline const RpgVertexMeshTexCoordArray& GetVertexTexCoords() const noexcept
+	{
+		return VertexTexCoords;
 	}
 
 
 private:
-	RpgUniquePtr<RpgSceneViewport> SelfViewport;
+	// Vertex position data
+	RpgVertexMeshPositionArray VertexPositions;
+
+	// Vertex normal, tangent data
+	RpgVertexMeshNormalTangentArray VertexNormalTangents;
+
+	// Vertex texcoord
+	RpgVertexMeshTexCoordArray VertexTexCoords;
+
+	// Vertex index
+	RpgVertexIndexArray VertexIndices;
+
+	// Terrain tiles
+	struct FTile
+	{
+		RpgArrayInline<RpgVertex::FIndex, 6> VertexIndices;
+		RpgBoundingAABB Bound;
+	};
+	RpgArray<FTile> Tiles;
+
+	// Terrain world size
+	float WorldSize;
+
+
+private:
+	void UpdateTileBound(int index) noexcept;
 
 };

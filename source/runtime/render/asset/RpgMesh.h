@@ -29,8 +29,8 @@ public:
 		const RpgVertex::FIndex* IndexData{ nullptr };
 		size_t IndexSizeBytes{ 0 };
 
-		int VertexCount{ 0 };
-		int IndexCount{ 0 };
+		int MeshVertexCount{ 0 };
+		int MeshIndexCount{ 0 };
 	};
 
 
@@ -89,8 +89,8 @@ public:
 		data.SkinSizeBytes = Skins.GetMemorySizeBytes_Allocated();
 		data.IndexData = Indices.GetData();
 		data.IndexSizeBytes = Indices.GetMemorySizeBytes_Allocated();
-		data.VertexCount = Positions.GetCount();
-		data.IndexCount = Indices.GetCount();
+		data.MeshVertexCount = Positions.GetCount();
+		data.MeshIndexCount = Indices.GetCount();
 
 		return data;
 	}
@@ -284,7 +284,7 @@ private:
 	// Vertex normal, tangent data
 	RpgVertexMeshNormalTangentArray NormalTangents;
 
-	// Vertex attribute data
+	// Vertex texcoord data
 	RpgVertexMeshTexCoordArray TexCoords;
 
 	// Vertex skin data

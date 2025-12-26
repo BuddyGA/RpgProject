@@ -84,6 +84,9 @@ public:
 	const RpgDrawIndexed* DrawSkinnedMeshData;
 	int DrawSkinnedMeshCount;
 
+	const RpgDrawIndexed* DrawTerrainData;
+	int DrawTerrainCount;
+
 
 public:
 	RpgRenderTask_RenderPassForward() noexcept;

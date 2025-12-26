@@ -102,12 +102,12 @@ RpgLevel::~RpgLevel() noexcept
 {
 	RPG_LogDebug(RpgLogLevel, "Destroy level (%s)", *GetAssetName());
 	
-	for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+	for (int compId = 0; compId < RPG_COMPONENT_ID_MAX_COUNT; ++compId)
 	{
-		if (ComponentStorages[compType])
+		if (ComponentStorages[compId])
 		{
-			delete ComponentStorages[compType];
-			ComponentStorages[compType] = nullptr;
+			delete ComponentStorages[compId];
+			ComponentStorages[compId] = nullptr;
 		}
 	}
 }
@@ -115,14 +115,14 @@ RpgLevel::~RpgLevel() noexcept
 
 void RpgLevel::AssetStreamWrite(RpgStreamWriter& writer) noexcept
 {
-	int componentCount[RPG_COMPONENT_TYPE_MAX_COUNT];
-	for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+	int componentCount[RPG_COMPONENT_ID_MAX_COUNT];
+	for (int compId = 0; compId < RPG_COMPONENT_ID_MAX_COUNT; ++compId)
 	{
-		RpgComponentStorageInterface* compStorage = ComponentStorages[compType];
-		componentCount[compType] = compStorage ? compStorage->GetCount() : 0;
+		RpgComponentStorageInterface* compStorage = ComponentStorages[compId];
+		componentCount[compId] = compStorage ? compStorage->GetCount() : 0;
 	}
 
-	writer.WriteData(componentCount, sizeof(int) * RPG_COMPONENT_TYPE_MAX_COUNT);
+	writer.WriteData(componentCount, sizeof(int) * RPG_COMPONENT_ID_MAX_COUNT);
 
 	RpgArray<int> gameObjectIds;
 	gameObjectIds.Reserve(GameObjectStates.GetCount());
@@ -172,13 +172,13 @@ void RpgLevel::AssetStreamWrite(RpgStreamWriter& writer) noexcept
 	// foreach gameobject componentscripts
 	for (int i : gameObjectIds)
 	{
-		const int id = gameObjectIds[i];
+		const int gid = gameObjectIds[i];
 
-		const FGameObjectComponentScript& compScript = GameObjectComponentScripts[id];
-		writer.WriteData(compScript.Components, sizeof(int16_t) * RPG_COMPONENT_TYPE_MAX_COUNT);
+		const FGameObjectComponentScript& compScript = GameObjectComponentScripts[gid];
+		writer.WriteData(compScript.Components, sizeof(int16_t) * RPG_COMPONENT_ID_MAX_COUNT);
 
 		// foreach component type
-		for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+		for (int compType = 0; compType < RPG_COMPONENT_ID_MAX_COUNT; ++compType)
 		{
 			const int compId = compScript.Components[compType];
 
@@ -186,7 +186,7 @@ void RpgLevel::AssetStreamWrite(RpgStreamWriter& writer) noexcept
 			{
 				RpgComponentStorageInterface* compStorage = ComponentStorages[compType];
 				RPG_Check(compStorage);
-				compStorage->StreamWrite(compId, RpgGameObject(this, id, GameObjectStates[id].Gen), writer);
+				compStorage->StreamWrite(compId, RpgGameObject(this, gid, GameObjectStates[gid].Gen), writer);
 			}
 		}
 	}
@@ -196,10 +196,10 @@ void RpgLevel::AssetStreamWrite(RpgStreamWriter& writer) noexcept
 void RpgLevel::AssetStreamRead(RpgStreamReader& reader, uint16_t version) noexcept
 {
 	// reserve component storages
-	int componentCount[RPG_COMPONENT_TYPE_MAX_COUNT];
-	reader.ReadData(componentCount, sizeof(int) * RPG_COMPONENT_TYPE_MAX_COUNT);
+	int componentCount[RPG_COMPONENT_ID_MAX_COUNT];
+	reader.ReadData(componentCount, sizeof(int) * RPG_COMPONENT_ID_MAX_COUNT);
 
-	for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+	for (int compType = 0; compType < RPG_COMPONENT_ID_MAX_COUNT; ++compType)
 	{
 		RpgComponentStorageInterface* compStorage = ComponentStorages[compType];
 		if (compStorage)
@@ -259,10 +259,10 @@ void RpgLevel::AssetStreamRead(RpgStreamReader& reader, uint16_t version) noexce
 		const RpgGameObject gameObject(this, i, 0);
 
 		FGameObjectComponentScript& compScript = GameObjectComponentScripts[i];
-		reader.ReadData(compScript.Components, sizeof(int16_t) * RPG_COMPONENT_TYPE_MAX_COUNT);
+		reader.ReadData(compScript.Components, sizeof(int16_t) * RPG_COMPONENT_ID_MAX_COUNT);
 
 		// foreach component type
-		for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+		for (int compType = 0; compType < RPG_COMPONENT_ID_MAX_COUNT; ++compType)
 		{
 			const int compId = compScript.Components[compType];
 			if (compId == RPG_INDEX_INVALID)
@@ -319,7 +319,7 @@ void RpgLevel::SetAssetLoading() noexcept
 
 	bHasStartedPlay = false;
 
-	for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+	for (int compType = 0; compType < RPG_COMPONENT_ID_MAX_COUNT; ++compType)
 	{
 		if (RpgComponentStorageInterface* compStorage = ComponentStorages[compType])
 		{
@@ -356,7 +356,7 @@ void RpgLevel::BeginFrame(int frameIndex) noexcept
 			bool bAllComponentsLoaded = true;
 
 			const FGameObjectComponentScript& compScript = GameObjectComponentScripts[index];
-			for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+			for (int compType = 0; compType < RPG_COMPONENT_ID_MAX_COUNT; ++compType)
 			{
 				const int compId = compScript.Components[compType];
 				if (compId == RPG_INDEX_INVALID)
@@ -415,7 +415,7 @@ void RpgLevel::BeginFrame(int frameIndex) noexcept
 		// remove components
 		FGameObjectComponentScript& compScript = GameObjectComponentScripts[index];
 
-		for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+		for (int compType = 0; compType < RPG_COMPONENT_ID_MAX_COUNT; ++compType)
 		{
 			const int compId = compScript.Components[compType];
 
@@ -556,7 +556,7 @@ RpgGameObject RpgLevel::GameObject_Create(const RpgName& name, bool bIsTransient
 	transform.Dirty = EDirty::DIRTY_NONE;
 
 	FGameObjectComponentScript& compScript = GameObjectComponentScripts[compId];
-	RpgPlatformMemory::Set(compScript.Components, RPG_INDEX_INVALID, sizeof(int16_t) * RPG_COMPONENT_TYPE_MAX_COUNT);
+	RpgPlatformMemory::Set(compScript.Components, RPG_INDEX_INVALID, sizeof(int16_t) * RPG_COMPONENT_ID_MAX_COUNT);
 	compScript.ScriptIndex = RPG_INDEX_INVALID;
 
 	return RpgGameObject(this, nameId, state.Gen);
@@ -779,7 +779,7 @@ void RpgLevel::GameObject_UpdateComponentFlags(RpgGameObject gameObject) noexcep
 	const uint32_t flags = GameObjectStates[index].Flags;
 	const FGameObjectComponentScript& compScript = GameObjectComponentScripts[index];
 
-	for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+	for (int compType = 0; compType < RPG_COMPONENT_ID_MAX_COUNT; ++compType)
 	{
 		const int compId = compScript.Components[compType];
 
@@ -890,7 +890,7 @@ void RpgLevel::GameObject_GetExternalAssetReferences(int id, RpgAssetReferences&
 
 	const FGameObjectComponentScript& compScript = GameObjectComponentScripts[id];
 
-	for (int compType = 0; compType < RPG_COMPONENT_TYPE_MAX_COUNT; ++compType)
+	for (int compType = 0; compType < RPG_COMPONENT_ID_MAX_COUNT; ++compType)
 	{
 		const int compId = compScript.Components[compType];
 		if (compId == RPG_INDEX_INVALID)

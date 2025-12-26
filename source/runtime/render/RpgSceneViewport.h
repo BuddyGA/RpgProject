@@ -85,6 +85,11 @@ public:
 		return FrameDatas[frameIndex].Meshes;
 	}
 
+	inline RpgArray<RpgSceneTerrain>& GetFrameTerrains(int frameIndex) noexcept
+	{
+		return FrameDatas[frameIndex].Terrains;
+	}
+
 	inline RpgArray<RpgSceneLight>& GetFrameLights(int frameIndex) noexcept
 	{
 		return FrameDatas[frameIndex].Lights;
@@ -110,10 +115,12 @@ private:
 		RpgSharedTextureDepthStencil TextureDepthStencil;
 
 		RpgArray<RpgSceneMesh> Meshes;
+		RpgArray<RpgSceneTerrain> Terrains;
 		RpgArray<RpgSceneLight> Lights;
 
 		RpgArray<RpgDrawIndexed> DrawOpaqueMeshes;
 		RpgArray<RpgDrawIndexed> DrawOpaqueSkinnedMeshes;
+		RpgArray<RpgDrawIndexed> DrawOpaqueTerrains;
 
 		RpgArray<RpgDrawIndexed> DrawTransparencies;
 

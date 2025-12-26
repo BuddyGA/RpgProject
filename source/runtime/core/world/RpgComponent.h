@@ -140,9 +140,6 @@ private:
 
 
 
-#define RPG_COMPONENT_TYPE_MAX_COUNT		32
-
-
 #define RPG_COMPONENT(type, id)																											\
 	friend RpgComponentStorage<type>;																									\
 public:																																	\
@@ -175,6 +172,66 @@ inline bool IsGameObjectTransformUpdated() const noexcept																				\
 private:																																\
 	RpgGameObject GameObject;																											\
 	uint32_t Flags{ RpgGameObjectFlag::None };																							
+
+
+
+#define RPG_COMPONENT_ID_PHYSICS_0		0
+#define RPG_COMPONENT_ID_PHYSICS_1		1
+#define RPG_COMPONENT_ID_PHYSICS_2		2
+#define RPG_COMPONENT_ID_PHYSICS_3		3
+#define RPG_COMPONENT_ID_PHYSICS_4		4
+#define RPG_COMPONENT_ID_PHYSICS_5		5
+#define RPG_COMPONENT_ID_PHYSICS_6		6
+#define RPG_COMPONENT_ID_PHYSICS_7		7
+
+#define RPG_COMPONENT_ID_ANIMATION_0	8
+#define RPG_COMPONENT_ID_ANIMATION_1	9
+#define RPG_COMPONENT_ID_ANIMATION_2	10
+#define RPG_COMPONENT_ID_ANIMATION_3	11
+#define RPG_COMPONENT_ID_ANIMATION_4	12
+#define RPG_COMPONENT_ID_ANIMATION_5	13
+#define RPG_COMPONENT_ID_ANIMATION_6	14
+#define RPG_COMPONENT_ID_ANIMATION_7	15
+
+#define RPG_COMPONENT_ID_RENDER_0		16
+#define RPG_COMPONENT_ID_RENDER_1		17
+#define RPG_COMPONENT_ID_RENDER_2		18
+#define RPG_COMPONENT_ID_RENDER_3		19
+#define RPG_COMPONENT_ID_RENDER_4		20
+#define RPG_COMPONENT_ID_RENDER_5		21
+#define RPG_COMPONENT_ID_RENDER_6		22
+#define RPG_COMPONENT_ID_RENDER_7		23
+
+#define RPG_COMPONENT_ID_AI_0			24
+#define RPG_COMPONENT_ID_AI_1			25
+#define RPG_COMPONENT_ID_AI_2			26
+#define RPG_COMPONENT_ID_AI_3			27
+#define RPG_COMPONENT_ID_AI_4			28
+#define RPG_COMPONENT_ID_AI_5			29
+#define RPG_COMPONENT_ID_AI_6			30
+#define RPG_COMPONENT_ID_AI_7			31
+
+#define RPG_COMPONENT_ID_AUDIO_0		32
+#define RPG_COMPONENT_ID_AUDIO_1		33
+#define RPG_COMPONENT_ID_AUDIO_2		34
+#define RPG_COMPONENT_ID_AUDIO_3		35
+#define RPG_COMPONENT_ID_AUDIO_4		36
+#define RPG_COMPONENT_ID_AUDIO_5		37
+#define RPG_COMPONENT_ID_AUDIO_6		38
+#define RPG_COMPONENT_ID_AUDIO_7		39
+
+#define RPG_COMPONENT_ID_GAME_0			40
+#define RPG_COMPONENT_ID_GAME_1			41
+#define RPG_COMPONENT_ID_GAME_2			42
+#define RPG_COMPONENT_ID_GAME_3			43
+#define RPG_COMPONENT_ID_GAME_4			44
+#define RPG_COMPONENT_ID_GAME_5			45
+#define RPG_COMPONENT_ID_GAME_6			46
+#define RPG_COMPONENT_ID_GAME_7			47
+
+
+#define RPG_COMPONENT_ID_MAX_COUNT		64
+
 
 
 #define RPG_COMPONENT_STATIC_StreamWrite(type)					void type::StreamWrite(RpgStreamWriter& writer, const type& data) noexcept

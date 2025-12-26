@@ -93,17 +93,17 @@ private:
 	{
 		int ShaderMaterialId;
 		int VertexStart;
-		int VertexCount;
+		int MeshVertexCount;
 		int IndexStart;
-		int IndexCount;
+		int MeshIndexCount;
 
 
 		FDrawBatch(int in_MaterialId = RPG_INDEX_INVALID) noexcept
 			: ShaderMaterialId(in_MaterialId)
 			, VertexStart(0)
-			, VertexCount(0)
+			, MeshVertexCount(0)
 			, IndexStart(0)
-			, IndexCount(0)
+			, MeshIndexCount(0)
 		{
 		}
 
@@ -142,7 +142,7 @@ private:
 	struct FDrawBatchLine
 	{
 		RpgMaterialResource::FMaterialID MaterialId{ RPG_INDEX_INVALID };
-		int IndexCount{ 0 };
+		int MeshIndexCount{ 0 };
 		int IndexStart{ 0 };
 		int IndexVertexOffset{ 0 };
 	};
@@ -162,7 +162,7 @@ private:
 		RpgVertexIndexArray LineIndices;
 		FDrawBatchLine BatchDrawLine;
 
-		ComPtr<D3D12MA::Allocation> StagingBuffer;
+		ComPtr<D3D12MA::Allocation> MeshStagingBuffer;
 		ComPtr<D3D12MA::Allocation> MeshVertexBuffer;
 		ComPtr<D3D12MA::Allocation> MeshIndexBuffer;
 		ComPtr<D3D12MA::Allocation> LineVertexBuffer;

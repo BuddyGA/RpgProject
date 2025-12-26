@@ -33,6 +33,7 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 	FFrameData& frame = FrameDatas[frameContext.Index];
 	frame.DrawOpaqueMeshes.Clear();
 	frame.DrawOpaqueSkinnedMeshes.Clear();
+	frame.DrawOpaqueTerrains.Clear();
 	frame.DrawTransparencies.Clear();
 
 
@@ -139,6 +140,25 @@ void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldRe
 	}
 
 
+	for (int t = 0; t < frame.Terrains.GetCount(); ++t)
+	{
+		RpgSceneTerrain& data = frame.Terrains[t];
+
+		if (data.GameObject.IsPendingDestroy())
+		{
+			continue;
+		}
+
+		const RpgSharedMaterial& useMaterial = data.Material && data.Material->IsAssetLoaded() ? data.Material : RpgMaterial::GetDefault(RpgMaterialDefault::MESH_PHONG);
+
+		RpgDrawIndexed& draw = frame.DrawOpaqueTerrains.Add();
+		draw.Material = materialResource->AddMaterial(useMaterial);
+		draw.ObjectParam.ViewIndex = cameraId;
+		draw.ObjectParam.TransformIndex = worldResource->AddTransform(data.GameObject, data.WorldTransformMatrix);
+		meshResource->AddTerrain(data.VertexPositions, data.VertexNormalTangents, data.VertexTexCoords, data.VertexIndices, draw.IndexCount, draw.IndexStart, draw.IndexVertexOffset);
+	}
+
+
 	for (int l = 0; l < frame.Lights.GetCount(); ++l)
 	{
 		const RpgSceneLight& data = frame.Lights[l];
@@ -204,6 +224,8 @@ void RpgSceneViewport::SetupRenderPasses(const RpgRenderFrameContext& frameConte
 	forwardPass->DrawMeshCount = frame.DrawOpaqueMeshes.GetCount();
 	forwardPass->DrawSkinnedMeshData = frame.DrawOpaqueSkinnedMeshes.GetData();
 	forwardPass->DrawSkinnedMeshCount = frame.DrawOpaqueSkinnedMeshes.GetCount();
+	forwardPass->DrawTerrainData = frame.DrawOpaqueTerrains.GetData();
+	forwardPass->DrawTerrainCount = frame.DrawOpaqueTerrains.GetCount();
 
 #ifndef RPG_BUILD_SHIPPING
 	FFrameDebug& debug = FrameDebugs[frameContext.Index];

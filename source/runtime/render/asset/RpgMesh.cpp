@@ -43,16 +43,17 @@ void RpgMesh::AssetStreamRead(RpgStreamReader& reader, uint16_t version) noexcep
 }
 
 
+bool RpgMesh::IsAssetLoaded() noexcept
+{
+	return (Flags & FLAG_Runtime_Loaded);
+}
+
+
 void RpgMesh::SetAssetLoading() noexcept
 {
 	Flags |= FLAG_Runtime_Loading;
 }
 
-
-bool RpgMesh::IsAssetLoaded() noexcept
-{
-	return (Flags & FLAG_Runtime_Loaded);
-}
 
 
 void RpgMesh::UpdateVertexData(int vertexCount, const RpgVertex::FMeshPosition* positionData, const RpgVertex::FMeshNormalTangent* normalTangentData, const RpgVertex::FMeshTexCoord* texCoordData, const RpgVertex::FMeshSkin* skinData, int indexCount, const RpgVertex::FIndex* indexData) noexcept

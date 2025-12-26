@@ -153,7 +153,7 @@ public:
 	RpgLevel* LoadLevelAsync(const RpgString& levelAssetPath) noexcept;
 	
 
-	// Create gameobject. This is only allocate the gameobject in memory, to actually spawn it call RpgGameObject::SpawnAtTransform after finished (e.g. add component/script/attach to parent)
+	// Create gameobject. This is only allocate the gameobject in memory, to actually spawn it call RpgGameObject::SpawnAtTransform after finished adding component/script/attach to parent
 	// @param name - Name of the gameobject
 	// @param opt_Level - (Optional) level owning the gameobject, if NULL main level will own the gameobject
 	// @param opt_bIsTransient - (Optional) Set TRUE to mark gameobject as transient. Transient gameobject ignores serialization while saving level

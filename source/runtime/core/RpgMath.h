@@ -56,16 +56,24 @@ namespace RpgMath
 
 
 	template<typename T>
-	constexpr inline T Abs(T value) noexcept
+	inline T Abs(T value) noexcept
 	{
 		static_assert(RpgTypeTraits::IsArithmetic<T>::Value, "Type of <T> must be arithmetic type!");
-		return std::abs(value);
+		return abs(value);
 	}
 
 
 	inline float ModF(float a, float b) noexcept
 	{
 		return fmodf(a, b);
+	}
+
+
+	template<typename T>
+	inline T Pow(T value, T p) noexcept
+	{
+		static_assert(RpgTypeTraits::IsArithmetic<T>::Value, "Type of <T> must be arithmetic type!");
+		return static_cast<T>(pow(value, p));
 	}
 
 
@@ -111,7 +119,7 @@ namespace RpgMath
 
 
 	template<typename T>
-	constexpr inline T Sqrt(T value) noexcept
+	inline T Sqrt(T value) noexcept
 	{
 		static_assert(RpgTypeTraits::IsArithmetic<T>::Value, "Type of <T> must be arithmetic type!");
 		return sqrt(value);

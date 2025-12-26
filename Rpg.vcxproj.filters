@@ -584,7 +584,7 @@
     <ClInclude Include="source\runtime\core\RpgObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\render\RpgTerrain.h">
+    <ClInclude Include="source\editor\RpgEditorTerrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

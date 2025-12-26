@@ -11,6 +11,9 @@
 // All copy, compute, render execute in async task threadpool
 #define RPG_RENDER_ASYNC_TASK			1
 
+#define RPG_RENDER_TERRAIN_WORLD_SIZE_MIN	1024.0f		// 10 m
+#define RPG_RENDER_TERRAIN_WORLD_SIZE_MAX	2097152.0f	// 2 km
+#define RPG_RENDER_TERRAIN_TILE_SIZE		128.0f			
 
 
 class RpgRenderer;

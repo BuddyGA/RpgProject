@@ -4,8 +4,8 @@
 
 RpgMeshSkinnedResource::RpgMeshSkinnedResource() noexcept
 {
-	VertexCount = 0;
-	IndexCount = 0;
+	MeshVertexCount = 0;
+	MeshIndexCount = 0;
 	SkinnedVertexCount = 0;
 	SkinnedIndexCount = 0;
 }
@@ -21,17 +21,17 @@ RpgMeshSkinnedResource::FMeshID RpgMeshSkinnedResource::AddMesh(const RpgSharedM
 
 		FMeshData& data = MeshDatas.Add();
 		data.Mesh = mesh;
-		data.VertexStart = VertexCount;
-		data.VertexCount = mesh->GetVertexCount();
-		data.IndexStart = IndexCount;
-		data.IndexCount = mesh->GetIndexCount();
+		data.VertexStart = MeshVertexCount;
+		data.MeshVertexCount = mesh->GetVertexCount();
+		data.IndexStart = MeshIndexCount;
+		data.MeshIndexCount = mesh->GetIndexCount();
 
-		VertexCount += data.VertexCount;
-		IndexCount += data.IndexCount;
+		MeshVertexCount += data.MeshVertexCount;
+		MeshIndexCount += data.MeshIndexCount;
 	}
 
 	const FMeshData& data = MeshDatas[id];
-	out_IndexCount = data.IndexCount;
+	out_IndexCount = data.MeshIndexCount;
 	out_IndexStart = data.IndexStart;
 	out_IndexVertexOffset = data.VertexStart;
 
@@ -48,9 +48,9 @@ RpgMeshSkinnedResource::FSkeletonID RpgMeshSkinnedResource::AddObjectBoneSkinnin
 
 	RpgShaderSkinnedObjectParameter& param = ObjectParameters.Add();
 	param.VertexStart = meshData.VertexStart;
-	param.VertexCount = meshData.VertexCount;
+	param.VertexCount = meshData.MeshVertexCount;
 	param.IndexStart = meshData.IndexStart;
-	param.IndexCount = meshData.IndexCount;
+	param.IndexCount = meshData.MeshIndexCount;
 	param.SkeletonIndex = id;
 
 	SkeletonBoneSkinningTransforms.InsertAtRange(boneSkinningTransforms, RPG_INDEX_LAST);
@@ -66,20 +66,20 @@ void RpgMeshSkinnedResource::UpdateResources() noexcept
 		return;
 	}
 
-	RpgD3D12::ResizeBuffer(VertexPositionBuffer, sizeof(RpgVertex::FMeshPosition) * VertexCount, false);
-	RPG_D3D12_SetDebugNameAllocation(VertexPositionBuffer, "RES_MeshSkin_VtxPos");
+	RpgD3D12::ResizeBuffer(MeshVertexPositionBuffer, sizeof(RpgVertex::FMeshPosition) * MeshVertexCount, false);
+	RPG_D3D12_SetDebugNameAllocation(MeshVertexPositionBuffer, "RES_MeshSkin_VtxPos");
 
-	RpgD3D12::ResizeBuffer(VertexNormalTangentBuffer, sizeof(RpgVertex::FMeshNormalTangent) * VertexCount, false);
-	RPG_D3D12_SetDebugNameAllocation(VertexNormalTangentBuffer, "RES_MeshSkin_VtxNormTan");
+	RpgD3D12::ResizeBuffer(MeshVertexNormalTangentBuffer, sizeof(RpgVertex::FMeshNormalTangent) * MeshVertexCount, false);
+	RPG_D3D12_SetDebugNameAllocation(MeshVertexNormalTangentBuffer, "RES_MeshSkin_VtxNormTan");
 
-	RpgD3D12::ResizeBuffer(VertexTexCoordBuffer, sizeof(RpgVertex::FMeshTexCoord) * VertexCount, false);
-	RPG_D3D12_SetDebugNameAllocation(VertexTexCoordBuffer, "RES_MeshSkin_VtxTexCoord");
+	RpgD3D12::ResizeBuffer(MeshVertexTexCoordBuffer, sizeof(RpgVertex::FMeshTexCoord) * MeshVertexCount, false);
+	RPG_D3D12_SetDebugNameAllocation(MeshVertexTexCoordBuffer, "RES_MeshSkin_VtxTexCoord");
 
-	RpgD3D12::ResizeBuffer(VertexSkinBuffer, sizeof(RpgVertex::FMeshSkin) * VertexCount, false);
+	RpgD3D12::ResizeBuffer(VertexSkinBuffer, sizeof(RpgVertex::FMeshSkin) * MeshVertexCount, false);
 	RPG_D3D12_SetDebugNameAllocation(VertexSkinBuffer, "RES_MeshSkin_VtxSkin");
 
-	RpgD3D12::ResizeBuffer(IndexBuffer, sizeof(RpgVertex::FIndex) * IndexCount, false);
-	RPG_D3D12_SetDebugNameAllocation(IndexBuffer, "RES_MeshSkin_Idx");
+	RpgD3D12::ResizeBuffer(MeshIndexBuffer, sizeof(RpgVertex::FIndex) * MeshIndexCount, false);
+	RPG_D3D12_SetDebugNameAllocation(MeshIndexBuffer, "RES_MeshSkin_Idx");
 
 	RpgD3D12::ResizeBuffer(SkeletonBoneSkinningBuffer, SkeletonBoneSkinningTransforms.GetMemorySizeBytes_Allocated(), false);
 	RPG_D3D12_SetDebugNameAllocation(SkeletonBoneSkinningBuffer, "RES_MeshSkin_SkelBone");
@@ -87,8 +87,8 @@ void RpgMeshSkinnedResource::UpdateResources() noexcept
 	for (int i = 0; i < MeshDatas.GetCount(); ++i)
 	{
 		const FMeshData& data = MeshDatas[i];
-		SkinnedVertexCount += data.VertexCount * data.InstanceCount;
-		SkinnedIndexCount += data.IndexCount * data.InstanceCount;
+		SkinnedVertexCount += data.MeshVertexCount * data.InstanceCount;
+		SkinnedIndexCount += data.MeshIndexCount * data.InstanceCount;
 	}
 
 	int skinnedVtxOffset = 0;
@@ -128,20 +128,20 @@ void RpgMeshSkinnedResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noe
 		return;
 	}
 
-	const size_t vertexPositionSizeBytes = sizeof(RpgVertex::FMeshPosition) * VertexCount;
-	const size_t vertexNormalTangentSizeBytes = sizeof(RpgVertex::FMeshNormalTangent) * VertexCount;
-	const size_t vertexTexCoordSizeBytes = sizeof(RpgVertex::FMeshTexCoord) * VertexCount;
-	const size_t vertexSkinSizeBytes = sizeof(RpgVertex::FMeshSkin) * VertexCount;
-	const size_t indexSizeBytes = sizeof(RpgVertex::FIndex) * IndexCount;
+	const size_t vertexPositionSizeBytes = sizeof(RpgVertex::FMeshPosition) * MeshVertexCount;
+	const size_t vertexNormalTangentSizeBytes = sizeof(RpgVertex::FMeshNormalTangent) * MeshVertexCount;
+	const size_t vertexTexCoordSizeBytes = sizeof(RpgVertex::FMeshTexCoord) * MeshVertexCount;
+	const size_t vertexSkinSizeBytes = sizeof(RpgVertex::FMeshSkin) * MeshVertexCount;
+	const size_t indexSizeBytes = sizeof(RpgVertex::FIndex) * MeshIndexCount;
 	const size_t skeletonBoneSkinningSizeBytes = SkeletonBoneSkinningTransforms.GetMemorySizeBytes_Allocated();
 	const size_t stagingSizeBytes = vertexPositionSizeBytes + vertexNormalTangentSizeBytes + vertexTexCoordSizeBytes + vertexSkinSizeBytes + indexSizeBytes + skeletonBoneSkinningSizeBytes;
 
-	RpgD3D12::ResizeBuffer(StagingBuffer, stagingSizeBytes, true);
-	RPG_D3D12_SetDebugNameAllocation(StagingBuffer, "STG_MeshSkinning");
+	RpgD3D12::ResizeBuffer(MeshStagingBuffer, stagingSizeBytes, true);
+	RPG_D3D12_SetDebugNameAllocation(MeshStagingBuffer, "STG_MeshSkinning");
 
-	uint8_t* stagingMap = RpgD3D12::MapBuffer<uint8_t>(StagingBuffer.Get());
+	uint8_t* stagingMap = RpgD3D12::MapBuffer<uint8_t>(MeshStagingBuffer.Get());
 	{
-		ID3D12Resource* stagingResource = StagingBuffer->GetResource();
+		ID3D12Resource* stagingResource = MeshStagingBuffer->GetResource();
 		size_t stagingOffset = 0;
 
 		// vertex position
@@ -150,7 +150,7 @@ void RpgMeshSkinnedResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noe
 		{
 			MeshDatas[i].Mesh->CopyVertexData_Position(stagingMap, stagingOffset);
 		}
-		cmdList->CopyBufferRegion(VertexPositionBuffer->GetResource(), 0, stagingResource, srcOffsetVertexPosition, vertexPositionSizeBytes);
+		cmdList->CopyBufferRegion(MeshVertexPositionBuffer->GetResource(), 0, stagingResource, srcOffsetVertexPosition, vertexPositionSizeBytes);
 
 
 		// vertex normal-tangent
@@ -159,7 +159,7 @@ void RpgMeshSkinnedResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noe
 		{
 			MeshDatas[i].Mesh->CopyVertexData_NormalTangent(stagingMap, stagingOffset);
 		}
-		cmdList->CopyBufferRegion(VertexNormalTangentBuffer->GetResource(), 0, stagingResource, srcOffsetVertexNormalTangent, vertexNormalTangentSizeBytes);
+		cmdList->CopyBufferRegion(MeshVertexNormalTangentBuffer->GetResource(), 0, stagingResource, srcOffsetVertexNormalTangent, vertexNormalTangentSizeBytes);
 
 
 		// vertex texcoord
@@ -168,7 +168,7 @@ void RpgMeshSkinnedResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noe
 		{
 			MeshDatas[i].Mesh->CopyVertexData_TexCoord(stagingMap, stagingOffset);
 		}
-		cmdList->CopyBufferRegion(VertexTexCoordBuffer->GetResource(), 0, stagingResource, srcOffsetVertexTexCoord, vertexTexCoordSizeBytes);
+		cmdList->CopyBufferRegion(MeshVertexTexCoordBuffer->GetResource(), 0, stagingResource, srcOffsetVertexTexCoord, vertexTexCoordSizeBytes);
 
 
 		// vertex skin
@@ -186,7 +186,7 @@ void RpgMeshSkinnedResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noe
 		{
 			MeshDatas[i].Mesh->CopyIndexData(stagingMap, stagingOffset);
 		}
-		cmdList->CopyBufferRegion(IndexBuffer->GetResource(), 0, stagingResource, srcOffsetIndex, indexSizeBytes);
+		cmdList->CopyBufferRegion(MeshIndexBuffer->GetResource(), 0, stagingResource, srcOffsetIndex, indexSizeBytes);
 
 
 		// skeleton bone skinning
@@ -198,14 +198,14 @@ void RpgMeshSkinnedResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noe
 		// Sanity check 
 		RPG_Check(stagingOffset == stagingSizeBytes);	
 	}
-	RpgD3D12::UnmapBuffer(StagingBuffer.Get());
+	RpgD3D12::UnmapBuffer(MeshStagingBuffer.Get());
 
 
 	// transition original vertex (texcoord, index) to COPY_SOURCE
 	D3D12_RESOURCE_BARRIER copySourceTransitionBarriers[2] =
 	{
-		RpgD3D12::CreateResourceBarrier_Transition(VertexTexCoordBuffer->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE),
-		RpgD3D12::CreateResourceBarrier_Transition(IndexBuffer->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE),
+		RpgD3D12::CreateResourceBarrier_Transition(MeshVertexTexCoordBuffer->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE),
+		RpgD3D12::CreateResourceBarrier_Transition(MeshIndexBuffer->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE),
 	};
 	cmdList->ResourceBarrier(2, copySourceTransitionBarriers);
 
@@ -217,7 +217,7 @@ void RpgMeshSkinnedResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noe
 		const size_t dstTexCoordOffset = sizeof(RpgVertex::FMeshTexCoord) * param.SkinnedVertexStart;
 		const size_t srcTexCoordOffset = sizeof(RpgVertex::FMeshTexCoord) * param.VertexStart;
 		const size_t texCoordSizeBytes = sizeof(RpgVertex::FMeshTexCoord) * param.VertexCount;
-		cmdList->CopyBufferRegion(SkinnedVertexTexCoordBuffer->GetResource(), dstTexCoordOffset, VertexTexCoordBuffer->GetResource(), srcTexCoordOffset, texCoordSizeBytes);
+		cmdList->CopyBufferRegion(SkinnedVertexTexCoordBuffer->GetResource(), dstTexCoordOffset, MeshVertexTexCoordBuffer->GetResource(), srcTexCoordOffset, texCoordSizeBytes);
 	}
 
 	// copy original vertex index to skinned
@@ -228,6 +228,6 @@ void RpgMeshSkinnedResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noe
 		const size_t dstIndexOffset = sizeof(RpgVertex::FIndex) * param.SkinnedIndexStart;
 		const size_t srcIndexOffset = sizeof(RpgVertex::FIndex) * param.IndexStart;
 		const size_t indexSizeBytes = sizeof(RpgVertex::FIndex) * param.IndexCount;
-		cmdList->CopyBufferRegion(SkinnedIndexBuffer->GetResource(), dstIndexOffset, IndexBuffer->GetResource(), srcIndexOffset, indexSizeBytes);
+		cmdList->CopyBufferRegion(SkinnedIndexBuffer->GetResource(), dstIndexOffset, MeshIndexBuffer->GetResource(), srcIndexOffset, indexSizeBytes);
 	}
 }

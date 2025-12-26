@@ -127,6 +127,16 @@ void RpgEditor::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 			RpgRenderWorldSubsystem* subsystem = MainWorld->Subsystem_Get<RpgRenderWorldSubsystem>();
 			subsystem->bDebugDrawMeshBound = !subsystem->bDebugDrawMeshBound;
 		}
+		else if (e.Button == RpgInputKey::KEYBOARD_F7)
+		{
+			RpgGameObject terrain = MainWorld->CreateGameObject("terrain");
+			{
+				RpgRenderComponent_Terrain& comp = terrain.AddComponent<RpgRenderComponent_Terrain>();
+				comp.Generate(RPG_RENDER_TERRAIN_TILE_SIZE * 100.0f);
+				comp.bIsVisible = true;
+			}
+			terrain.SpawnAtTransform(RpgTransform());
+		}
 		else if (e.Button == RpgInputKey::KEYBOARD_F8)
 		{
 			RPG_Check(MainWorld);

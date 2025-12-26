@@ -7,7 +7,7 @@
 
 class RpgPhysicsComponent_Filter
 {
-	RPG_COMPONENT(RpgPhysicsComponent_Filter, 0);
+	RPG_COMPONENT(RpgPhysicsComponent_Filter, RPG_COMPONENT_ID_PHYSICS_0)
 
 public:
 	// Object collision channel
@@ -36,7 +36,7 @@ public:
 
 class RpgPhysicsComponent_Collision
 {
-	RPG_COMPONENT(RpgPhysicsComponent_Collision, 1);
+	RPG_COMPONENT(RpgPhysicsComponent_Collision, RPG_COMPONENT_ID_PHYSICS_1)
 
 public:
 	RpgPhysicsComponent_Collision() noexcept

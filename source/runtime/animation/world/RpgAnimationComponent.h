@@ -10,7 +10,7 @@
 // ======================================================================================================================= //
 class RpgAnimationComponent_AnimSkeletonPose
 {
-	RPG_COMPONENT(RpgAnimationComponent_AnimSkeletonPose, 5);
+	RPG_COMPONENT(RpgAnimationComponent_AnimSkeletonPose, RPG_COMPONENT_ID_ANIMATION_0);
 
 public:
 	RpgSharedAnimationClip Clip;

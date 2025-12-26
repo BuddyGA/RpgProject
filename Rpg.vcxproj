@@ -301,6 +301,7 @@ copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(
   <ItemGroup>
     <ClInclude Include="source\editor\RpgEditor.h" />
     <ClInclude Include="source\editor\RpgEditorObjectInspector.h" />
+    <ClInclude Include="source\editor\RpgEditorTerrain.h" />
     <ClInclude Include="source\editor\RpgEditorTypes.h" />
     <ClInclude Include="source\editor\RpgEditorWorldOutliner.h" />
     <ClInclude Include="source\runtime\animation\task\RpgAnimationTask_TickPose.h" />
@@ -329,7 +330,6 @@ copy /y "$(SolutionDir)externals\mimalloc\lib\Release\mimalloc-redirect.dll" "$(
     <ClInclude Include="source\runtime\gui\widget\RpgGuiConsole.h" />
     <ClInclude Include="source\runtime\gui\RpgGuiTypes.h" />
     <ClInclude Include="source\runtime\physics\task\RpgPhysicsTask_TestOverlapPair.h" />
-    <ClInclude Include="source\runtime\render\RpgTerrain.h" />
     <ClInclude Include="source\test\core\RpgTestCore.h" />
     <ClInclude Include="source\test\game\RpgTestGame.h" />
     <ClInclude Include="source\test\gui\RpgTestGui.h" />
