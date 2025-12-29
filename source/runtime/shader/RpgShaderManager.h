@@ -9,7 +9,7 @@
 
 namespace RpgShader
 {
-    typedef RpgArrayInline<RpgName, 8> FCompileMacros;
+    typedef RpgArrayInline<RpgName, 4> FCompileMacros;
 
 
     enum EType : uint8_t
@@ -32,10 +32,10 @@ namespace RpgShaderManager
 	extern void Initialize() noexcept;
 	extern void Shutdown() noexcept;
 
-	extern void AddShader(const RpgName& in_Name, const RpgString& in_HlslFilePath, RpgShader::EType in_Type, RpgShader::FCompileMacros optIn_CompileMacros = RpgShader::FCompileMacros()) noexcept;
+	extern void AddShader(const RpgStringID& in_Name, const RpgString& in_HlslFilePath, RpgShader::EType in_Type, RpgShader::FCompileMacros optIn_CompileMacros = RpgShader::FCompileMacros()) noexcept;
 	extern void CompileShaders(bool bWaitAll) noexcept;
 
-	extern bool DoesShaderExists(const RpgName& name) noexcept;
-	extern IDxcBlob* GetShaderCodeBlob(const RpgName& name) noexcept;
+	extern bool DoesShaderExists(const RpgStringID& name) noexcept;
+	extern IDxcBlob* GetShaderCodeBlob(const RpgStringID& name) noexcept;
 
 };

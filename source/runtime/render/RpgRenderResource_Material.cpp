@@ -3,13 +3,13 @@
 
 
 
-RpgMaterialResource::RpgMaterialResource() noexcept
+RpgRenderResource_Material::RpgRenderResource_Material() noexcept
 {
 
 }
 
 
-void RpgMaterialResource::UpdateResources(int frameIndex) noexcept
+void RpgRenderResource_Material::UpdateResources(int frameIndex) noexcept
 {
 	if (Materials.IsEmpty())
 	{
@@ -92,7 +92,7 @@ void RpgMaterialResource::UpdateResources(int frameIndex) noexcept
 }
 
 
-void RpgMaterialResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept
+void RpgRenderResource_Material::CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept
 {
 	if (Materials.IsEmpty())
 	{
@@ -132,17 +132,17 @@ void RpgMaterialResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noexce
 	{
 		const int index = UploadTextureIndices[i];
 		RpgSharedTexture2D texture = TextureDescriptors[index].WeakTexture.AsShared();
-		RPG_CheckV(texture.IsValid() && texture->IsDirty(), "Texture: %s", *texture->GetAssetName());
+		RPG_CheckV(texture.IsValid() && texture->IsDirty(), "Texture: %s", *texture->GetAssetName().ToString());
 
 		texture->GPU_CommandCopy(cmdList);
 		texture->GPU_SetLoaded();
 
-		RPG_LogDebug(RpgLogTemp, "Texture loaded to GPU (%s)", *texture->GetAssetName());
+		RPG_LogDebug(RpgLogTemp, "Texture loaded to GPU (%s)", *texture->GetAssetName().ToString());
 	}
 }
 
 
-void RpgMaterialResource::CommandBindShaderResources(ID3D12GraphicsCommandList* cmdList) const noexcept
+void RpgRenderResource_Material::CommandBindShaderResources(ID3D12GraphicsCommandList* cmdList) const noexcept
 {
 	RPG_Check(!Materials.IsEmpty());
 
@@ -153,7 +153,7 @@ void RpgMaterialResource::CommandBindShaderResources(ID3D12GraphicsCommandList* 
 }
 
 
-void RpgMaterialResource::CommandBindMaterial(ID3D12GraphicsCommandList* cmdList, FMaterialID materialId) const noexcept
+void RpgRenderResource_Material::CommandBindMaterial(ID3D12GraphicsCommandList* cmdList, FMaterialID materialId) const noexcept
 {
 	RPG_Check(!Materials.IsEmpty());
 	RPG_Check(materialId >= 0 && materialId < Materials.GetCount());

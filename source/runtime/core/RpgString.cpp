@@ -2,25 +2,28 @@
 
 
 
-RpgStringPool::RpgStringPool() noexcept
+RpgStringID::FHashTable RpgStringID::HashTable;
+
+
+RpgStringID::FHashTable::FHashTable() noexcept
 {
-	Pool.Reserve(1024);
-	Hashes.Reserve(32);
-	Entries.Reserve(32);
+	Hashes.Reserve(128);
+	Entries.Reserve(128);
+	StringPool.Reserve(1024);
 	InitializeSRWLock(&Lock);
 }
 
 
-void RpgStringPool::Allocate(const char* cstr, int& out_Index, bool bIsInstance, int* optOut_Instance) noexcept
+void RpgStringID::FHashTable::Allocate(const char* cstr, int& out_Index, bool bIsUnique, int* optOut_UniqueId) noexcept
 {
 	const int len = RpgPlatformString::CStringLength(cstr);
 	if (len == 0)
 	{
 		out_Index = RPG_INDEX_INVALID;
 
-		if (optOut_Instance)
+		if (optOut_UniqueId)
 		{
-			*optOut_Instance = 0;
+			*optOut_UniqueId = 0;
 		}
 
 		return;
@@ -35,45 +38,44 @@ void RpgStringPool::Allocate(const char* cstr, int& out_Index, bool bIsInstance,
 
 	AcquireSRWLockExclusive(&Lock);
 	{
-		int entryIndex = Hashes.FindIndexByValue(hash);
-		int instance = 0;
+		int index = Hashes.FindIndexByValue(hash);
+		int uniqueId = 0;
 
-		if (entryIndex == RPG_INDEX_INVALID)
+		if (index == RPG_INDEX_INVALID)
 		{
-			entryIndex = Pool.GetCount();
-			instance = 0;
+			index = Hashes.GetCount();
+			uniqueId = 0;
 
 			// add new hash
 			Hashes.AddValue(hash);
 
 			// add new entry
 			FEntry& newEntry = Entries.Add();
-			newEntry.Index = entryIndex;
-			newEntry.Count = len + 1;
-			newEntry.Instance = 0;
+			newEntry.StringIndex = StringPool.GetCount();
+			newEntry.UniqueId = 0;
 
-			// add to pool
-			Pool.InsertAtRange(cstr, newEntry.Count, RPG_INDEX_LAST);
+			// add to pool (+1 for null terminator)
+			StringPool.InsertAtRange(cstr, len + 1, RPG_INDEX_LAST);
 		}
 		else
 		{
-			FEntry& entry = Entries[entryIndex];
-			instance = bIsInstance ? ++entry.Instance : 0;
+			FEntry& entry = Entries[index];
+			uniqueId = bIsUnique ? ++entry.UniqueId : 0;
 		}
 		
-		RPG_Check(entryIndex != RPG_INDEX_INVALID);
-		out_Index = entryIndex;
+		RPG_Check(index != RPG_INDEX_INVALID);
+		out_Index = index;
 
-		if (optOut_Instance)
+		if (optOut_UniqueId)
 		{
-			*optOut_Instance = instance;
+			*optOut_UniqueId = uniqueId;
 		}
 	}
 	ReleaseSRWLockExclusive(&Lock);
 }
 
 
-RpgString RpgStringPool::ConstructString(int index, int instance) const noexcept
+RpgString RpgStringID::FHashTable::ConstructString(int index, int uniqueId) const noexcept
 {
 	RpgString str;
 
@@ -82,8 +84,8 @@ RpgString RpgStringPool::ConstructString(int index, int instance) const noexcept
 		RPG_Check(index >= 0 && index < Entries.GetCount());
 
 		const FEntry& entry = Entries[index];
-		const char* src = &Pool[entry.Index];
-		str = (instance > 0) ? RpgString::Format("%s_%i", src, instance) : RpgString::Format("%s", src);
+		const char* src = &StringPool[entry.StringIndex];
+		str = (uniqueId > 0) ? RpgString::Format("%s_%i", src, uniqueId) : RpgString::Format("%s", src);
 	}
 	ReleaseSRWLockShared(&Lock);
 

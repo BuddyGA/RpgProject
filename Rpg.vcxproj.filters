@@ -45,18 +45,6 @@
     <ClCompile Include="source\runtime\core\RpgVertex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\render\asset\RpgTexture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\RpgModel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\asset\RpgMaterial.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\RpgRenderPipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\runtime\core\RpgD3D12.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -66,70 +54,7 @@
     <ClCompile Include="source\runtime\thirdparty\stb\__stb__build.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\render\task\RpgRenderTask_CompilePSO.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\runtime\shader\RpgShaderManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\game\RpgGameApp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\RpgRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\RpgSceneViewport.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\RpgShadowViewport_PointLight.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\task\RpgRenderTask_Copy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\task\RpgRenderTask_RenderPassDepth.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\task\RpgRenderTask_RenderPassForward.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\task\RpgRenderTask_RenderPassTransparency.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\RpgRenderResource_Material.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\RpgRenderResource_World.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\RpgRenderResource_Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\task\RpgRenderTask_RenderPass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\asset\RpgFont.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\navigation\world\RpgNavigationWorldSubsystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\asset\RpgMesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\RpgRenderer2D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\editor\__editor__build.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\task\RpgRenderTask_Compute.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\editor\task\RpgEditorTask_ImportTexture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\editor\task\RpgEditorTask_ImportModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\thirdparty\D3D12MA\__D3D12MA__build.cpp">
@@ -138,166 +63,85 @@
     <ClCompile Include="source\runtime\thirdparty\simdjson\__simdjson__build.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\animation\RpgAnimationSkeleton.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\animation\RpgAnimationClip.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\animation\world\RpgAnimationWorldSubsystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\physics\world\RpgPhysicsWorldSubsystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\render\world\RpgRenderWorldSubsystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\runtime\core\RpgTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\thirdparty\xxhash\xxhash.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\animation\RpgAnimationPose.cpp">
+    <ClCompile Include="source\runtime\core\RpgString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\animation\task\RpgAnimationTask_TickPose.cpp">
+    <ClCompile Include="source\runtime\asset\RpgAssetSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\render\RpgRenderResource_MeshSkinned.cpp">
+    <ClCompile Include="source\runtime\input\RpgInputSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\editor\script\RpgEditorScript_Camera.cpp">
+    <ClCompile Include="source\runtime\game\RpgGameApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\core\input\RpgInputSystem.cpp">
+    <ClCompile Include="source\runtime\world\RpgWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\render\RpgShadowViewport_Cascade.cpp">
+    <ClCompile Include="source\runtime\world\RpgTerrain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\render\RpgShadowViewport_SpotLight.cpp">
+    <ClCompile Include="source\runtime\world\task\RpgWorldTask_GenerateTerrain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\render\task\RpgRenderTask_RenderPassShadow.cpp">
+    <ClCompile Include="source\runtime\asset\RpgFont.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\render\task\RpgRenderTask_CaptureMesh.cpp">
+    <ClCompile Include="source\runtime\asset\RpgMaterial.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\render\task\RpgRenderTask_CaptureLight.cpp">
+    <ClCompile Include="source\runtime\asset\RpgMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\physics\RpgPhysicsTrace.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\physics\RpgPhysicsCollision.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\physics\task\RpgPhysicsTask_UpdateBound.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\physics\task\RpgPhysicsTask_UpdateShape.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\gui\RpgGuiTypes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\gui\widget\RpgGuiButton.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\test\gui\RpgTestGui.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\gui\widget\RpgGuiConsole.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\gui\widget\RpgGuiInputText.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\gui\RpgGuiLayout.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\gui\RpgGuiContext.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\test\core\RpgTestCore_String.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\test\core\RpgTestCore_Array.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\test\core\RpgTestCore_FreeList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\test\core\RpgTestCore_Algorithm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\test\core\RpgTestCore_Map.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\test\core\RpgTestCore_FilePath.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\test\core\RpgTestCore_Pointer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\physics\task\RpgPhysicsTask_TestOverlapPair.cpp">
+    <ClCompile Include="source\runtime\asset\RpgTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\render\RpgRenderThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\gui\widget\RpgGuiWindow.cpp">
+    <ClCompile Include="source\runtime\render\RpgRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\gui\widget\RpgGuiText.cpp">
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_CompilePSO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\gui\RpgGuiWidget.cpp">
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_Compute.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\gui\widget\RpgGuiTree.cpp">
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_Copy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\test\game\RpgTestGame.cpp">
+    <ClCompile Include="source\runtime\render\RpgRenderPipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\animation\world\RpgAnimationComponent.cpp">
+    <ClCompile Include="source\runtime\render\RpgSceneViewport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\physics\world\RpgPhysicsComponent.cpp">
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_Capture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\render\world\RpgRenderComponent.cpp">
+    <ClCompile Include="source\runtime\render\RpgRenderResource_Material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\core\asset\RpgAssetSystem.cpp">
+    <ClCompile Include="source\runtime\render\RpgRenderResource_Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\core\world\RpgGameObject.cpp">
+    <ClCompile Include="source\runtime\render\RpgRenderResource_MeshSkinned.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\core\world\RpgLevel.cpp">
+    <ClCompile Include="source\runtime\render\RpgRenderResource_World.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\core\world\RpgWorld.cpp">
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_RenderPass_Forward.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\game\world\RpgGameWorld.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\game\world\RpgGameWorldSubsystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\game\script\RpgGameScript_PlayerController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\core\RpgObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\core\RpgString.cpp">
+    <ClCompile Include="source\runtime\render\task\RpgRenderTask_RenderPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -344,85 +188,13 @@
     <ClInclude Include="source\runtime\core\RpgVertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\render\asset\RpgTexture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\RpgModel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\asset\RpgMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\RpgRenderPipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\RpgRenderResource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\runtime\core\RpgD3D12.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\task\RpgRenderTask_CompilePSO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\shader\RpgShaderManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\game\RpgGameApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\RpgRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\RpgSceneViewport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\RpgShadowViewport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\editor\RpgEditorAssetBrowser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\task\RpgRenderTask_Copy.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\asset\RpgMesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\task\RpgRenderTask_RenderPass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\task\RpgRenderTask_Compute.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\asset\RpgFont.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\navigation\world\RpgNavigationWorldSubsystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\editor\RpgEditor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\editor\RpgEditorTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\editor\RpgEditorWorldOutliner.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\editor\RpgEditorObjectInspector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\RpgRenderer2D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\runtime\core\RpgStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\editor\task\RpgEditorTask_ImportTexture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\editor\task\RpgEditorTask_ImportModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\core\RpgArray.h">
@@ -434,157 +206,91 @@
     <ClInclude Include="source\runtime\core\RpgMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\render\RpgRenderTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\animation\world\RpgAnimationWorldSubsystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\physics\world\RpgPhysicsWorldSubsystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\physics\RpgPhysicsTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\animation\RpgAnimationTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\navigation\RpgNavigationTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\world\RpgRenderWorldSubsystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\world\RpgRenderComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\physics\world\RpgPhysicsComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\animation\world\RpgAnimationComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\animation\task\RpgAnimationTask_TickPose.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\editor\task\RpgAssimpTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\editor\script\RpgEditorScript_Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\core\input\RpgInputTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\core\input\RpgInputSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\game\world\RpgGameComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\game\world\RpgGameWorldSubsystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\navigation\world\RpgNavigationComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\task\RpgRenderTask_Capture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\runtime\shader\RpgShaderTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\physics\task\RpgPhysicsTask_UpdateBound.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\physics\task\RpgPhysicsTask_UpdateShape.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\gui\RpgGuiTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\gui\widget\RpgGuiButton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\test\gui\RpgTestGui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\gui\widget\RpgGuiConsole.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\gui\widget\RpgGuiInputText.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\gui\RpgGuiLayout.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\core\input\RpgInputWindows.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\test\core\RpgTestCore.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\physics\task\RpgPhysicsTask_TestOverlapPair.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\render\RpgRenderThread.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\game\RpgGameTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\gui\widget\RpgGuiWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\gui\widget\RpgGuiText.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\gui\RpgGuiWidget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\gui\RpgGuiCanvas.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\gui\RpgGuiContext.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\gui\widget\RpgGuiTree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\test\game\RpgTestGame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\core\asset\RpgAssetSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\core\asset\RpgAssetTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\core\world\RpgGameObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\core\world\RpgLevel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\core\world\RpgWorld.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\core\world\RpgComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\game\world\RpgGameWorld.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\game\script\RpgGameScript_PlayerController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\core\RpgSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\core\RpgObject.h">
+    <ClInclude Include="source\runtime\asset\RpgAssetSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\editor\RpgEditorTerrain.h">
+    <ClInclude Include="source\runtime\asset\RpgAssetTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\input\RpgInputWindows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\input\RpgInputSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\input\RpgInputTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\game\RpgGameApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\world\RpgWorld.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\world\RpgTerrain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\world\task\RpgWorldTask_GenerateTerrain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\asset\RpgFont.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\asset\RpgMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\asset\RpgMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\asset\RpgTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\RpgRenderTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\RpgRenderThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\RpgRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\task\RpgRenderTask_CompilePSO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\task\RpgRenderTask_Compute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\task\RpgRenderTask_Copy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\RpgRenderPipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\RpgSceneViewport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\RpgShadowViewport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\task\RpgRenderTask_Capture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\world\RpgEntity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\RpgRenderResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\render\task\RpgRenderTask_RenderPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\world\RpgComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -82,6 +82,13 @@ public:
 		}
 	}
 
+
+	inline void Write(const RpgStringID& dataStr) noexcept
+	{
+		const RpgString tempStr = dataStr.ToString();
+		Write(tempStr);
+	}
+
 };
 
 
@@ -179,6 +186,14 @@ public:
 			dataStr.Resize(length);
 			ReadData(dataStr.GetData(), length);
 		}
+	}
+
+
+	inline void Read(RpgStringID& dataStr) noexcept
+	{
+		RpgString tempStr;
+		Read(tempStr);
+		dataStr = RpgStringID(tempStr);
 	}
 
 };

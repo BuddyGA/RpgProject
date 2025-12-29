@@ -4,16 +4,15 @@
 #include "../RpgRenderResource.h"
 
 
-class RpgTexture2D;
+class RpgTerrain;
 
 
 
 class RpgRenderTask_RenderPass : public RpgThreadTask
 {
 public:
-	RpgRenderFrameContext FrameContext;
-	const RpgWorldResource* WorldResource;
-	
+	const RpgRenderFrameContext* FrameContext;
+
 
 public:
 	RpgRenderTask_RenderPass() noexcept;
@@ -39,45 +38,16 @@ private:
 
 
 
-class RpgRenderTask_RenderPassShadow : public RpgRenderTask_RenderPass
-{
-public:
-	RpgTextureDepthStencil* TextureDepth;
-	RpgWorldResource::FViewID ViewId;
 
-	const RpgDrawIndexedDepth* DrawMeshData;
-	int DrawMeshCount;
+typedef RpgArrayInline<class RpgRenderTask_RenderPass_Forward*, 8> RpgRenderTask_RenderPass_Forward_Array;
 
-	const RpgDrawIndexedDepth* DrawSkinnedMeshData;
-	int DrawSkinnedMeshCount;
-
-	bool bIsOmniDirectional;
-
-
-public:
-	RpgRenderTask_RenderPassShadow() noexcept;
-	virtual void Reset() noexcept override;
-
-
-	virtual const char* GetTaskName() const noexcept override
-	{
-		return "RpgRenderTask_RenderPassShadow";
-	}
-
-
-protected:
-	virtual void CommandDraw(ID3D12GraphicsCommandList* cmdList) const noexcept override;
-
-};
-
-
-
-class RpgRenderTask_RenderPassForward : public RpgRenderTask_RenderPass
+class RpgRenderTask_RenderPass_Forward : public RpgRenderTask_RenderPass
 {
 public:
 	RpgTextureRenderTarget* TextureRenderTarget;
 	RpgTextureDepthStencil* TextureDepthStencil;
 
+	/*
 	const RpgDrawIndexed* DrawMeshData;
 	int DrawMeshCount;
 
@@ -86,28 +56,23 @@ public:
 
 	const RpgDrawIndexed* DrawTerrainData;
 	int DrawTerrainCount;
+	*/
+
+	RpgArray<const RpgTerrain*> DrawTerrains;
 
 
 public:
-	RpgRenderTask_RenderPassForward() noexcept;
+	RpgRenderTask_RenderPass_Forward() noexcept;
 	virtual void Reset() noexcept override;
 
 
 	virtual const char* GetTaskName() const noexcept override
 	{
-		return "RpgRenderTask_RenderPassForward";
+		return "RpgRenderTask_RenderPass_Forward";
 	}
 
 
 protected:
 	virtual void CommandDraw(ID3D12GraphicsCommandList* cmdList) const noexcept override;
-
-
-#ifndef RPG_BUILD_SHIPPING
-public:
-	RpgMaterialResource::FMaterialID DebugDrawLineMaterialId;
-	RpgMaterialResource::FMaterialID DebugDrawLineNoDepthMaterialId;
-	RpgWorldResource::FViewID DebugDrawCameraId;
-#endif // !RPG_BUILD_SHIPPING
 
 };

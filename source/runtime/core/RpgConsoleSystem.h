@@ -2,6 +2,7 @@
 
 #include "RpgString.h"
 #include "RpgDelegate.h"
+#include "RpgSet.h"
 
 
 #define RPG_CONSOLE_MESSAGE_FORMAT_MAX_COUNT	1024
@@ -80,10 +81,7 @@ public:
 
 	inline void RegisterCommand(const RpgName& command) noexcept
 	{
-		if (RegisteredCommands.FindIndexByValue(command) == RPG_INDEX_INVALID)
-		{
-			RegisteredCommands.AddValue(command);
-		}
+		RegisteredCommands.Add(command);
 	}
 
 
@@ -108,7 +106,7 @@ private:
 	RpgArray<char, 128> LogBuffer;
 	RpgArray<FLogInfo> LogInfos;
 
-	RpgArray<RpgName> RegisteredCommands;
+	RpgSet<RpgName> RegisteredCommands;
 
 	RPG_DELEGATE_DECLARE_TwoParams(FCommandDelegate, const RpgName&, command, const RpgConsoleCommandParams&, params)
 	FCommandDelegate RegisteredListeners;

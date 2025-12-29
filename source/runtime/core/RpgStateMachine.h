@@ -13,7 +13,7 @@ class RpgState
 	RPG_NOCOPYMOVE(RpgState)
 
 public:
-	RpgState(const RpgName& in_Name) noexcept
+	RpgState(const RpgStringID& in_Name) noexcept
 	{
 		Name = in_Name;
 		bTickUpdate = false;
@@ -22,7 +22,7 @@ public:
 	virtual ~RpgState() noexcept = default;
 
 
-	inline const RpgName& GetName() const noexcept
+	inline const RpgStringID& GetName() const noexcept
 	{
 		return Name;
 	}
@@ -36,7 +36,7 @@ protected:
 
 
 protected:
-	RpgName Name;
+	RpgStringID Name;
 	bool bTickUpdate;
 
 
@@ -78,7 +78,7 @@ public:
 	}
 
 
-	inline void SetState(const RpgName& name) noexcept
+	inline void SetState(const RpgStringID& name) noexcept
 	{
 		RpgState* newState = nullptr;
 

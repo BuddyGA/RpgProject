@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/RpgThreadPool.h"
-#include "../RpgRenderTypes.h"
+#include "../RpgRenderResource.h"
 
 
 
@@ -10,9 +10,7 @@ class RpgRenderTask_Copy : public RpgThreadTask
 public:
 	ID3D12Fence* FenceSignal;
 	uint64_t FenceSignalValue;
-	RpgRenderFrameContext FrameContext;
-	RpgRenderer2D* Renderer2d;
-	RpgArrayInline<RpgWorldResource*, 8> WorldResources;
+	RpgRenderFrameContext* FrameContext;
 
 
 public:

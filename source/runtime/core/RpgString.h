@@ -177,8 +177,17 @@ public:
 		return Equals(rhs);
 	}
 
+	inline bool operator==(const char* rhs) const noexcept
+	{
+		return Equals(rhs);
+	}
 
 	inline bool operator!=(const RpgString& rhs) const noexcept
+	{
+		return !Equals(rhs);
+	}
+
+	inline bool operator!=(const char* rhs) const noexcept
 	{
 		return !Equals(rhs);
 	}
@@ -426,7 +435,6 @@ namespace Rpg
 
 
 
-
 #define RPG_NAME_MAX_COUNT			48
 
 class alignas(16) RpgName
@@ -559,64 +567,76 @@ namespace Rpg
 
 
 
-class RpgStringPool
-{
-	RPG_SINGLETON(RpgStringPool)
-
-public:
-	void Allocate(const char* cstr, int& out_Index, bool bIsInstance, int* optOut_Instance = nullptr) noexcept;
-	RpgString ConstructString(int index, int instance) const noexcept;
-
-
-private:
-	struct FEntry
-	{
-		int Index{ RPG_INDEX_INVALID };
-		int Count{ 0 };
-		int Instance{ 0 };
-	};
-
-
-private:
-	mutable SRWLOCK Lock;
-
-	RpgArray<uint64_t> Hashes;
-	RpgArray<FEntry> Entries;
-	RpgArray<char, 64> Pool;
-
-};
-
 
 
 
 class RpgStringID
 {
+	class FHashTable
+	{
+	public:
+		FHashTable() noexcept;
+		void Allocate(const char* cstr, int& out_Index, bool bIsUnique, int* optOut_UniqueId = nullptr) noexcept;
+		RpgString ConstructString(int index, int uniqueId) const noexcept;
+
+
+	private:
+		struct FEntry
+		{
+			int StringIndex{ RPG_INDEX_INVALID };
+			int UniqueId{ 0 };
+		};
+
+
+	private:
+		mutable SRWLOCK Lock;
+
+		RpgArray<uint64_t> Hashes;
+		RpgArray<FEntry> Entries;
+		RpgArray<char, 64> StringPool;
+
+	};
+
+	static FHashTable HashTable;
+
+
 public:
-	RpgStringID(const char* cstr = nullptr) noexcept
-		: PoolIndex(RPG_INDEX_INVALID)
-		, Instance(0)
+	RpgStringID(const char* cstr = nullptr, bool bIsUnique = false) noexcept
+		: TableIndex(RPG_INDEX_INVALID)
+		, UniqueId(0)
 	{
 		if (cstr)
 		{
-			RpgStringPool::Get().Allocate(cstr, PoolIndex, false);
+			HashTable.Allocate(cstr, TableIndex, bIsUnique, &UniqueId);
 		}
 	}
 
 
-	RpgStringID(const char* cstr, bool bIsInstance) noexcept
-		: PoolIndex(RPG_INDEX_INVALID)
-		, Instance(0)
+	explicit RpgStringID(const RpgString& str, bool bIsUnique = false) noexcept
+		: TableIndex(RPG_INDEX_INVALID)
+		, UniqueId(0)
 	{
-		if (cstr)
+		if (!str.IsEmpty())
 		{
-			RpgStringPool::Get().Allocate(cstr, PoolIndex, bIsInstance, &Instance);
+			HashTable.Allocate(*str, TableIndex, bIsUnique, &UniqueId);
+		}
+	}
+
+
+	explicit RpgStringID(const RpgName& str, bool bIsUnique = false) noexcept
+		: TableIndex(RPG_INDEX_INVALID)
+		, UniqueId(0)
+	{
+		if (!str.IsEmpty())
+		{
+			HashTable.Allocate(*str, TableIndex, bIsUnique, &UniqueId);
 		}
 	}
 
 
 	RpgStringID(const RpgStringID& other) noexcept
-		: PoolIndex(other.PoolIndex)
-		, Instance(other.Instance)
+		: TableIndex(other.TableIndex)
+		, UniqueId(other.UniqueId)
 	{
 	}
 
@@ -624,12 +644,12 @@ public:
 public:
 	inline RpgStringID& operator=(const char* rhs) noexcept
 	{
-		PoolIndex = RPG_INDEX_INVALID;
-		Instance = 0;
+		TableIndex = RPG_INDEX_INVALID;
+		UniqueId = 0;
 
 		if (rhs)
 		{
-			RpgStringPool::Get().Allocate(rhs, PoolIndex, false);
+			HashTable.Allocate(rhs, TableIndex, false);
 		}
 
 		return *this;
@@ -638,8 +658,8 @@ public:
 
 	inline RpgStringID& operator=(const RpgStringID& rhs) noexcept
 	{
-		PoolIndex = rhs.PoolIndex;
-		Instance = rhs.Instance;
+		TableIndex = rhs.TableIndex;
+		UniqueId = rhs.UniqueId;
 
 		return *this;
 
@@ -648,31 +668,61 @@ public:
 
 	inline bool operator==(const RpgStringID& rhs) const noexcept
 	{
-		return PoolIndex == rhs.PoolIndex;
+		return TableIndex == rhs.TableIndex && UniqueId == rhs.UniqueId;
 	}
 
 
 	inline bool operator!=(const RpgStringID& rhs) const noexcept
 	{
-		return PoolIndex != rhs.PoolIndex;
+		return !(*this == rhs);
 	}
 
 
 public:
 	inline bool IsEmpty() const noexcept
 	{
-		return PoolIndex == RPG_INDEX_INVALID;
+		return TableIndex == RPG_INDEX_INVALID;
 	}
 
+	inline uint64_t GetHash() const noexcept
+	{
+		return TableIndex == RPG_INDEX_INVALID ? 0 : (static_cast<uint64_t>(UniqueId) << 32) | static_cast<uint64_t>(TableIndex);
+	}
 
 	inline RpgString ToString() const noexcept
 	{
-		return (PoolIndex != RPG_INDEX_INVALID) ? RpgStringPool::Get().ConstructString(PoolIndex, Instance) : RpgString();
+		return (TableIndex == RPG_INDEX_INVALID) ? RpgString() : HashTable.ConstructString(TableIndex, UniqueId);
 	}
 
 
 private:
-	int PoolIndex;
-	int Instance;
+	int TableIndex;
+	int UniqueId;
+
+
+public:
+	template<typename...TVarArgs>
+	inline static RpgStringID Format(const char* format, TVarArgs&&...args) noexcept
+	{
+		return RpgStringID(RpgString::Format(format, std::forward<TVarArgs>(args)...));
+	}
+
+};
+
+
+namespace Rpg
+{
+	template<>
+	struct Type<RpgStringID>
+	{
+		static constexpr RpgType Value = RpgType("RpgStringID", sizeof(RpgStringID), nullptr, nullptr, false, false, true);
+	};
+
+
+	template<>
+	inline uint64_t GetHash<RpgStringID>(const RpgStringID& value) noexcept
+	{
+		return value.GetHash();
+	}
 
 };

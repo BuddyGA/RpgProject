@@ -115,8 +115,8 @@ namespace RpgThreadPool
 	//void WaitAllTasks(RpgThreadTask** tasks, int taskCount) noexcept;
 
 
-	// Submit <tasks> into threadpool or execute in serial based on <bCondition>
-	template<typename bool bCondition = false>
+	// Submit <tasks> into threadpool based on <bSubmitCondition> or execute in serial
+	template<typename bool bSubmitCondition = false>
 	inline void SubmitOrExecuteTasks(RpgThreadTask** tasks, int taskCount) noexcept
 	{
 		if (tasks == nullptr || taskCount == 0)
@@ -124,7 +124,7 @@ namespace RpgThreadPool
 			return;
 		}
 
-		if constexpr (bCondition)
+		if constexpr (bSubmitCondition)
 		{
 			SubmitTasks(tasks, taskCount);
 		}

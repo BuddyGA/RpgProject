@@ -924,6 +924,27 @@ public:
 	}
 
 
+	inline T* begin() noexcept
+	{
+		return Data;
+	}
+
+	inline const T* begin() const noexcept
+	{
+		return Data;
+	}
+
+	inline T* end() noexcept
+	{
+		return Data + Count;
+	}
+
+	inline const T* end() const noexcept
+	{
+		return Data + Count;
+	}
+
+
 private:
 	T Data[CAPACITY];
 	int Count;

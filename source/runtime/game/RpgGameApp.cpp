@@ -1,16 +1,8 @@
 #include "RpgGameApp.h"
 #include "core/RpgCommandLine.h"
-#include "core/asset/RpgAssetSystem.h"
-#include "core/input/RpgInputSystem.h"
-#include "render/RpgRenderThread.h"
-#include "render/world/RpgRenderComponent.h"
-
-
-#ifndef RPG_BUILD_SHIPPING
-#include "RpgEditor.h"
-#include "../../test/gui/RpgTestGui.h"
-#include "../../test/game/RpgTestGame.h"
-#endif // !RPG_BUILD_SHIPPING
+#include "asset/RpgAssetSystem.h"
+#include "input/RpgInputSystem.h"
+#include "render/RpgRenderer.h"
 
 
 
@@ -24,9 +16,6 @@ RpgGameApp::RpgGameApp() noexcept
 {
 	WindowState = RpgPlatformWindowSizeState::DEFAULT;
 
-	SceneViewport.bIsMainViewport = true;
-	LoadingLevel = nullptr;
-
 	// fps info
 	FpsLimit = 60;
 	FpsSampleTimer = 0.0f;
@@ -34,50 +23,27 @@ RpgGameApp::RpgGameApp() noexcept
 	FpsTimeMs = 0.0f;
 	FpsCountMs = 0.0f;
 
-	RpgRenderThread::Initialize();
+	g_ConsoleSystem->RegisterObjectCommandListener(this, &RpgGameApp::HandleConsoleCommand);
 }
 
 
 RpgGameApp::~RpgGameApp() noexcept
 {
-#ifndef RPG_BUILD_SHIPPING
-	delete g_Editor;
-#endif // !RPG_BUILD_SHIPPING
-
-	RpgRenderThread::Shutdown();
 }
 
 
-void RpgGameApp::Initialize() noexcept
+void RpgGameApp::RequestExit(bool bAskConfirmation) noexcept
 {
-	g_ConsoleSystem->RegisterObjectCommandListener(this, &RpgGameApp::HandleConsoleCommand);
+	if (!bAskConfirmation)
+	{
+		PostQuitMessage(0);
+		return;
+	}
 
-	// main world
-	MainWorld = CreateWorld<RpgGameWorld>("world_game");
-
-	// main renderer
-	MainRenderer = RpgPointer::MakeUnique<RpgRenderer>(RpgPlatformProcess::GetMainWindowHandle(), !RpgCommandLine::HasCommand("novsync"));
-
-	// gui canvas
-	GuiCanvas.Name = "engine_canvas";
-
-	// gui console
-	GuiConsole = GuiCanvas.AddChild<RpgGuiConsole>();
-
-
-#ifndef RPG_BUILD_SHIPPING
-	g_Editor = new RpgEditor();
-	g_Editor->SetupGUI(GuiCanvas);
-
-	// test gui
-	//RpgTest::Gui::Create(GuiCanvas);
-
-	// test level
-	RpgTest::Game::Create(MainWorld);
-
-	g_Editor->LevelLoaded(MainWorld);
-#endif // !RPG_BUILD_SHIPPING
-
+	if (MessageBoxA(RpgPlatformProcess::GetMainWindowHandle(), "Are you sure you want to exit?", "Confirmation", MB_APPLMODAL | MB_ICONQUESTION | MB_YESNO) == IDYES)
+	{
+		PostQuitMessage(0);
+	}
 }
 
 
@@ -99,37 +65,21 @@ void RpgGameApp::WindowSizeChanged(const RpgPlatformWindowEvent& e) noexcept
 
 void RpgGameApp::MouseMove(const RpgPlatformMouseMoveEvent& e) noexcept
 {
-	GuiContext.MouseMove(e);
 }
 
 
 void RpgGameApp::MouseWheel(const RpgPlatformMouseWheelEvent& e) noexcept
 {
-	GuiContext.MouseWheel(e);
 }
 
 
 void RpgGameApp::MouseButton(const RpgPlatformMouseButtonEvent& e) noexcept
 {
-	GuiContext.MouseButton(e);
 }
 
 
 void RpgGameApp::KeyboardButton(const RpgPlatformKeyboardEvent& e) noexcept
 {
-	GuiContext.KeyboardButton(e);
-
-	if (e.bIsDown)
-	{
-		if (e.Button == RpgInputKey::KEYBOARD_TILDE)
-		{
-			GuiConsole->Toggle();
-		}
-	}
-
-#ifndef RPG_BUILD_SHIPPING
-	g_Editor->KeyboardButton(e);
-#endif // !RPG_BUILD_SHIPPING
 
 }
 
@@ -142,14 +92,11 @@ void RpgGameApp::CharInput(char c) noexcept
 		return;
 	}
 
-	GuiContext.CharInput(c);
 }
 
 
-void RpgGameApp::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
+void RpgGameApp::FrameTick(int frameIndex, float deltaTime) noexcept
 {
-	const int frameIndex = frameCounter % RPG_FRAME_BUFFERING;
-
 	// Calculate average FPS
 	{
 		const int FPS_SAMPLE_COUNT = 3;
@@ -168,181 +115,93 @@ void RpgGameApp::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 	}
 
 
-	// Begin frame
-	{
-		g_AssetSystem->Update();
-
-		MainWorld->BeginFrame(frameIndex);
-
-		if (LoadingLevel)
-		{
-			RPG_LogDebug(RpgLogGame, "Loading progress: %.2f", LoadingLevel->GetLoadingProgress());
-
-			if (LoadingLevel->IsLoaded())
-			{
-			#ifndef RPG_BUILD_SHIPPING
-				g_Editor->LevelLoaded(MainWorld);
-			#endif // !RPG_BUILD_SHIPPING
-
-				LoadingLevel = nullptr;
-			}
-
-			SceneViewport.GetFrameMeshes(frameIndex).Clear();
-			SceneViewport.GetFrameLights(frameIndex).Clear();
-		}
-		else
-		{
-			RpgRenderComponent_Camera* mainCameraComp = !MainCameraObject.IsNull() ? MainCameraObject.GetComponent<RpgRenderComponent_Camera>() : nullptr;
-
-			if (mainCameraComp && WindowState != RpgPlatformWindowSizeState::MINIMIZED)
-			{
-				mainCameraComp->RenderTargetDimension = WindowDimension;
-			}
-		}
-	}
+	// Asset loding update
+	g_AssetSystem->Update();
 
 	const RpgRectFloat windowClipRect(0.0f, 0.0f, static_cast<float>(WindowDimension.X), static_cast<float>(WindowDimension.Y));
 
+
 	// GUI
 	{
-		GuiContext.Begin();
-
-		if (WindowState != RpgPlatformWindowSizeState::MINIMIZED)
-		{
-			GuiCanvas.UpdateWidgets(GuiContext, windowClipRect);
-		}
-
-		GuiContext.End();
+		
 	}
 
 
 	// Tick update
 	{
-		MainWorld->DispatchTickUpdate(deltaTime);
+
 	}
 
 
 	// Post tick update
 	{
-		MainWorld->DispatchPostTickUpdate();
+
 	}
 
-
-	// Render
-	RpgRenderThread::WaitFrame(frameIndex);
-	{
-		RpgD3D12::BeginFrame(frameIndex);
-
-		MainRenderer->BeginRender(frameIndex, deltaTime);
-		{
-			MainRenderer->RegisterWorld(MainWorld);
-
-			if (LoadingLevel)
-			{
-				// Normally this is done in render-world-subsystem when camera-component referencing the main viewport
-				// since the level is loading and no camera gameobject yet, we call this manually
-				MainRenderer->AddWorldSceneViewport(frameIndex, MainWorld, &SceneViewport);
-			}
-
-			// Setup renderer final texture
-			MainRenderer->SetFinalTexture(frameIndex, SceneViewport.GetTextureRenderTarget(frameIndex).CastStatic<RpgTexture2D>());
-
-			// Dispatch render
-			MainWorld->DispatchRender(frameIndex, MainRenderer.Get());
-
-			// Render 2D
-			RpgRenderer2D& renderer2d = MainRenderer->GetRenderer2D();
-
-		#ifndef RPG_BUILD_SHIPPING
-			g_Editor->Render2d(renderer2d);
-		#endif // !RPG_BUILD_SHIPPING
-
-			// Fps info
-			{
-				RpgColor fpsTextColor;
-
-				if (FpsCountMs < 30)
-				{
-					fpsTextColor = RpgColor::RED;
-				}
-				else if (FpsCountMs < 50)
-				{
-					fpsTextColor = RpgColor::YELLOW;
-				}
-				else
-				{
-					fpsTextColor = RpgColor::GREEN;
-				}
-
-				const RpgPointFloat fpsTextPos(static_cast<float>(renderer2d.GetViewportDimension().X) - 110.0f, 8.0f);
-				renderer2d.AddText(*FpsString, FpsString.GetLength(), fpsTextPos, fpsTextColor);
-			}
-
-			// Loading info
-			if (LoadingLevel)
-			{
-				static RpgString loadingString = RpgString::Format("Loading: %.2f", LoadingLevel->GetLoadingProgress());
-				const RpgPointFloat loadingTextPos(16.0f, static_cast<float>(renderer2d.GetViewportDimension().Y) - 160.0f);
-				renderer2d.AddText(*loadingString, loadingString.GetLength(), loadingTextPos, RpgColor::WHITE);
-			}
-
-			// GUI
-			GuiCanvas.Render(GuiContext, renderer2d, 255, windowClipRect);
-		}
-		MainRenderer->EndRender(frameIndex, deltaTime);
-	}
-	RpgRenderThread::ExecuteFrame(frameCounter, frameIndex, deltaTime, MainRenderer.Get());
-
-
-	// End frame
-	MainWorld->EndFrame(frameIndex);
 
 	g_InputSystem->Flush();
 }
 
 
-void RpgGameApp::RequestExit(bool bAskConfirmation) noexcept
+void RpgGameApp::FramePreRender(int frameIndex, float deltaTime, RpgRenderer& renderer) noexcept
 {
-	if (!bAskConfirmation)
+	MainViewport.World = &MainWorld;
+	MainViewport.SetFrameViewRotationAndPosition(frameIndex, RpgQuaternion::FromPitchYawRollDegree(60.0f, 0.0, 0.0f), RpgVector3::ZERO);
+
+	renderer.AddSceneViewport(&MainViewport);
+
+	// Setup renderer final texture
+	//renderer.SetFinalTexture(MainViewport.GetFrameTextureRenderTarget(frameIndex).CastStatic<RpgTexture2D>());
+
+	/*
+
+	if (LoadingLevel)
 	{
-		PostQuitMessage(0);
-		return;
+		// Normally this is done in render-world-subsystem when camera-component referencing the main viewport
+		// since the level is loading and no camera gameobject yet, we call this manually
+		MainRenderer->AddWorldSceneViewport(frameIndex, MainWorld, &SceneViewport);
 	}
 
-	if (MessageBoxA(RpgPlatformProcess::GetMainWindowHandle(), "Are you sure you want to exit?", "Confirmation", MB_APPLMODAL | MB_ICONQUESTION | MB_YESNO) == IDYES)
+	// Dispatch render
+	MainWorld->DispatchRender(frameIndex, MainRenderer.Get());
+
+	// Render 2D
+	RpgRenderer2D& renderer2d = MainRenderer->GetRenderer2D();
+
+#ifndef RPG_BUILD_SHIPPING
+	g_Editor->Render2d(renderer2d);
+#endif // !RPG_BUILD_SHIPPING
+
+	// Fps info
 	{
-		PostQuitMessage(0);
+		RpgColor fpsTextColor;
+
+		if (FpsCountMs < 30)
+		{
+			fpsTextColor = RpgColor::RED;
+		}
+		else if (FpsCountMs < 50)
+		{
+			fpsTextColor = RpgColor::YELLOW;
+		}
+		else
+		{
+			fpsTextColor = RpgColor::GREEN;
+		}
+
+		const RpgPointFloat fpsTextPos(static_cast<float>(renderer2d.GetViewportDimension().X) - 110.0f, 8.0f);
+		renderer2d.AddText(*FpsString, FpsString.GetLength(), fpsTextPos, fpsTextColor);
 	}
-}
 
-
-void RpgGameApp::OpenLevel(const RpgString& levelAssetPath) noexcept
-{
-	if (levelAssetPath.IsEmpty())
+	// Loading info
+	if (LoadingLevel)
 	{
-		return;
+		static RpgString loadingString = RpgString::Format("Loading: %.2f", LoadingLevel->GetLoadingProgress());
+		const RpgPointFloat loadingTextPos(16.0f, static_cast<float>(renderer2d.GetViewportDimension().Y) - 160.0f);
+		renderer2d.AddText(*loadingString, loadingString.GetLength(), loadingTextPos, RpgColor::WHITE);
 	}
 
-	RPG_CONSOLE_Log(RpgLogGame, "Open level (%s)", *levelAssetPath);
-
-	// TODO: Show loading screen
-	MainCameraObject = RpgGameObject();
-	MainWorld->ClearLevels();
-	LoadingLevel = MainWorld->LoadLevelAsync(levelAssetPath);
-}
-
-
-void RpgGameApp::SetMainCamera(RpgGameObject cameraObject) noexcept
-{
-	MainCameraObject = cameraObject;
-
-	if (MainCameraObject.IsNull())
-	{
-		return;
-	}
-
-	RpgRenderComponent_Camera* cameraComp = MainCameraObject.GetComponent<RpgRenderComponent_Camera>();
-	RPG_Check(cameraComp);
-	cameraComp->Viewport = &SceneViewport;
-	cameraComp->bActivated = true;
+	// GUI
+	GuiCanvas.Render(GuiContext, renderer2d, 255, windowClipRect);
+	*/
 }

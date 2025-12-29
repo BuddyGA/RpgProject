@@ -298,12 +298,12 @@ void RpgRenderPipeline::Initialize() noexcept
     {
         // ShadowDepth
         {
-            RpgRenderPipelineState state{};
+            RpgMaterialPipelineState state{};
             state.VertexShaderName = RPG_SHADER_NAME_ShadowMapDirectional;
-            state.VertexMode = RpgRenderVertexMode::MESH;
-            state.RasterMode = RpgRenderRasterMode::SOLID;
-            state.BlendMode = RpgRenderColorBlendMode::NONE;
-            state.DepthStencilFormat = RpgRender::DEFAULT_FORMAT_SHADOW_DEPTH;
+            state.VertexMode = RpgMaterialVertexMode::MESH;
+            state.RasterMode = RpgMaterialRasterMode::SOLID;
+            state.BlendMode = RpgMaterialColorBlendMode::NONE;
+            state.DepthStencilFormat = RpgRenderFormat::SHADOW_DEPTH;
             state.bDepthTest = true;
             state.bDepthWrite = true;
             state.DepthBias = 0;
@@ -322,14 +322,14 @@ void RpgRenderPipeline::Initialize() noexcept
 
         // ShadowDepthCube
         {
-            RpgRenderPipelineState state{};
+            RpgMaterialPipelineState state{};
             state.VertexShaderName = RPG_SHADER_NAME_ShadowMapCube_VS;
             state.GeometryShaderName = RPG_SHADER_NAME_ShadowMapCube_GS;
             //state.PixelShaderName = RPG_SHADER_DEFAULT_NAME_ShadowMapCube_PS;
-            state.VertexMode = RpgRenderVertexMode::MESH;
-            state.RasterMode = RpgRenderRasterMode::SOLID;
-            state.BlendMode = RpgRenderColorBlendMode::NONE;
-            state.DepthStencilFormat = RpgRender::DEFAULT_FORMAT_SHADOW_DEPTH;
+            state.VertexMode = RpgMaterialVertexMode::MESH;
+            state.RasterMode = RpgMaterialRasterMode::SOLID;
+            state.BlendMode = RpgMaterialColorBlendMode::NONE;
+            state.DepthStencilFormat = RpgRenderFormat::SHADOW_DEPTH;
             state.RenderTargetCount = 0;
             state.bDepthTest = true;
             state.bDepthWrite = true;
@@ -418,7 +418,7 @@ void RpgRenderPipeline::AddMaterials(RpgSharedMaterial* materialArray, int mater
 
         if (foundAtIndex != RPG_INDEX_INVALID)
         {
-            RPG_LogWarn(RpgLogD3D12, "Ignore add material. Material [%s] has been added!", *mat->GetName());
+            RPG_LogWarn(RpgLogD3D12, "Ignore add material. Material [%s] has been added!", *mat->GetName().ToString());
             continue;
         }
 

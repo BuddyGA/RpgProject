@@ -3,51 +3,28 @@
 #include "core/RpgThreadPool.h"
 
 
-class RpgWorld;
-class RpgRenderComponent_Camera;
+class RpgSceneViewport;
+class RpgShadowViewport;
 
 
 
-class RpgRenderTask_CaptureMesh : public RpgThreadTask
+class RpgRenderTask_Capture : public RpgThreadTask
 {
 public:
-	RpgWorld* World;
-	RpgRenderComponent_Camera* Camera;
+	RpgSceneViewport* SceneViewport;
+	RpgShadowViewport* ShadowViewport;
 	int FrameIndex;
 
 
 public:
-	RpgRenderTask_CaptureMesh() noexcept;
+	RpgRenderTask_Capture() noexcept;
 	virtual void Reset() noexcept override;
 	virtual void Execute() noexcept override;
 
 
 	virtual const char* GetTaskName() const noexcept override
 	{
-		return "RpgRenderTask_CaptureMesh";
-	}
-
-};
-
-
-
-class RpgRenderTask_CaptureLight : public RpgThreadTask
-{
-public:
-	RpgWorld* World;
-	RpgRenderComponent_Camera* Camera;
-	int FrameIndex;
-
-
-public:
-	RpgRenderTask_CaptureLight() noexcept;
-	virtual void Reset() noexcept override;
-	virtual void Execute() noexcept override;
-
-
-	virtual const char* GetTaskName() const noexcept override
-	{
-		return "RpgRenderTask_CaptureLight";
+		return "RpgRenderTask_Capture";
 	}
 
 };

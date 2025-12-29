@@ -41,7 +41,7 @@ namespace RpgRenderThread
 
 			FFrameData& frame = FrameDatas[frameIndex];
 			RPG_Check(frame.Renderer);
-			frame.Renderer->Execute(FrameCounter, frameIndex, frame.DeltaTime);
+			frame.Renderer->Render(frameIndex, frame.DeltaTime);
 			frame.Renderer = nullptr;
 
 			//RPG_Log(RpgLogSystem, "[Thread-render] Finish frame (%i)", frameIndex);
@@ -132,7 +132,7 @@ void RpgRenderThread::WaitFrame(int frameIndex) noexcept
 }
 
 
-void RpgRenderThread::ExecuteFrame(uint64_t frameCounter, int frameIndex, float deltaTime, RpgRenderer* renderer) noexcept
+void RpgRenderThread::FrameRender(uint64_t frameCounter, int frameIndex, float deltaTime, RpgRenderer* renderer) noexcept
 {
 	FFrameData& frame = FrameDatas[frameIndex];
 	frame.Renderer = renderer;
@@ -143,7 +143,7 @@ void RpgRenderThread::ExecuteFrame(uint64_t frameCounter, int frameIndex, float 
 	ReleaseSemaphore(AwakeSemaphore, 1, NULL);
 
 #else
-	frame.Renderer->Execute(frameCounter, frameIndex, deltaTime);
+	frame.Renderer->Render(frameIndex, deltaTime);
 
 #endif // RPG_RENDER_MULTITHREADED
 

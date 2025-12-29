@@ -14,7 +14,7 @@ RPG_LOG_DECLARE_CATEGORY_STATIC(RpgLogShader, VERBOSITY_DEBUG)
 class RpgShaderTask_CompileHLSL : public RpgThreadTask
 {
 public:
-	RpgName Name;
+	RpgStringID Name;
 	RpgString FilePath;
 	RpgShader::EType Type;
 	RpgShader::FCompileMacros CompileMacros;
@@ -75,7 +75,7 @@ public:
 
 	virtual void Execute() noexcept override
 	{
-		RPG_LogDebug(RpgLogShader, "[ThreadId-%u] Execute compile shader task\n\tName: %s\n\tFile: %s\n", GetCurrentThreadId(), *Name, *FilePath);
+		RPG_LogDebug(RpgLogShader, "[ThreadId-%u] Execute compile shader task\n\tName: %s\n\tFile: %s\n", GetCurrentThreadId(), *Name.ToString(), *FilePath);
 		RPG_Assert(Type >= RpgShader::TYPE_VERTEX && Type < RpgShader::TYPE_MAX_COUNT);
 		
 		RpgArrayInline<FDefine, 8> defines;
@@ -184,12 +184,12 @@ public:
 
 		if (dxcErrorBlob && dxcErrorBlob->GetBufferSize())
 		{
-			RPG_LogError(RpgLogShader, "[ThreadId-%u] Compile shader FAILED!\n\tName: %s\n\tFile: %s\n\tMessage: %s\n", GetCurrentThreadId(), *Name, *FilePath, (const char*)dxcErrorBlob->GetBufferPointer());
+			RPG_LogError(RpgLogShader, "[ThreadId-%u] Compile shader FAILED!\n\tName: %s\n\tFile: %s\n\tMessage: %s\n", GetCurrentThreadId(), *Name.ToString(), *FilePath, (const char*)dxcErrorBlob->GetBufferPointer());
 			CodeBlob.Reset();
 		}
 		else
 		{
-			RPG_LogDebug(RpgLogShader, "[ThreadId-%u] Compile shader SUCCESS!\n\tName: %s\n\tFile: %s\n", GetCurrentThreadId(), *Name, *FilePath);
+			RPG_LogDebug(RpgLogShader, "[ThreadId-%u] Compile shader SUCCESS!\n\tName: %s\n\tFile: %s\n", GetCurrentThreadId(), *Name.ToString(), *FilePath);
 			RPG_SHADER_Check(dxcResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&CodeBlob), nullptr));
 		}
 	}
@@ -230,7 +230,7 @@ namespace RpgShaderManager
 	};
 
 
-	static RpgArray<RpgName> ShaderNames;
+	static RpgArray<RpgStringID> ShaderNames;
 	static RpgArray<FShaderData> ShaderDatas;
 	static RpgArray<RpgShaderTask_CompileHLSL> TaskCompileShaders;
 
@@ -298,11 +298,11 @@ void RpgShaderManager::Shutdown() noexcept
 }
 
 
-void RpgShaderManager::AddShader(const RpgName& in_Name, const RpgString& in_HlslFilePath, RpgShader::EType in_Type, RpgShader::FCompileMacros optIn_CompileMacros) noexcept
+void RpgShaderManager::AddShader(const RpgStringID& in_Name, const RpgString& in_HlslFilePath, RpgShader::EType in_Type, RpgShader::FCompileMacros optIn_CompileMacros) noexcept
 {
 	if (ShaderNames.FindIndexByValue(in_Name) != RPG_INDEX_INVALID)
 	{
-		RPG_LogWarn(RpgLogShader, "Ignore add shader. Shader with name [%s] already exists!", *in_Name);
+		RPG_LogWarn(RpgLogShader, "Ignore add shader. Shader with name [%s] already exists!", *in_Name.ToString());
 		return;
 	}
 
@@ -364,13 +364,13 @@ void RpgShaderManager::CompileShaders(bool bWaitAll) noexcept
 }
 
 
-bool RpgShaderManager::DoesShaderExists(const RpgName& name) noexcept
+bool RpgShaderManager::DoesShaderExists(const RpgStringID& name) noexcept
 {
 	return ShaderNames.FindIndexByValue(name) != RPG_INDEX_INVALID;
 }
 
 
-IDxcBlob* RpgShaderManager::GetShaderCodeBlob(const RpgName& name) noexcept
+IDxcBlob* RpgShaderManager::GetShaderCodeBlob(const RpgStringID& name) noexcept
 {
 	const int index = ShaderNames.FindIndexByValue(name);
 	if (index == RPG_INDEX_INVALID)

@@ -70,7 +70,7 @@ RpgName RpgFilePath::GetDirectoryName() const noexcept
 		return "";
 	}
 
-	char tempDirName[RPG_NAME_MAX_COUNT];
+	char tempDirName[64];
 	RpgPlatformMemory::Copy(tempDirName, DirectoryName.GetData(), length);
 	tempDirName[length] = '\0';
 
@@ -91,7 +91,7 @@ RpgName RpgFilePath::GetFileName() const noexcept
 		return "";
 	}
 
-	char tempFileName[RPG_NAME_MAX_COUNT];
+	char tempFileName[64];
 	RpgPlatformMemory::Copy(tempFileName, FileName.GetData(), length);
 	tempFileName[length] = '\0';
 
@@ -112,7 +112,7 @@ RpgName RpgFilePath::GetFileExtension() const noexcept
 		return "";
 	}
 
-	char tempFileExt[RPG_NAME_MAX_COUNT];
+	char tempFileExt[64];
 	RpgPlatformMemory::Copy(tempFileExt, FileExt.GetData(), length);
 	tempFileExt[length] = '\0';
 

@@ -1,143 +1,115 @@
 #pragma once
 
+#include "core/RpgMath.h"
+#include "asset/RpgTexture.h"
 #include "RpgRenderResource.h"
 #include "task/RpgRenderTask_RenderPass.h"
+
+
+class RpgWorld;
+class RpgTerrain;
 
 
 
 class RpgSceneViewport
 {
+	RPG_NOCOPY(RpgSceneViewport)
+
 public:
-	RpgPointInt RenderTargetDimension;
-	bool bIsMainViewport;
+	RpgWorld* World;
+	bool bFrustumCulling;
+	bool bWireframeMode;
 
 
 public:
 	RpgSceneViewport() noexcept;
+	void UpdateFrame(RpgRenderFrameContext& context) noexcept;
+	void SetupRenderPasses(const RpgRenderFrameContext& context, RpgRenderTask_RenderPass_Forward_Array& out_ForwardPasses) noexcept;
 
-	void PreRender(RpgRenderFrameContext& frameContext, RpgWorldResource* worldResource, const RpgWorld* world) noexcept;
-	void SetupRenderPasses(const RpgRenderFrameContext& frameContext, const RpgWorldResource* worldResource, const RpgWorld* world, RpgRenderTask_RenderPassShadowArray& out_ShadowPasses, RpgRenderTask_RenderPassForwardArray& out_ForwardPasses) noexcept;
 
-
-	inline void SetViewRotationAndPosition(const RpgQuaternion& in_Rotation, const RpgVector3& in_Position) noexcept
+	inline void SetFrameRenderTargetDimension(int frameIndex, RpgPointInt in_Dimension) noexcept
 	{
-		ViewRotation = in_Rotation;
-		ViewPosition = in_Position;
+		FrameDatas[frameIndex].RenderTargetDimension = in_Dimension;
 	}
 
-	inline void GetViewRotationAndPosition(RpgQuaternion& out_Rotation, RpgVector3& out_Position) const noexcept
+	inline void SetFrameViewRotationAndPosition(int frameIndex, const RpgQuaternion& in_Rotation, const RpgVector3& in_Position) noexcept
 	{
-		out_Rotation = ViewRotation;
-		out_Position = ViewPosition;
+		FFrameData& frame = FrameDatas[frameIndex];
+		frame.ViewRotation = in_Rotation;
+		frame.ViewPosition = in_Position;
 	}
 
-
-	inline void SetProjectionPerspective(float in_FovDegree, float in_NearClipZ, float in_FarClipZ) noexcept
+	inline void GetFrameViewRotationAndPosition(int frameIndex, RpgQuaternion& out_Rotation, RpgVector3& out_Position) const noexcept
 	{
-		FovDegree = in_FovDegree;
-		NearClipZ = in_NearClipZ;
-		FarClipZ = in_FarClipZ;
-		bOrthographicProjection = false;
-		bDirtyProjection = true;
+		const FFrameData& frame = FrameDatas[frameIndex];
+		out_Rotation = frame.ViewRotation;
+		out_Position = frame.ViewPosition;
 	}
 
 
-	inline void SetProjectionOrthographic(float in_NearClipZ, float in_FarClipZ) noexcept
+	inline void SetFrameProjectionPerspective(int frameIndex, float in_FovDegree, float in_NearClipZ, float in_FarClipZ) noexcept
 	{
-		NearClipZ = in_NearClipZ;
-		FarClipZ = in_FarClipZ;
-		bOrthographicProjection = true;
-		bDirtyProjection = true;
+		FFrameData& frame = FrameDatas[frameIndex];
+		frame.FovDegree = in_FovDegree;
+		frame.NearClipZ = in_NearClipZ;
+		frame.FarClipZ = in_FarClipZ;
+		frame.bOrthographicProjection = false;
 	}
 
 
-	inline void UpdateViewProjection() noexcept
+	inline void SetFrameProjectionOrthographic(int frameIndex, float in_NearClipZ, float in_FarClipZ) noexcept
 	{
-		const RpgMatrixTransform worldMatrixTransform(ViewPosition, ViewRotation);
-
-		ViewMatrix = worldMatrixTransform.GetInverse();
-
-		ProjectionMatrix = bOrthographicProjection ?
-			RpgMatrixProjection::CreateOrthographic(0.0f, static_cast<float>(RenderTargetDimension.X), 0.0f, static_cast<float>(RenderTargetDimension.Y), NearClipZ, FarClipZ) :
-			RpgMatrixProjection::CreatePerspective(static_cast<float>(RenderTargetDimension.X) / static_cast<float>(RenderTargetDimension.Y), FovDegree, NearClipZ, FarClipZ);
-
-		ViewFrustum.CreateFromMatrix(worldMatrixTransform, ProjectionMatrix);
+		FFrameData& frame = FrameDatas[frameIndex];
+		frame.NearClipZ = in_NearClipZ;
+		frame.FarClipZ = in_FarClipZ;
+		frame.bOrthographicProjection = true;
 	}
 
 
-	inline const RpgBoundingFrustum& GetViewFrustum() const noexcept
+	inline const RpgBoundingFrustum& GetFrameViewFrustum(int frameIndex) const noexcept
 	{
-		return ViewFrustum;
+		return FrameDatas[frameIndex].ViewFrustum;
 	}
 
-	inline const RpgSharedTextureRenderTarget& GetTextureRenderTarget(int frameIndex) const noexcept
+
+	inline const RpgSharedTextureRenderTarget& GetFrameTextureRenderTarget(int frameIndex) const noexcept
 	{
 		return FrameDatas[frameIndex].TextureRenderTarget;
 	}
 
-	inline const RpgSharedTextureDepthStencil& GetTextureDepthStencil(int frameIndex) const noexcept
+
+	inline const RpgSharedTextureDepthStencil& GetFrameTextureDepthStencil(int frameIndex) const noexcept
 	{
 		return FrameDatas[frameIndex].TextureDepthStencil;
 	}
 
-	inline RpgArray<RpgSceneMesh>& GetFrameMeshes(int frameIndex) noexcept
-	{
-		return FrameDatas[frameIndex].Meshes;
-	}
 
-	inline RpgArray<RpgSceneTerrain>& GetFrameTerrains(int frameIndex) noexcept
+	inline void AddFrameCapturedMesh(int frameIndex, const RpgSceneMesh& mesh) noexcept
 	{
-		return FrameDatas[frameIndex].Terrains;
-	}
-
-	inline RpgArray<RpgSceneLight>& GetFrameLights(int frameIndex) noexcept
-	{
-		return FrameDatas[frameIndex].Lights;
+		FrameDatas[frameIndex].CapturedMeshes.AddValue(mesh);
 	}
 
 
 private:
-	RpgMatrixTransform ViewMatrix;
-	RpgMatrixProjection ProjectionMatrix;
-	RpgQuaternion ViewRotation;
-	RpgVector3 ViewPosition;
-	RpgBoundingFrustum ViewFrustum;
-	float FovDegree;
-	float NearClipZ;
-	float FarClipZ;
-	bool bOrthographicProjection;
-	bool bDirtyProjection;
-
-
 	struct FFrameData
 	{
+		RpgMatrixTransform ViewMatrix;
+		RpgMatrixProjection ProjectionMatrix;
+		RpgQuaternion ViewRotation;
+		RpgVector3 ViewPosition;
+		RpgBoundingFrustum ViewFrustum;
+		float FovDegree;
+		float NearClipZ;
+		float FarClipZ;
+		bool bOrthographicProjection;
+		RpgPointInt RenderTargetDimension;
 		RpgSharedTextureRenderTarget TextureRenderTarget;
 		RpgSharedTextureDepthStencil TextureDepthStencil;
 
-		RpgArray<RpgSceneMesh> Meshes;
-		RpgArray<RpgSceneTerrain> Terrains;
-		RpgArray<RpgSceneLight> Lights;
+		RpgArray<RpgSceneMesh> CapturedMeshes;
 
-		RpgArray<RpgDrawIndexed> DrawOpaqueMeshes;
-		RpgArray<RpgDrawIndexed> DrawOpaqueSkinnedMeshes;
-		RpgArray<RpgDrawIndexed> DrawOpaqueTerrains;
-
-		RpgArray<RpgDrawIndexed> DrawTransparencies;
-
-		RpgRenderTask_RenderPassForward TaskRenderPassForward;
+		RpgRenderTask_RenderPass_Forward TaskRenderPassForward;
 	};
 	FFrameData FrameDatas[RPG_FRAME_BUFFERING];
-
-
-#ifndef RPG_BUILD_SHIPPING
-private:
-	struct FFrameDebug
-	{
-		RpgMaterialResource::FMaterialID LineMaterialId;
-		RpgMaterialResource::FMaterialID LineNoDepthMaterialId;
-		RpgWorldResource::FViewID CameraId;
-	};
-	FFrameDebug FrameDebugs[RPG_FRAME_BUFFERING];
-#endif // !RPG_BUILD_SHIPPING
 
 };

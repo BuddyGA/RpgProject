@@ -20,7 +20,7 @@ RpgConsoleSystem::RpgConsoleSystem() noexcept
 	}
 #endif // RPG_BUILD_DEBUG
 
-	RegisteredCommands.AddConstruct("exit");
+	RegisteredCommands.Add("exit");
 }
 
 
@@ -156,9 +156,9 @@ void RpgConsoleSystem::ExecuteCommand(const char* commandArgs) noexcept
 		return;
 	}
 
-	if (RegisteredCommands.FindIndexByValue(name) == RPG_INDEX_INVALID)
+	if (!RegisteredCommands.Exists(name))
 	{
-		AddLogMessageFormat(RpgColor::YELLOW, "Invalid command: %s", *name);
+		AddLogMessageFormat(RpgColor::YELLOW, "Invalid command: %s", *name.ToString());
 	}
 	else
 	{

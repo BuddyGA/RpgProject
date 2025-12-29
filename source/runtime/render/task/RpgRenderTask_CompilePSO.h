@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/RpgThreadPool.h"
+#include "asset/RpgMaterial.h"
 #include "../RpgRenderTypes.h"
 
 
@@ -9,8 +10,8 @@ class RpgRenderTask_CompilePSO : public RpgThreadTask
 {
 public:
 	ID3D12RootSignature* RootSignature;
-	RpgName Name;
-	RpgRenderPipelineState PipelineState;
+	RpgStringID Name;
+	RpgMaterialPipelineState PipelineState;
 
 
 public:

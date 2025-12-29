@@ -11,7 +11,7 @@ public:
 	ID3D12Fence* FenceSignal;
 	uint64_t WaitFenceCopyValue;
 	uint64_t FenceSignalValue;
-	RpgRenderFrameContext FrameContext;
+	RpgRenderFrameContext* FrameContext;
 
 
 public:
