@@ -25,7 +25,7 @@ void RpgRenderWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) noex
 	for (auto it = world->ComponentIterator<RpgRenderComponent_Mesh>(); it; ++it)
 	{
 		RpgRenderComponent_Mesh& comp = it.GetValue();
-		if (!comp.IsGameObjectSpawned() ||!comp.IsGameObjectTransformUpdated())
+		if (!comp.IsGameObjectSpawned() || !comp.IsGameObjectTransformUpdated())
 		{
 			continue;
 		}

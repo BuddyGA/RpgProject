@@ -1,13 +1,13 @@
 #pragma once
 
-#include "world/RpgComponent.h"
+#include "core/world/RpgComponent.h"
 #include "../RpgGameTypes.h"
 
 
 
 class RpgGameComponent_Attribute
 {
-	RPG_COMPONENT(RpgGameComponent_Attribute, RPG_COMPONENT_ID_GAME_0);
+	RPG_COMPONENT(RpgGameComponent_Attribute, RPG_COMPONENT_ID_GAME_0)
 
 public:
 	float Base[RpgAttribute::MAX_COUNT];

@@ -10,8 +10,21 @@
 #include "world/RpgGameWorld.h"
 
 
-
 RPG_LOG_DECLARE_CATEGORY_EXTERN(RpgLogGame);
+
+
+
+enum class RpgGameState : uint8_t
+{
+	INTRO = 0,
+	MAIN_MENU,
+	GENERATING_WORLD,
+	LOADING_GAME,
+	IN_GAME,
+	CUTSCENE,
+	GAME_ENDED,
+	CREDITS
+};
 
 
 
@@ -26,6 +39,7 @@ public:
 	~RpgGameApp() noexcept;
 
 	void Initialize() noexcept;
+	void RequestExit(bool bAskConfirmation) noexcept;
 	void HandleConsoleCommand(const RpgName& command, const RpgConsoleCommandParams& params) noexcept;
 	void WindowSizeChanged(const RpgPlatformWindowEvent& e) noexcept;
 	void MouseMove(const RpgPlatformMouseMoveEvent& e) noexcept;
@@ -35,7 +49,6 @@ public:
 	void CharInput(char c) noexcept;
 
 	void FrameTick(uint64_t frameCounter, float deltaTime) noexcept;
-	void RequestExit(bool bAskConfirmation) noexcept;
 
 	void OpenLevel(const RpgStringID& levelAssetPath) noexcept;
 	void SetMainCamera(RpgGameObject cameraObject) noexcept;
@@ -142,6 +155,9 @@ private:
 	RpgGameObject MainCameraObject;
 
 	RpgLevel* LoadingLevel;
+
+	// Current game state
+	RpgGameState CurrentState;
 
 
 public:

@@ -26,6 +26,7 @@ RpgGameApp::RpgGameApp() noexcept
 
 	SceneViewport.bIsMainViewport = true;
 	LoadingLevel = nullptr;
+	CurrentState = RpgGameState::INTRO;
 
 	// fps info
 	FpsLimit = 60;
@@ -78,6 +79,21 @@ void RpgGameApp::Initialize() noexcept
 	g_Editor->LevelLoaded(MainWorld);
 #endif // !RPG_BUILD_SHIPPING
 
+}
+
+
+void RpgGameApp::RequestExit(bool bAskConfirmation) noexcept
+{
+	if (!bAskConfirmation)
+	{
+		PostQuitMessage(0);
+		return;
+	}
+
+	if (MessageBoxA(RpgPlatformProcess::GetMainWindowHandle(), "Are you sure you want to exit?", "Confirmation", MB_APPLMODAL | MB_ICONQUESTION | MB_YESNO) == IDYES)
+	{
+		PostQuitMessage(0);
+	}
 }
 
 
@@ -237,15 +253,11 @@ void RpgGameApp::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 		{
 			MainRenderer->RegisterWorld(MainWorld);
 
-			if (LoadingLevel)
+			if (!LoadingLevel)
 			{
-				// Normally this is done in render-world-subsystem when camera-component referencing the main viewport
-				// since the level is loading and no camera gameobject yet, we call this manually
-				MainRenderer->AddWorldSceneViewport(frameIndex, MainWorld, &SceneViewport);
+				// Setup renderer final texture
+				MainRenderer->SetFinalTexture(frameIndex, SceneViewport.GetTextureRenderTarget(frameIndex).CastStatic<RpgTexture2D>());
 			}
-
-			// Setup renderer final texture
-			MainRenderer->SetFinalTexture(frameIndex, SceneViewport.GetTextureRenderTarget(frameIndex).CastStatic<RpgTexture2D>());
 
 			// Dispatch render
 			MainWorld->DispatchRender(frameIndex, MainRenderer.Get());
@@ -298,21 +310,6 @@ void RpgGameApp::FrameTick(uint64_t frameCounter, float deltaTime) noexcept
 	MainWorld->EndFrame(frameIndex);
 
 	g_InputSystem->Flush();
-}
-
-
-void RpgGameApp::RequestExit(bool bAskConfirmation) noexcept
-{
-	if (!bAskConfirmation)
-	{
-		PostQuitMessage(0);
-		return;
-	}
-
-	if (MessageBoxA(RpgPlatformProcess::GetMainWindowHandle(), "Are you sure you want to exit?", "Confirmation", MB_APPLMODAL | MB_ICONQUESTION | MB_YESNO) == IDYES)
-	{
-		PostQuitMessage(0);
-	}
 }
 
 

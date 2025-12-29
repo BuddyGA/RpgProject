@@ -1,11 +1,6 @@
 #pragma once
 
-#include "core/dsa/RpgArray.h"
-
-
-
-class RpgAttributeComponent;
-class RpgAttributeWorldSubsystem;
+#include "core/RpgArray.h"
 
 
 

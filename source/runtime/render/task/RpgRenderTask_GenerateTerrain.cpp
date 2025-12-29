@@ -3,7 +3,7 @@
 
 
 #define RPG_TERRAIN_TILE_SIZE		200 // 2m
-#define RPG_TERRAIN_WORLD_SIZE		10000 // 100m
+#define RPG_TERRAIN_WORLD_SIZE		5000 // 50m
 
 
 
