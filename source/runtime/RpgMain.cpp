@@ -4,21 +4,23 @@
 #include "core/RpgThreadPool.h"
 #include "core/RpgTimer.h"
 #include "core/RpgD3D12.h"
-#include "asset/RpgAssetSystem.h"
-#include "asset/RpgTexture.h"
-#include "asset/RpgFont.h"
-#include "asset/RpgMaterial.h"
-#include "asset/RpgMesh.h"
-#include "input/RpgInputWindows.h"
-#include "input/RpgInputSystem.h"
+#include "core/asset/RpgAssetSystem.h"
+#include "core/input/RpgInputWindows.h"
+#include "core/input/RpgInputSystem.h"
+#include "render/asset/RpgTexture.h"
+#include "render/asset/RpgFont.h"
+#include "render/asset/RpgMaterial.h"
 #include "shader/RpgShaderManager.h"
 #include "render/RpgRenderPipeline.h"
-#include "render/RpgRenderThread.h"
-#include "render/RpgRenderer.h"
 #include "game/RpgGameApp.h"
 
 #include <windowsx.h>
 #include <hidusage.h>
+
+#ifdef RPG_BUILD_DEBUG
+#include "../test/core/RpgTestCore.h"
+#endif // RPG_BUILD_DEBUG
+
 
 
 constexpr const char* RPG_WINDOW_CLASS_NAME = "RpgWindow";
@@ -293,13 +295,19 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	RpgFileSystem::Initialize();
 
 
+#ifdef RPG_BUILD_DEBUG
+	// Run tests
+	{
+		RpgTest::Core::Execute();
+	}
+#endif // RPG_BUILD_DEBUG
+
+
 	// TODO: Read config from <RpgGame.config>
 
 	// TODO: Steam init
 
-
 	RpgThreadPool::Initialize(1);
-	RpgRenderThread::Initialize();
 
 	RpgD3D12::Initialize();
 	RpgShaderManager::Initialize();
@@ -330,6 +338,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		g_AssetSystem->RegisterAssetClass<RpgMesh>();
 		g_AssetSystem->RegisterAssetClass<RpgTexture2D>();
 		g_AssetSystem->RegisterAssetClass<RpgMaterial>();
+		g_AssetSystem->RegisterAssetClass<RpgLevel>();
 
 	#ifndef RPG_BUILD_SHIPPING
 		// add engine assets
@@ -351,65 +360,67 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	// Initialize input system
 	g_InputSystem = new RpgInputSystem();
 	
-	// Initialize main window
-	WNDCLASSEXA windowClass{};
-	windowClass.cbSize = sizeof(WNDCLASSEXA);
-	windowClass.hInstance = GetModuleHandle(NULL);
-	windowClass.lpszClassName = RPG_WINDOW_CLASS_NAME;
-	windowClass.cbClsExtra = 0;
-	windowClass.cbWndExtra = 0;
-	windowClass.hbrBackground = NULL;
-	windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	windowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	windowClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-	windowClass.lpfnWndProc = Rpg_WndProc;
-	windowClass.lpszMenuName = NULL;
-	windowClass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
-	RegisterClassExA(&windowClass);
-
-	RpgPointInt windowResolution(1600, 900);
-
-	const int cmdArgResX = RpgCommandLine::GetCommandValueInt("resx");
-	if (cmdArgResX > 0)
-	{
-		windowResolution.X = cmdArgResX;
-	}
-
-	const int cmdArgResY = RpgCommandLine::GetCommandValueInt("resy");
-	if (cmdArgResY > 0)
-	{
-		windowResolution.Y = cmdArgResY;
-	}
-
-	RPG_Log(RpgLogSystem, "Create game window (%i, %i)", windowResolution.X, windowResolution.Y);
-
-	RECT rect{};
-	rect.left = 0;
-	rect.top = 0;
-	rect.right = windowResolution.X;
-	rect.bottom = windowResolution.Y;
-
-	AdjustWindowRectEx(&rect, WS_OVERLAPPEDWINDOW, FALSE, 0);
-
-	HWND mainWindowHandle = CreateWindowExA(0, RPG_WINDOW_CLASS_NAME, "RpgGame_v0.0_alpha", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, (rect.right - rect.left), (rect.bottom - rect.top), NULL, NULL, GetModuleHandle(NULL), NULL);
-	RpgPlatformProcess::SetMainWindowHandle(mainWindowHandle);
-
-	// Initialize renderer
-	g_Renderer = new RpgRenderer(mainWindowHandle, !RpgCommandLine::HasCommand("novsync"));
-
-	// Initialize game
+	// Initialize game app
 	g_GameApp = new RpgGameApp();
 
-	// Show window
-	if (mainWindowHandle)
+	// main window
 	{
-		ShowWindow(mainWindowHandle, SW_SHOW);
+		WNDCLASSEXA windowClass{};
+		windowClass.cbSize = sizeof(WNDCLASSEXA);
+		windowClass.hInstance = GetModuleHandle(NULL);
+		windowClass.lpszClassName = RPG_WINDOW_CLASS_NAME;
+		windowClass.cbClsExtra = 0;
+		windowClass.cbWndExtra = 0;
+		windowClass.hbrBackground = NULL;
+		windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+		windowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+		windowClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+		windowClass.lpfnWndProc = Rpg_WndProc;
+		windowClass.lpszMenuName = NULL;
+		windowClass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
+		RegisterClassExA(&windowClass);
+
+
+		RpgPointInt windowResolution(1600, 900);
+
+		const int cmdArgResX = RpgCommandLine::GetCommandValueInt("resx");
+		if (cmdArgResX > 0)
+		{
+			windowResolution.X = cmdArgResX;
+		}
+
+		const int cmdArgResY = RpgCommandLine::GetCommandValueInt("resy");
+		if (cmdArgResY > 0)
+		{
+			windowResolution.Y = cmdArgResY;
+		}
+
+		RPG_Log(RpgLogSystem, "Create game window (%i, %i)", windowResolution.X, windowResolution.Y);
+
+		RECT rect{};
+		rect.left = 0;
+		rect.top = 0;
+		rect.right = windowResolution.X;
+		rect.bottom = windowResolution.Y;
+
+		AdjustWindowRectEx(&rect, WS_OVERLAPPEDWINDOW, FALSE, 0);
+
+		HWND mainWindowHandle = CreateWindowExA(0, RPG_WINDOW_CLASS_NAME, "RpgGame_v0.0_alpha", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, (rect.right - rect.left), (rect.bottom - rect.top), NULL, NULL, GetModuleHandle(NULL), NULL);
+
+		if (mainWindowHandle)
+		{
+			ShowWindow(mainWindowHandle, SW_SHOW);
+		}
+		else
+		{
+			MessageBoxA(NULL, "Fail create application window!", "Error", MB_ICONERROR | MB_OK);
+			TerminateProcess(GetCurrentProcess(), 1);
+		}
+
+		RpgPlatformProcess::SetMainWindowHandle(mainWindowHandle);
 	}
-	else
-	{
-		MessageBoxA(NULL, "Fail create application window!", "Error", MB_ICONERROR | MB_OK);
-		TerminateProcess(GetCurrentProcess(), 1);
-	}
+
+	g_GameApp->Initialize();
 
 
 // ------------------------------------------------------------------------------------------------- //
@@ -444,30 +455,16 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			}
 		}
 
+
 		if (!bRunning)
 		{
 			break;
 		}
 
-		const int frameIndex = FrameCounter % RPG_FRAME_BUFFERING;
 
-		// Tick
 		Timer.Tick();
-		const float deltaTimeSeconds = Timer.GetDeltaTimeSeconds();
+		g_GameApp->FrameTick(FrameCounter, Timer.GetDeltaTimeSeconds());
 
-		// Update
-		g_GameApp->FrameTick(frameIndex, deltaTimeSeconds);
-
-		// Render
-		RpgRenderThread::WaitFrame(frameIndex);
-		{
-			g_Renderer->BeginPreRender(frameIndex, deltaTimeSeconds);
-			g_GameApp->FramePreRender(frameIndex, deltaTimeSeconds, *g_Renderer);
-			g_Renderer->EndPreRender(frameIndex, deltaTimeSeconds);
-		}
-		RpgRenderThread::FrameRender(FrameCounter, frameIndex, deltaTimeSeconds, g_Renderer);
-
-		// Frame limit
 		const int fpsLimit = g_GameApp->FpsLimit;
 
 		if (g_GameApp->IsWindowMinimized())
@@ -503,7 +500,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 // 	Shutdown
 // ------------------------------------------------------------------------------------------------- //
 	delete g_GameApp;
-	delete g_Renderer;
 	delete g_InputSystem;
 	delete g_AssetSystem;
 
@@ -511,10 +507,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	RpgFont::DestroyDefaults();
 	RpgTexture2D::DestroyDefaults();
 
-	RpgRenderPipeline::Shutdown();
 	RpgShaderManager::Shutdown();
+	RpgRenderPipeline::Shutdown();
 	RpgD3D12::Shutdown();
-	RpgRenderThread::Shutdown();
+
 	RpgThreadPool::Shutdown();
 	RpgPlatformProcess::Shutdown();
 	

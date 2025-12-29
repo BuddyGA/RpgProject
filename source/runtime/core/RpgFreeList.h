@@ -36,7 +36,6 @@ public:
 		other.Capacity = 0;
 		other.Count = 0;
 		other.NextFreeIndex = RPG_INDEX_INVALID;
-		other.FreeIndexArray = nullptr;
 		other.ValidIndexArray = nullptr;
 		other.DataArray = nullptr;
 	}
@@ -340,21 +339,9 @@ public:
 		return Count;
 	}
 
-
 	inline bool IsEmpty() const noexcept
 	{
 		return Count == 0;
-	}
-
-
-	inline T* GetData() noexcept
-	{
-		return DataArray;
-	}
-
-	inline const T* GetData() const noexcept
-	{
-		return DataArray;
 	}
 
 

@@ -601,9 +601,10 @@ class RpgStringID
 
 
 public:
-	RpgStringID(const char* cstr = nullptr, bool bIsUnique = false) noexcept
+	explicit RpgStringID(const char* cstr = nullptr, bool bUnique = false) noexcept
 		: TableIndex(RPG_INDEX_INVALID)
 		, UniqueId(0)
+		, bIsUnique(bUnique)
 	{
 		if (cstr)
 		{
@@ -612,9 +613,10 @@ public:
 	}
 
 
-	explicit RpgStringID(const RpgString& str, bool bIsUnique = false) noexcept
+	explicit RpgStringID(const RpgString& str, bool bUnique = false) noexcept
 		: TableIndex(RPG_INDEX_INVALID)
 		, UniqueId(0)
+		, bIsUnique(bUnique)
 	{
 		if (!str.IsEmpty())
 		{
@@ -623,9 +625,10 @@ public:
 	}
 
 
-	explicit RpgStringID(const RpgName& str, bool bIsUnique = false) noexcept
+	explicit RpgStringID(const RpgName& str, bool bUnique = false) noexcept
 		: TableIndex(RPG_INDEX_INVALID)
 		, UniqueId(0)
+		, bIsUnique(bUnique)
 	{
 		if (!str.IsEmpty())
 		{
@@ -637,29 +640,17 @@ public:
 	RpgStringID(const RpgStringID& other) noexcept
 		: TableIndex(other.TableIndex)
 		, UniqueId(other.UniqueId)
+		, bIsUnique(other.bIsUnique)
 	{
 	}
 
 
 public:
-	inline RpgStringID& operator=(const char* rhs) noexcept
-	{
-		TableIndex = RPG_INDEX_INVALID;
-		UniqueId = 0;
-
-		if (rhs)
-		{
-			HashTable.Allocate(rhs, TableIndex, false);
-		}
-
-		return *this;
-	}
-
-
 	inline RpgStringID& operator=(const RpgStringID& rhs) noexcept
 	{
 		TableIndex = rhs.TableIndex;
 		UniqueId = rhs.UniqueId;
+		bIsUnique = rhs.bIsUnique;
 
 		return *this;
 
@@ -684,6 +675,11 @@ public:
 		return TableIndex == RPG_INDEX_INVALID;
 	}
 
+	inline bool IsUnique() const noexcept
+	{
+		return bIsUnique;
+	}
+
 	inline uint64_t GetHash() const noexcept
 	{
 		return TableIndex == RPG_INDEX_INVALID ? 0 : (static_cast<uint64_t>(UniqueId) << 32) | static_cast<uint64_t>(TableIndex);
@@ -698,6 +694,7 @@ public:
 private:
 	int TableIndex;
 	int UniqueId;
+	bool bIsUnique;
 
 
 public:

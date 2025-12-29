@@ -8,7 +8,6 @@ RpgRenderTask_Compute::RpgRenderTask_Compute() noexcept
 	FenceSignal = nullptr;
 	WaitFenceCopyValue = 0;
 	FenceSignalValue = 0;
-	FrameContext = nullptr;
 
 	RPG_D3D12_Validate(RpgD3D12::GetDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COMPUTE, IID_PPV_ARGS(&CmdAllocCompute)));
 	RPG_D3D12_SetDebugName(CmdAllocCompute, "CmdAllocCompute_AsyncTaskCompute");
@@ -25,7 +24,6 @@ void RpgRenderTask_Compute::Reset() noexcept
 	FenceSignal = nullptr;
 	WaitFenceCopyValue = 0;
 	FenceSignalValue = 0;
-	FrameContext = nullptr;
 }
 
 
@@ -34,7 +32,6 @@ void RpgRenderTask_Compute::Execute() noexcept
 	ID3D12GraphicsCommandList* cmdList = CmdListCompute.Get();
 	RPG_D3D12_COMMAND_Begin(CmdAllocCompute, CmdListCompute);
 	
-	/*
 	const RpgArray<RpgShaderSkinnedObjectParameter>& objectParams = FrameContext.MeshSkinnedResource->GetObjectParameters();
 
 	if (!objectParams.IsEmpty())
@@ -79,8 +76,7 @@ void RpgRenderTask_Compute::Execute() noexcept
 			cmdList->Dispatch((param.VertexCount + 63) / 64, 1, 1);
 		}
 	}
-	*/
-
+	
 	RPG_D3D12_COMMAND_End(CmdListCompute);
 
 

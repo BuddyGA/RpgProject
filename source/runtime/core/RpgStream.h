@@ -2,6 +2,7 @@
 
 #include "RpgSet.h"
 #include "RpgString.h"
+#include "RpgFreeList.h"
 
 
 
@@ -85,6 +86,9 @@ public:
 
 	inline void Write(const RpgStringID& dataStr) noexcept
 	{
+		const bool bIsUnique = dataStr.IsUnique();
+		Write(bIsUnique);
+
 		const RpgString tempStr = dataStr.ToString();
 		Write(tempStr);
 	}
@@ -191,9 +195,12 @@ public:
 
 	inline void Read(RpgStringID& dataStr) noexcept
 	{
+		bool bIsUnique = false;
+		Read(bIsUnique);
+
 		RpgString tempStr;
 		Read(tempStr);
-		dataStr = RpgStringID(tempStr);
+		dataStr = RpgStringID(tempStr, bIsUnique);
 	}
 
 };

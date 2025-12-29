@@ -1,24 +1,23 @@
 #pragma once
 
+#include "core/world/RpgGameObject.h"
 #include "shader/RpgShaderTypes.h"
 #include "asset/RpgMesh.h"
 #include "asset/RpgMaterial.h"
-#include "world/RpgEntity.h"
-#include "RpgRenderTypes.h"
 
 
 
 // Global material resource
 // Texture descriptor dynamic indexing
 // Parameter vector and scalar
-class RpgRenderResource_Material
+class RpgMaterialResource
 {
 public:
 	typedef int FMaterialID;
 
 
 public:
-	RpgRenderResource_Material() noexcept;
+	RpgMaterialResource() noexcept;
 	void UpdateResources(int frameIndex) noexcept;
 	void CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept;
 	void CommandBindShaderResources(ID3D12GraphicsCommandList* cmdList) const noexcept;
@@ -86,18 +85,21 @@ private:
 
 
 
+
 // Global mesh resource
 class RpgMeshResource
 {
 public:
 	typedef int FMeshID;
+	typedef int FTerrainID;
 
 
 public:
 	RpgMeshResource() noexcept;
 	FMeshID AddMesh(const RpgSharedMesh& mesh, int& out_IndexCount, int& out_IndexStart, int& out_IndexVertexOffset) noexcept;
-	virtual void UpdateResources() noexcept;
-	virtual void CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept;
+	FTerrainID AddTerrain(const RpgVertexMeshPositionArray* vertexPositions, const RpgVertexMeshNormalTangentArray* vertexNormalTangents, const RpgVertexMeshTexCoordArray* vertexTexCoords, const RpgVertexIndexArray* indices, int& out_IndexCount, int& out_IndexStart, int& out_IndexVertexOffset) noexcept;
+	void UpdateResources() noexcept;
+	void CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept;
 
 
 	inline void Reset() noexcept
@@ -105,29 +107,59 @@ public:
 		MeshDatas.Clear();
 		MeshVertexCount = 0;
 		MeshIndexCount = 0;
+
+		TerrainDatas.Clear();
+		TerrainVertexCount = 0;
+		TerrainIndexCount = 0;
 	}
 
-	inline D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView_Position() const noexcept
+	inline D3D12_VERTEX_BUFFER_VIEW GetMeshVertexBufferView_Position() const noexcept
 	{
 		return GetVertexBufferView<RpgVertex::FMeshPosition>(MeshVertexPositionBuffer->GetResource(), MeshVertexCount);
 	}
 
-	inline D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView_NormalTangent() const noexcept
+	inline D3D12_VERTEX_BUFFER_VIEW GetMeshVertexBufferView_NormalTangent() const noexcept
 	{
 		return GetVertexBufferView<RpgVertex::FMeshNormalTangent>(MeshVertexNormalTangentBuffer->GetResource(), MeshVertexCount);
 	}
 
-	inline D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView_TexCoord() const noexcept
+	inline D3D12_VERTEX_BUFFER_VIEW GetMeshVertexBufferView_TexCoord() const noexcept
 	{
 		return GetVertexBufferView<RpgVertex::FMeshTexCoord>(MeshVertexTexCoordBuffer->GetResource(), MeshVertexCount);
 	}
 
-	inline D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const noexcept
+	inline D3D12_INDEX_BUFFER_VIEW GetMeshIndexBufferView() const noexcept
 	{
 		D3D12_INDEX_BUFFER_VIEW view{};
 		view.BufferLocation = MeshIndexBuffer->GetResource()->GetGPUVirtualAddress();
 		view.Format = DXGI_FORMAT_R32_UINT;
 		view.SizeInBytes = static_cast<UINT>(sizeof(RpgVertex::FIndex) * MeshIndexCount);
+
+		return view;
+	}
+
+
+	inline D3D12_VERTEX_BUFFER_VIEW GetTerrainVertexBufferView_Position() const noexcept
+	{
+		return GetVertexBufferView<RpgVertex::FMeshPosition>(TerrainVertexPositionBuffer->GetResource(), TerrainVertexCount);
+	}
+
+	inline D3D12_VERTEX_BUFFER_VIEW GetTerrainVertexBufferView_NormalTangent() const noexcept
+	{
+		return GetVertexBufferView<RpgVertex::FMeshNormalTangent>(TerrainVertexNormalTangentBuffer->GetResource(), TerrainVertexCount);
+	}
+
+	inline D3D12_VERTEX_BUFFER_VIEW GetTerrainVertexBufferView_TexCoord() const noexcept
+	{
+		return GetVertexBufferView<RpgVertex::FMeshTexCoord>(TerrainVertexTexCoordBuffer->GetResource(), TerrainVertexCount);
+	}
+
+	inline D3D12_INDEX_BUFFER_VIEW GetTerrainIndexBufferView() const noexcept
+	{
+		D3D12_INDEX_BUFFER_VIEW view{};
+		view.BufferLocation = TerrainIndexBuffer->GetResource()->GetGPUVirtualAddress();
+		view.Format = DXGI_FORMAT_R32_UINT;
+		view.SizeInBytes = static_cast<UINT>(sizeof(RpgVertex::FIndex) * TerrainIndexCount);
 
 		return view;
 	}
@@ -146,7 +178,7 @@ private:
 	}
 
 
-protected:
+private:
 	struct FMeshData
 	{
 		RpgSharedMesh Mesh;
@@ -178,11 +210,46 @@ protected:
 	// Mesh index count
 	int MeshIndexCount;
 
+
+	struct FTerrainData
+	{
+		const RpgVertexMeshPositionArray* VertexPositions{ nullptr };
+		const RpgVertexMeshNormalTangentArray* VertexNormalTangents{ nullptr };
+		const RpgVertexMeshTexCoordArray* VertexTexCoords{ nullptr };
+		const RpgVertexIndexArray* VertexIndices{ nullptr };
+		int VertexStart{ 0 };
+		int VertexCount{ 0 };
+		int IndexStart{ 0 };
+		int IndexCount{ 0 };
+	};
+	RpgArray<FTerrainData> TerrainDatas;
+
+	// (VBO) Terrain input vertex position
+	ComPtr<D3D12MA::Allocation> TerrainVertexPositionBuffer;
+
+	// (VBO) Terrain input vertex normal-tangent
+	ComPtr<D3D12MA::Allocation> TerrainVertexNormalTangentBuffer;
+
+	// (VBO) Terrain input vertex texcoord
+	ComPtr<D3D12MA::Allocation> TerrainVertexTexCoordBuffer;
+
+	// (IBO) Terrain input index
+	ComPtr<D3D12MA::Allocation> TerrainIndexBuffer;
+
+	// Terrain staging buffer
+	ComPtr<D3D12MA::Allocation> TerrainStagingBuffer;
+
+	// Terrain vertex count
+	int TerrainVertexCount;
+
+	// Terrain index count
+	int TerrainIndexCount;
+
 };
 
 
 
-/*
+
 // Global mesh skinned (skeletal mesh) resource
 class RpgMeshSkinnedResource
 {
@@ -369,7 +436,7 @@ private:
 	ComPtr<D3D12MA::Allocation> MeshVertexTexCoordBuffer;
 
 	// (VBO) Vertex skin (bone, weight)
-	ComPtr<D3D12MA::Allocation> MeshVertexSkinBuffer;
+	ComPtr<D3D12MA::Allocation> VertexSkinBuffer;
 
 	// (IBO) Vertex index
 	ComPtr<D3D12MA::Allocation> MeshIndexBuffer;
@@ -396,6 +463,7 @@ private:
 	ComPtr<D3D12MA::Allocation> MeshStagingBuffer;
 
 };
+
 
 
 
@@ -535,54 +603,58 @@ public:
 #endif // !RPG_BUILD_SHIPPING
 
 };
-*/
-
-
-
-struct RpgRenderFrameContext
-{
-	int Index{ 0 };
-	float DeltaTime{ 0.0f };
-	RpgRenderLight::EShadowQuality ShadowQuality{ RpgRenderLight::SHADOW_QUALITY_NONE };
-	RpgRenderAntiAliasing::EMode AntiAliasingMode{ RpgRenderAntiAliasing::MODE_NONE };
-
-	RpgRenderResource_Material ResourceMaterial;
-
-
-	inline void ResetResources() noexcept
-	{
-		ResourceMaterial.Reset();
-	}
-
-
-	inline void UpdateResources() noexcept
-	{
-		ResourceMaterial.UpdateResources(Index);
-	}
-
-
-	inline void CommandCopyResources(ID3D12GraphicsCommandList* cmdList) noexcept
-	{
-		ResourceMaterial.CommandCopy(cmdList);
-	}
-
-};
 
 
 
 struct RpgSceneMesh
 {
-	RpgEntity Entity;
+	RpgGameObject GameObject;
 	RpgMatrixTransform WorldTransformMatrix;
 	RpgSharedMaterial Material;
 	RpgSharedMesh Mesh;
+	int Lod{ 0 };
+};
+
+
+struct RpgSceneTerrain
+{
+	RpgGameObject GameObject;
+	RpgMatrixTransform WorldTransformMatrix;
+	RpgSharedMaterial Material;
+	const RpgVertexMeshPositionArray* VertexPositions{ nullptr };
+	const RpgVertexMeshNormalTangentArray* VertexNormalTangents{ nullptr };
+	const RpgVertexMeshTexCoordArray* VertexTexCoords{ nullptr };
+	const RpgVertexIndexArray* VertexIndices{ nullptr };
+};
+
+
+struct RpgSceneLight
+{
+	RpgGameObject GameObject;
+	RpgTransform WorldTransform;
+	RpgRenderLight::EType Type{ RpgRenderLight::TYPE_NONE };
+	RpgColorLinear ColorIntensity;
+	float AttenuationRadius{ 0.0f };
+	float AttenuationFallOffExp{ 0.0f };
+	float SpotInnerConeDegree{ 0.0f };
+	float SpotOuterConeDegree{ 0.0f };
+	RpgShadowViewport* ShadowViewport{ nullptr };
 };
 
 
 
 struct RpgDrawIndexed
 {
-	RpgRenderResource_Material::FMaterialID Material{ RPG_INDEX_INVALID };
+	RpgMaterialResource::FMaterialID Material;
+	RpgShaderObjectParameter ObjectParam;
+	int IndexCount{ 0 };
+	int IndexStart{ 0 };
+	int IndexVertexOffset{ 0 };
+};
+
+
+struct RpgDrawIndexedDepth
+{
 	RpgShaderObjectParameter ObjectParam;
 	int IndexCount{ 0 };
 	int IndexStart{ 0 };

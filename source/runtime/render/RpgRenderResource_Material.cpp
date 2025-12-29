@@ -3,13 +3,13 @@
 
 
 
-RpgRenderResource_Material::RpgRenderResource_Material() noexcept
+RpgMaterialResource::RpgMaterialResource() noexcept
 {
 
 }
 
 
-void RpgRenderResource_Material::UpdateResources(int frameIndex) noexcept
+void RpgMaterialResource::UpdateResources(int frameIndex) noexcept
 {
 	if (Materials.IsEmpty())
 	{
@@ -92,7 +92,7 @@ void RpgRenderResource_Material::UpdateResources(int frameIndex) noexcept
 }
 
 
-void RpgRenderResource_Material::CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept
+void RpgMaterialResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept
 {
 	if (Materials.IsEmpty())
 	{
@@ -142,7 +142,7 @@ void RpgRenderResource_Material::CommandCopy(ID3D12GraphicsCommandList* cmdList)
 }
 
 
-void RpgRenderResource_Material::CommandBindShaderResources(ID3D12GraphicsCommandList* cmdList) const noexcept
+void RpgMaterialResource::CommandBindShaderResources(ID3D12GraphicsCommandList* cmdList) const noexcept
 {
 	RPG_Check(!Materials.IsEmpty());
 
@@ -153,7 +153,7 @@ void RpgRenderResource_Material::CommandBindShaderResources(ID3D12GraphicsComman
 }
 
 
-void RpgRenderResource_Material::CommandBindMaterial(ID3D12GraphicsCommandList* cmdList, FMaterialID materialId) const noexcept
+void RpgMaterialResource::CommandBindMaterial(ID3D12GraphicsCommandList* cmdList, FMaterialID materialId) const noexcept
 {
 	RPG_Check(!Materials.IsEmpty());
 	RPG_Check(materialId >= 0 && materialId < Materials.GetCount());

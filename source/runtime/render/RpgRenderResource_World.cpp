@@ -2,7 +2,7 @@
 #include "RpgRenderPipeline.h"
 
 
-/*
+
 RpgWorldResource::RpgWorldResource() noexcept
 {
 }
@@ -283,4 +283,3 @@ void RpgWorldResource::Debug_CommandDrawIndexed_Line(ID3D12GraphicsCommandList* 
 }
 
 #endif // !RPG_BUILD_SHIPPING
-*/

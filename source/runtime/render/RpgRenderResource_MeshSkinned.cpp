@@ -1,7 +1,7 @@
 #include "RpgRenderResource.h"
 
 
-/*
+
 RpgMeshSkinnedResource::RpgMeshSkinnedResource() noexcept
 {
 	MeshVertexCount = 0;
@@ -231,4 +231,3 @@ void RpgMeshSkinnedResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noe
 		cmdList->CopyBufferRegion(SkinnedIndexBuffer->GetResource(), dstIndexOffset, MeshIndexBuffer->GetResource(), srcIndexOffset, indexSizeBytes);
 	}
 }
-*/

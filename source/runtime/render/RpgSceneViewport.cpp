@@ -1,72 +1,238 @@
 #include "RpgSceneViewport.h"
+#include "core/world/RpgWorld.h"
+#include "animation/world/RpgAnimationComponent.h"
+#include "RpgShadowViewport.h"
 
 
 
 RpgSceneViewport::RpgSceneViewport() noexcept
+	: FrameDatas()
 {
-	bFrustumCulling = false;
-	bWireframeMode = false;
+	RenderTargetDimension = RpgPointInt(1600, 900);
+	FovDegree = 75.0f;
+	NearClipZ = 10.0f;
+	FarClipZ = 10000.0f;
+	bOrthographicProjection = false;
+	bDirtyProjection = true;
 
+
+#ifndef RPG_BUILD_SHIPPING
 	for (int f = 0; f < RPG_FRAME_BUFFERING; ++f)
 	{
-		FFrameData& frame = FrameDatas[f];
-		frame.RenderTargetDimension = RpgPointInt(1600, 900);
-		frame.FovDegree = 60.0f;
-		frame.NearClipZ = 10.0f;
-		frame.FarClipZ = 10000.0f;
-		frame.bOrthographicProjection = false;
+		FFrameDebug& debug = FrameDebugs[f];
+		debug.LineMaterialId = RPG_INDEX_INVALID;
+		debug.CameraId = RPG_INDEX_INVALID;
 	}
+#endif // !RPG_BUILD_SHIPPING
+
 }
 
 
-void RpgSceneViewport::UpdateFrame(RpgRenderFrameContext& context) noexcept
+void RpgSceneViewport::PreRender(RpgRenderFrameContext& frameContext, RpgWorldResource* worldResource, const RpgWorld* world) noexcept
 {
-	FFrameData& frame = FrameDatas[context.Index];
-	frame.CapturedTerrains.Clear();
-	
-	const RpgPointInt renderTargetDimension = frame.RenderTargetDimension;
-
-	// Update view-projection
-	const RpgMatrixTransform worldMatrixTransform(frame.ViewPosition, frame.ViewRotation);
-
-	frame.ViewMatrix = worldMatrixTransform.GetInverse();
-
-	frame.ProjectionMatrix = frame.bOrthographicProjection ?
-		RpgMatrixProjection::CreateOrthographic(0.0f, static_cast<float>(renderTargetDimension.X), 0.0f, static_cast<float>(renderTargetDimension.Y), frame.NearClipZ, frame.FarClipZ) :
-		RpgMatrixProjection::CreatePerspective(static_cast<float>(renderTargetDimension.X) / static_cast<float>(renderTargetDimension.Y), frame.FovDegree, frame.NearClipZ, frame.FarClipZ);
-
-	frame.ViewFrustum.CreateFromMatrix(worldMatrixTransform, frame.ProjectionMatrix);
+	FFrameData& frame = FrameDatas[frameContext.Index];
+	frame.DrawOpaqueMeshes.Clear();
+	frame.DrawOpaqueSkinnedMeshes.Clear();
+	frame.DrawOpaqueTerrains.Clear();
+	frame.DrawTransparencies.Clear();
 
 
 	// Resize render target
-	if (!frame.TextureRenderTarget)
 	{
-		frame.TextureRenderTarget = RpgPointer::MakeShared<RpgTextureRenderTarget>("texrt_scn_vprt", RpgTextureFormat::TEX_RT_RGBA, renderTargetDimension.X, renderTargetDimension.Y);
+		if (!frame.TextureRenderTarget)
+		{
+			frame.TextureRenderTarget = RpgPointer::MakeShared<RpgTextureRenderTarget>(RpgName::Format("texrt_scn_vprt_%s_%i", bIsMainViewport ? "main" : "secondary", frameContext.Index), RpgTextureFormat::TEX_RT_RGBA, RenderTargetDimension.X, RenderTargetDimension.Y);
+		}
+
+		frame.TextureRenderTarget->Resize(RenderTargetDimension.X, RenderTargetDimension.Y);
+		frame.TextureRenderTarget->GPU_UpdateResource();
+
+
+		// Resize depth-stencil
+		if (!frame.TextureDepthStencil)
+		{
+			frame.TextureDepthStencil = RpgPointer::MakeShared<RpgTextureDepthStencil>("texds_scn_vprt", RpgTextureFormat::TEX_DS_32, RenderTargetDimension.X, RenderTargetDimension.Y);
+		}
+
+		frame.TextureDepthStencil->Resize(RenderTargetDimension.X, RenderTargetDimension.Y);
+		frame.TextureDepthStencil->GPU_UpdateResource();
 	}
 
-	frame.TextureRenderTarget->Resize(renderTargetDimension.X, renderTargetDimension.Y);
-	frame.TextureRenderTarget->GPU_UpdateResource();
+
+	// Update view projection
+	UpdateViewProjection();
 
 
-	// Resize depth-stencil
-	if (!frame.TextureDepthStencil)
+	// Build draw calls
+	RpgMaterialResource* materialResource = frameContext.MaterialResource;
+	RpgMeshResource* meshResource = frameContext.MeshResource;
+	RpgMeshSkinnedResource* meshSkinnedResource = frameContext.MeshSkinnedResource;
+
+	const RpgWorldResource::FViewID cameraId = worldResource->AddView(ViewMatrix, ProjectionMatrix, ViewPosition, NearClipZ, FarClipZ);
+
+	RpgArray<RpgMatrixTransform> tempBoneSkinningTransforms;
+
+	for (int m = 0; m < frame.Meshes.GetCount(); ++m)
 	{
-		frame.TextureDepthStencil = RpgPointer::MakeShared<RpgTextureDepthStencil>("texds_scn_vprt", RpgTextureFormat::TEX_DS_32, renderTargetDimension.X, renderTargetDimension.Y);
+		RpgSceneMesh& data = frame.Meshes[m];
+
+		if (data.GameObject.IsPendingDestroy())
+		{
+			continue;
+		}
+
+		const bool bHasSkin = data.Mesh->HasSkin();
+		bool bIsStaticMesh = true;
+
+		const RpgSharedMaterial& useMaterial = data.Material && data.Material->IsAssetLoaded() ? data.Material : RpgMaterial::GetDefault(RpgMaterialDefault::MESH_PHONG);
+
+		RpgDrawIndexed draw;
+		draw.Material = materialResource->AddMaterial(useMaterial);
+		draw.ObjectParam.ViewIndex = cameraId;
+		draw.ObjectParam.TransformIndex = worldResource->AddTransform(data.GameObject, data.WorldTransformMatrix);
+
+		if (bHasSkin)
+		{
+			const RpgAnimationComponent_AnimSkeletonPose* animComp = data.GameObject.GetComponent<RpgAnimationComponent_AnimSkeletonPose>();
+
+			// draw as static mesh if no animation component
+			bIsStaticMesh = (animComp == nullptr);
+
+			if (animComp)
+			{
+				const RpgAnimationSkeleton* skeleton = animComp->GetSkeleton().Get();
+				RPG_Check(skeleton);
+
+				const RpgAnimationPose& finalPose = animComp->GetFinalPose();
+				const int boneCount = skeleton->GetBoneCount();
+				tempBoneSkinningTransforms.Resize(boneCount);
+
+				for (int b = 0; b < boneCount; ++b)
+				{
+					tempBoneSkinningTransforms[b] = skeleton->GetBoneInverseBindPoseTransform(b) * finalPose.GetBonePoseTransform(b);
+				}
+
+				const RpgMeshSkinnedResource::FMeshID meshId = meshSkinnedResource->AddMesh(data.Mesh, draw.IndexCount, draw.IndexStart, draw.IndexVertexOffset);
+				meshSkinnedResource->AddObjectBoneSkinningTransforms(meshId, tempBoneSkinningTransforms);
+			}
+		}
+
+		if (bIsStaticMesh)
+		{
+			meshResource->AddMesh(data.Mesh, draw.IndexCount, draw.IndexStart, draw.IndexVertexOffset);
+		}
+
+		if (data.Material->IsTransparency())
+		{
+			frame.DrawTransparencies.AddValue(draw);
+		}
+		else
+		{
+			if (bIsStaticMesh)
+			{
+				frame.DrawOpaqueMeshes.AddValue(draw);
+			}
+			else
+			{
+				frame.DrawOpaqueSkinnedMeshes.AddValue(draw);
+			}
+		}
 	}
 
-	frame.TextureDepthStencil->Resize(renderTargetDimension.X, renderTargetDimension.Y);
-	frame.TextureDepthStencil->GPU_UpdateResource();
+
+	for (int t = 0; t < frame.Terrains.GetCount(); ++t)
+	{
+		RpgSceneTerrain& data = frame.Terrains[t];
+
+		if (data.GameObject.IsPendingDestroy())
+		{
+			continue;
+		}
+
+		const RpgSharedMaterial& useMaterial = data.Material && data.Material->IsAssetLoaded() ? data.Material : RpgMaterial::GetDefault(RpgMaterialDefault::MESH_PHONG);
+
+		RpgDrawIndexed& draw = frame.DrawOpaqueTerrains.Add();
+		draw.Material = materialResource->AddMaterial(useMaterial);
+		draw.ObjectParam.ViewIndex = cameraId;
+		draw.ObjectParam.TransformIndex = worldResource->AddTransform(data.GameObject, data.WorldTransformMatrix);
+		meshResource->AddTerrain(data.VertexPositions, data.VertexNormalTangents, data.VertexTexCoords, data.VertexIndices, draw.IndexCount, draw.IndexStart, draw.IndexVertexOffset);
+	}
+
+
+	for (int l = 0; l < frame.Lights.GetCount(); ++l)
+	{
+		const RpgSceneLight& data = frame.Lights[l];
+		
+		if (data.GameObject.IsPendingDestroy())
+		{
+			continue;
+		}
+
+		RpgWorldResource::FLightID lightId = RPG_INDEX_INVALID;
+
+		if (data.Type == RpgRenderLight::TYPE_POINT_LIGHT)
+		{
+			lightId = worldResource->AddLight_Point(data.GameObject, data.WorldTransform.Position, data.ColorIntensity, data.AttenuationRadius, data.AttenuationFallOffExp);
+		}
+		else if (data.Type == RpgRenderLight::TYPE_SPOT_LIGHT)
+		{
+			lightId = worldResource->AddLight_Spot(data.GameObject, data.WorldTransform.Position, data.WorldTransform.GetAxisForward(), 
+				data.ColorIntensity, data.AttenuationRadius, 16, data.SpotInnerConeDegree, data.SpotOuterConeDegree);
+		}
+		else
+		{
+			RPG_NotImplementedYet();
+		}
+
+		if (data.ShadowViewport)
+		{
+			data.ShadowViewport->PreRender(frameContext, worldResource, world, lightId);
+		}
+	}
+
+#ifndef RPG_BUILD_SHIPPING
+	FFrameDebug& debug = FrameDebugs[frameContext.Index];
+	debug.LineMaterialId = materialResource->AddMaterial(RpgMaterial::GetDefault(RpgMaterialDefault::DEBUG_PRIMITIVE_LINE));
+	debug.LineNoDepthMaterialId = materialResource->AddMaterial(RpgMaterial::GetDefault(RpgMaterialDefault::DEBUG_PRIMITIVE_LINE_NO_DEPTH));
+	debug.CameraId = cameraId;
+#endif // !RPG_BUILD_SHIPPING
+
 }
 
 
-void RpgSceneViewport::SetupRenderPasses(const RpgRenderFrameContext& context, RpgRenderTask_RenderPass_Forward_Array& out_ForwardPasses) noexcept
+void RpgSceneViewport::SetupRenderPasses(const RpgRenderFrameContext& frameContext, const RpgWorldResource* worldResource, const RpgWorld* world, RpgRenderTask_RenderPassShadowArray& out_ShadowPasses, RpgRenderTask_RenderPassForwardArray& out_ForwardPasses) noexcept
 {
-	FFrameData& frame = FrameDatas[context.Index];
+	FFrameData& frame = FrameDatas[frameContext.Index];
 
-	RpgRenderTask_RenderPass_Forward* forwardPass = &frame.TaskRenderPassForward;
+	// shadow pass
+	for (int i = 0; i < frame.Lights.GetCount(); ++i)
+	{
+		if (frame.Lights[i].ShadowViewport)
+		{
+			frame.Lights[i].ShadowViewport->SetupRenderPasses(frameContext, worldResource, world, out_ShadowPasses);
+		}
+	}
+
+	// forward pass
+	RpgRenderTask_RenderPassForward* forwardPass = &frame.TaskRenderPassForward;
 	forwardPass->Reset();
-	forwardPass->FrameContext = &context;
+	forwardPass->FrameContext = frameContext;
+	forwardPass->WorldResource = worldResource;
 	forwardPass->TextureRenderTarget = frame.TextureRenderTarget.Get();
 	forwardPass->TextureDepthStencil = frame.TextureDepthStencil.Get();
-	forwardPass->DrawTerrains = frame.CapturedTerrains;
+	forwardPass->DrawMeshData = frame.DrawOpaqueMeshes.GetData();
+	forwardPass->DrawMeshCount = frame.DrawOpaqueMeshes.GetCount();
+	forwardPass->DrawSkinnedMeshData = frame.DrawOpaqueSkinnedMeshes.GetData();
+	forwardPass->DrawSkinnedMeshCount = frame.DrawOpaqueSkinnedMeshes.GetCount();
+	forwardPass->DrawTerrainData = frame.DrawOpaqueTerrains.GetData();
+	forwardPass->DrawTerrainCount = frame.DrawOpaqueTerrains.GetCount();
+
+#ifndef RPG_BUILD_SHIPPING
+	FFrameDebug& debug = FrameDebugs[frameContext.Index];
+	forwardPass->DebugDrawLineMaterialId = debug.LineMaterialId;
+	forwardPass->DebugDrawLineNoDepthMaterialId = debug.LineNoDepthMaterialId;
+	forwardPass->DebugDrawCameraId = debug.CameraId;
+#endif // !RPG_BUILD_SHIPPING
+
+	out_ForwardPasses.AddValue(forwardPass);
 }
