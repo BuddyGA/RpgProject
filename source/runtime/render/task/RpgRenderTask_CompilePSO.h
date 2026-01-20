@@ -8,8 +8,8 @@
 class RpgRenderTask_CompilePSO : public RpgThreadTask
 {
 public:
-	ID3D12RootSignature* RootSignature;
 	RpgName Name;
+	ID3D12RootSignature* RootSignature;
 	RpgRenderPipelineState PipelineState;
 
 

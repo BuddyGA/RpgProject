@@ -17,14 +17,14 @@ RpgEditorScript_Camera::RpgEditorScript_Camera() noexcept
 	PitchMin = -80.0f;
 	PitchMax = 80.0f;
 	RotationSpeed = 90.0f;
-	MoveSpeed = 500.0f;
+	MoveSpeed = 5.0f;
 }
 
 
 void RpgEditorScript_Camera::AttachedToGameObject() noexcept
 {
 	RpgTransform transform = GameObject.GetWorldTransform();
-	transform.Position = RpgVector3(0.0f, 1000.0f, 0.0f);
+	transform.Position = RpgVector3(0.0f, 10.0f, 0.0f);
 	transform.Rotation = RpgQuaternion::FromPitchYawRollDegree(PitchValue, 0.0f, 0.0f);
 
 	GameObject.SetWorldTransform(transform);
@@ -32,7 +32,7 @@ void RpgEditorScript_Camera::AttachedToGameObject() noexcept
 	Flashlight = &GameObject.AddComponent<RpgRenderComponent_Light>();
 	Flashlight->Type = RpgRenderLight::TYPE_SPOT_LIGHT;
 	Flashlight->ColorIntensity = RpgColorLinear(1.0f, 1.0f, 1.0f, 2.0f);
-	Flashlight->AttenuationRadius = 1600.0f;
+	Flashlight->AttenuationRadius = 16.0f;
 	Flashlight->SpotInnerConeDegree = 20.0f;
 	Flashlight->SpotOuterConeDegree = 40.0f;
 	Flashlight->bCastShadow = false;
@@ -113,9 +113,7 @@ void RpgEditorScript_Camera::TickUpdate(float deltaTime) noexcept
 
 	if (g_InputSystem->IsKeyButtonPressed(RpgInputKey::KEYBOARD_F))
 	{
-		if (Flashlight)
-		{
-			Flashlight->bIsVisible = !Flashlight->bIsVisible;
-		}
+		const bool bIsON = Flashlight->bIsVisible;
+		Flashlight->bIsVisible = !bIsON;
 	}
 }

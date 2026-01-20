@@ -108,7 +108,7 @@ void RpgAnimationWorldSubsystem::Render(int frameIndex, RpgRenderer* renderer) n
 			for (int b = 0; b < boneCount; ++b)
 			{
 				const RpgVector3 bonePosition = bonePoseTransforms[b].GetPosition() * gameObjectWorldMatrix;
-				debugLine->AddAABB(RpgBoundingAABB(bonePosition - 2.0f, bonePosition + 2.0f), RpgColor::RED);
+				debugLine->AddAABB(RpgBoundingAABB(bonePosition - 0.02f, bonePosition + 0.02f), RpgColor::RED);
 
 				const int boneParentIndex = boneParentIndices[b];
 				

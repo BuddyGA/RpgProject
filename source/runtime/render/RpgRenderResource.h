@@ -97,7 +97,6 @@ public:
 public:
 	RpgMeshResource() noexcept;
 	FMeshID AddMesh(const RpgSharedMesh& mesh, int& out_IndexCount, int& out_IndexStart, int& out_IndexVertexOffset) noexcept;
-	FTerrainID AddTerrain(const RpgVertexMeshPositionArray* vertexPositions, const RpgVertexMeshNormalTangentArray* vertexNormalTangents, const RpgVertexMeshTexCoordArray* vertexTexCoords, const RpgVertexIndexArray* indices, int& out_IndexCount, int& out_IndexStart, int& out_IndexVertexOffset) noexcept;
 	void UpdateResources() noexcept;
 	void CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept;
 
@@ -107,59 +106,29 @@ public:
 		MeshDatas.Clear();
 		MeshVertexCount = 0;
 		MeshIndexCount = 0;
-
-		TerrainDatas.Clear();
-		TerrainVertexCount = 0;
-		TerrainIndexCount = 0;
 	}
 
-	inline D3D12_VERTEX_BUFFER_VIEW GetMeshVertexBufferView_Position() const noexcept
+	inline D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView_Position() const noexcept
 	{
 		return GetVertexBufferView<RpgVertex::FMeshPosition>(MeshVertexPositionBuffer->GetResource(), MeshVertexCount);
 	}
 
-	inline D3D12_VERTEX_BUFFER_VIEW GetMeshVertexBufferView_NormalTangent() const noexcept
+	inline D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView_NormalTangent() const noexcept
 	{
 		return GetVertexBufferView<RpgVertex::FMeshNormalTangent>(MeshVertexNormalTangentBuffer->GetResource(), MeshVertexCount);
 	}
 
-	inline D3D12_VERTEX_BUFFER_VIEW GetMeshVertexBufferView_TexCoord() const noexcept
+	inline D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView_TexCoord() const noexcept
 	{
 		return GetVertexBufferView<RpgVertex::FMeshTexCoord>(MeshVertexTexCoordBuffer->GetResource(), MeshVertexCount);
 	}
 
-	inline D3D12_INDEX_BUFFER_VIEW GetMeshIndexBufferView() const noexcept
+	inline D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const noexcept
 	{
 		D3D12_INDEX_BUFFER_VIEW view{};
 		view.BufferLocation = MeshIndexBuffer->GetResource()->GetGPUVirtualAddress();
 		view.Format = DXGI_FORMAT_R32_UINT;
 		view.SizeInBytes = static_cast<UINT>(sizeof(RpgVertex::FIndex) * MeshIndexCount);
-
-		return view;
-	}
-
-
-	inline D3D12_VERTEX_BUFFER_VIEW GetTerrainVertexBufferView_Position() const noexcept
-	{
-		return GetVertexBufferView<RpgVertex::FMeshPosition>(TerrainVertexPositionBuffer->GetResource(), TerrainVertexCount);
-	}
-
-	inline D3D12_VERTEX_BUFFER_VIEW GetTerrainVertexBufferView_NormalTangent() const noexcept
-	{
-		return GetVertexBufferView<RpgVertex::FMeshNormalTangent>(TerrainVertexNormalTangentBuffer->GetResource(), TerrainVertexCount);
-	}
-
-	inline D3D12_VERTEX_BUFFER_VIEW GetTerrainVertexBufferView_TexCoord() const noexcept
-	{
-		return GetVertexBufferView<RpgVertex::FMeshTexCoord>(TerrainVertexTexCoordBuffer->GetResource(), TerrainVertexCount);
-	}
-
-	inline D3D12_INDEX_BUFFER_VIEW GetTerrainIndexBufferView() const noexcept
-	{
-		D3D12_INDEX_BUFFER_VIEW view{};
-		view.BufferLocation = TerrainIndexBuffer->GetResource()->GetGPUVirtualAddress();
-		view.Format = DXGI_FORMAT_R32_UINT;
-		view.SizeInBytes = static_cast<UINT>(sizeof(RpgVertex::FIndex) * TerrainIndexCount);
 
 		return view;
 	}
@@ -209,41 +178,6 @@ private:
 
 	// Mesh index count
 	int MeshIndexCount;
-
-
-	struct FTerrainData
-	{
-		const RpgVertexMeshPositionArray* VertexPositions{ nullptr };
-		const RpgVertexMeshNormalTangentArray* VertexNormalTangents{ nullptr };
-		const RpgVertexMeshTexCoordArray* VertexTexCoords{ nullptr };
-		const RpgVertexIndexArray* VertexIndices{ nullptr };
-		int VertexStart{ 0 };
-		int VertexCount{ 0 };
-		int IndexStart{ 0 };
-		int IndexCount{ 0 };
-	};
-	RpgArray<FTerrainData> TerrainDatas;
-
-	// (VBO) Terrain input vertex position
-	ComPtr<D3D12MA::Allocation> TerrainVertexPositionBuffer;
-
-	// (VBO) Terrain input vertex normal-tangent
-	ComPtr<D3D12MA::Allocation> TerrainVertexNormalTangentBuffer;
-
-	// (VBO) Terrain input vertex texcoord
-	ComPtr<D3D12MA::Allocation> TerrainVertexTexCoordBuffer;
-
-	// (IBO) Terrain input index
-	ComPtr<D3D12MA::Allocation> TerrainIndexBuffer;
-
-	// Terrain staging buffer
-	ComPtr<D3D12MA::Allocation> TerrainStagingBuffer;
-
-	// Terrain vertex count
-	int TerrainVertexCount;
-
-	// Terrain index count
-	int TerrainIndexCount;
 
 };
 
@@ -311,7 +245,7 @@ public:
 
 	inline D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView_Skin() const noexcept
 	{
-		return GetVertexBufferView<RpgVertex::FMeshSkin>(VertexSkinBuffer->GetResource(), MeshVertexCount);
+		return GetVertexBufferView<RpgVertex::FMeshSkin>(MeshVertexSkinBuffer->GetResource(), MeshVertexCount);
 	}
 
 	inline D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const noexcept
@@ -361,7 +295,7 @@ public:
 
 	inline ID3D12Resource* GetResourceVertexSkin() const noexcept
 	{
-		return VertexSkinBuffer->GetResource();
+		return MeshVertexSkinBuffer->GetResource();
 	}
 
 	inline ID3D12Resource* GetResourceSkeletonBoneSkinning() const noexcept
@@ -436,7 +370,7 @@ private:
 	ComPtr<D3D12MA::Allocation> MeshVertexTexCoordBuffer;
 
 	// (VBO) Vertex skin (bone, weight)
-	ComPtr<D3D12MA::Allocation> VertexSkinBuffer;
+	ComPtr<D3D12MA::Allocation> MeshVertexSkinBuffer;
 
 	// (IBO) Vertex index
 	ComPtr<D3D12MA::Allocation> MeshIndexBuffer;
@@ -460,7 +394,7 @@ private:
 
 
 	// Staging buffer
-	ComPtr<D3D12MA::Allocation> MeshStagingBuffer;
+	ComPtr<D3D12MA::Allocation> StagingBuffer;
 
 };
 
@@ -582,7 +516,7 @@ private:
 	RpgArray<RpgMatrixTransform> TransformDatas;
 	ComPtr<D3D12MA::Allocation> TransformStructBuffer;
 
-	ComPtr<D3D12MA::Allocation> MeshStagingBuffer;
+	ComPtr<D3D12MA::Allocation> StagingBuffer;
 
 
 
@@ -615,17 +549,6 @@ struct RpgSceneMesh
 	int Lod{ 0 };
 };
 
-
-struct RpgSceneTerrain
-{
-	RpgGameObject GameObject;
-	RpgMatrixTransform WorldTransformMatrix;
-	RpgSharedMaterial Material;
-	const RpgVertexMeshPositionArray* VertexPositions{ nullptr };
-	const RpgVertexMeshNormalTangentArray* VertexNormalTangents{ nullptr };
-	const RpgVertexMeshTexCoordArray* VertexTexCoords{ nullptr };
-	const RpgVertexIndexArray* VertexIndices{ nullptr };
-};
 
 
 struct RpgSceneLight

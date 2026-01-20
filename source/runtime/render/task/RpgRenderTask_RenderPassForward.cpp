@@ -13,8 +13,6 @@ RpgRenderTask_RenderPassForward::RpgRenderTask_RenderPassForward() noexcept
 	DrawMeshCount = 0;
 	DrawSkinnedMeshData = nullptr;
 	DrawSkinnedMeshCount = 0;
-	DrawTerrainData = nullptr;
-	DrawTerrainCount = 0;
 
 #ifndef RPG_BUILD_SHIPPING
 	DebugDrawLineMaterialId = RPG_INDEX_INVALID;
@@ -34,8 +32,6 @@ void RpgRenderTask_RenderPassForward::Reset() noexcept
 	DrawMeshCount = 0;
 	DrawSkinnedMeshData = nullptr;
 	DrawSkinnedMeshCount = 0;
-	DrawTerrainData = nullptr;
-	DrawTerrainCount = 0;
 
 #ifndef RPG_BUILD_SHIPPING
 	DebugDrawLineMaterialId = RPG_INDEX_INVALID;
@@ -101,14 +97,14 @@ void RpgRenderTask_RenderPassForward::CommandDraw(ID3D12GraphicsCommandList* cmd
 		// Bind vertex buffers
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[3] =
 		{
-			FrameContext.MeshResource->GetMeshVertexBufferView_Position(),
-			FrameContext.MeshResource->GetMeshVertexBufferView_NormalTangent(),
-			FrameContext.MeshResource->GetMeshVertexBufferView_TexCoord()
+			FrameContext.MeshResource->GetVertexBufferView_Position(),
+			FrameContext.MeshResource->GetVertexBufferView_NormalTangent(),
+			FrameContext.MeshResource->GetVertexBufferView_TexCoord()
 		};
 		cmdList->IASetVertexBuffers(0, 3, vertexBufferViews);
 
 		// Bind index buffer
-		const D3D12_INDEX_BUFFER_VIEW indexBufferView = FrameContext.MeshResource->GetMeshIndexBufferView();
+		const D3D12_INDEX_BUFFER_VIEW indexBufferView = FrameContext.MeshResource->GetIndexBufferView();
 		cmdList->IASetIndexBuffer(&indexBufferView);
 
 		// Draw calls
@@ -154,36 +150,6 @@ void RpgRenderTask_RenderPassForward::CommandDraw(ID3D12GraphicsCommandList* cmd
 
 			cmdList->SetGraphicsRoot32BitConstants(RpgRenderPipeline::GRPI_OBJECT_PARAM, sizeof(RpgShaderObjectParameter) / 4, &draw.ObjectParam, 0);
 			cmdList->DrawIndexedInstanced(skinnedParam.IndexCount, 1, skinnedParam.IndexStart, skinnedParam.VertexStart, 0);
-		}
-	}
-
-
-	// Draw terrain
-	if (DrawTerrainData)
-	{
-		RPG_Assert(DrawTerrainCount > 0);
-
-		// Bind vertex buffers
-		D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[3] =
-		{
-			FrameContext.MeshResource->GetTerrainVertexBufferView_Position(),
-			FrameContext.MeshResource->GetTerrainVertexBufferView_NormalTangent(),
-			FrameContext.MeshResource->GetTerrainVertexBufferView_TexCoord()
-		};
-		cmdList->IASetVertexBuffers(0, 3, vertexBufferViews);
-
-		// Bind index buffer
-		const D3D12_INDEX_BUFFER_VIEW indexBufferView = FrameContext.MeshResource->GetTerrainIndexBufferView();
-		cmdList->IASetIndexBuffer(&indexBufferView);
-
-		// Draw calls
-		for (int d = 0; d < DrawTerrainCount; ++d)
-		{
-			const RpgDrawIndexed& draw = DrawTerrainData[d];
-			FrameContext.MaterialResource->CommandBindMaterial(cmdList, draw.Material);
-
-			cmdList->SetGraphicsRoot32BitConstants(RpgRenderPipeline::GRPI_OBJECT_PARAM, sizeof(RpgShaderObjectParameter) / 4, &draw.ObjectParam, 0);
-			cmdList->DrawIndexedInstanced(draw.IndexCount, 1, draw.IndexStart, draw.IndexVertexOffset, 0);
 		}
 	}
 	

@@ -28,7 +28,7 @@ void RpgShadowViewport_PointLight::PreRender(RpgRenderFrameContext& frameContext
 
 	RpgTransform transform = GameObject.GetWorldTransform();
 	const float fovDegree = 90.0f;
-	const float nearClipZ = 1.0f;
+	const float nearClipZ = 0.01f;
 	const float farClipZ = AttenuationRadius * 1.05f;
 	const RpgMatrixProjection projMatrix = RpgMatrixProjection::CreatePerspective(1.0f, fovDegree, nearClipZ, farClipZ);
 

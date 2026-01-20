@@ -30,7 +30,7 @@ RpgMaterial::RpgMaterial(const RpgName& in_Name, const RpgSharedMaterial& in_Par
 	: RpgMaterial(in_Name, in_ParentMaterial->RenderState, in_ParentMaterial->ParameterLayout)
 {
 	Name = in_Name;
-	Flags = FLAG_Instance;
+	Flags = FLAG_Instance | FLAG_Runtime_Loading;
 	ParentMaterial = in_ParentMaterial;
 }
 

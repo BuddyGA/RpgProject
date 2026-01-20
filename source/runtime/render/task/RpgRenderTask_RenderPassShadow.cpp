@@ -68,12 +68,12 @@ void RpgRenderTask_RenderPassShadow::CommandDraw(ID3D12GraphicsCommandList* cmdL
 		// Bind vertex buffers
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[1] =
 		{
-			FrameContext.MeshResource->GetMeshVertexBufferView_Position(),
+			FrameContext.MeshResource->GetVertexBufferView_Position(),
 		};
 		cmdList->IASetVertexBuffers(0, 1, vertexBufferViews);
 
 		// Bind index buffer
-		const D3D12_INDEX_BUFFER_VIEW indexBufferView = FrameContext.MeshResource->GetMeshIndexBufferView();
+		const D3D12_INDEX_BUFFER_VIEW indexBufferView = FrameContext.MeshResource->GetIndexBufferView();
 		cmdList->IASetIndexBuffer(&indexBufferView);
 
 		// Draw calls

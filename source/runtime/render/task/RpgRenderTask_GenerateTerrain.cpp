@@ -2,8 +2,8 @@
 #include "core/RpgConsoleSystem.h"
 
 
-#define RPG_TERRAIN_TILE_SIZE		200 // 2m
-#define RPG_TERRAIN_WORLD_SIZE		5000 // 50m
+#define RPG_TERRAIN_TILE_SIZE		2 // 2m
+#define RPG_TERRAIN_WORLD_SIZE		1000 // 1km
 
 
 

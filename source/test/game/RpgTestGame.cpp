@@ -142,22 +142,22 @@ static void TestLevel_Import(RpgWorld* world, const RpgFilePath& sourceFilePath,
 
 static bool TestLevel_Sponza(RpgWorld* world) noexcept
 {
-	TestLevel_Import(world, RpgFileSystem::GetAssetRawDirPath() + "model/sponza_phong/sponza.obj", 1.0f, false, true);
+	TestLevel_Import(world, RpgFileSystem::GetAssetRawDirPath() + "model/sponza_phong/sponza.obj", 0.01f, false, true);
 
 	RpgTransform transform;
 
-	transform.Position = RpgVector3(650.0f, 200.0f, 0.0f);
-	TestLevel_AddLight_Point(world, transform, RpgColorLinear(1.0f, 1.0f, 1.0f, 0.33f), 800.0f, true);
+	transform.Position = RpgVector3(6.5f, 2.0f, 0.0f);
+	TestLevel_AddLight_Point(world, transform, RpgColorLinear(1.0f, 1.0f, 1.0f, 0.33f), 8.0f, true);
 
-	transform.Position = RpgVector3(0.0f, 200.0f, 0.0f);
-	TestLevel_AddLight_Point(world, transform, RpgColorLinear(1.0f, 1.0f, 1.0f, 0.33f), 800.0f, true);
+	transform.Position = RpgVector3(0.0f, 2.0f, 0.0f);
+	TestLevel_AddLight_Point(world, transform, RpgColorLinear(1.0f, 1.0f, 1.0f, 0.33f), 8.0f, true);
 
-	transform.Position = RpgVector3(-650.0f, 200.0f, 0.0f);
-	TestLevel_AddLight_Point(world, transform, RpgColorLinear(1.0f, 1.0f, 1.0f, 0.33f), 800.0f, true);
+	transform.Position = RpgVector3(-6.5f, 2.0f, 0.0f);
+	TestLevel_AddLight_Point(world, transform, RpgColorLinear(1.0f, 1.0f, 1.0f, 0.33f), 8.0f, true);
 
-	transform.Position = RpgVector3(645.0f, 750.0f, 60.0f);
+	transform.Position = RpgVector3(6.5f, 7.5f, 0.0f);
 	transform.Rotation = RpgQuaternion::FromPitchYawRollDegree(20.0f, 90.0f, 0.0f);
-	TestLevel_AddLight_Spot(world, transform, RpgColorLinear(1.0f, 1.0f, 1.0f, 1.0f), 1600.0f, 20.0f, 40.0f, true);
+	TestLevel_AddLight_Spot(world, transform, RpgColorLinear(1.0f, 1.0f, 1.0f, 1.0f), 16.0f, 20.0f, 40.0f, true);
 
 	return true;
 }
@@ -246,7 +246,7 @@ static void TestLevel_Animations(RpgWorld* world) noexcept
 
 	RpgEditorImportSetting_Model setting;
 	setting.SourceFilePath = RpgFileSystem::GetAssetRawDirPath() + "model/CesiumMan.glb";
-	setting.Scale = 100.0f;
+	setting.Scale = 1.0f;
 	setting.bImportMaterialTexture = true;
 	setting.bImportSkeleton = true;
 	setting.bImportAnimation = true;
@@ -266,11 +266,10 @@ static void TestLevel_Animations(RpgWorld* world) noexcept
 	skeletons[1] = importedSkeleton;
 	animationClips[1] = importedAnimations[0];
 
-	const int DIM_X = 16;
-	const int DIM_Z = 16;
-	const float OFFSET = 128.0f;
+	const int DIM_X = 8;
+	const int DIM_Z = 8;
+	const float OFFSET = 2.0f;
 	const RpgVector3 startPos(-(DIM_X * OFFSET * 0.5f), 0.0f, -(DIM_Z * OFFSET * 0.5f));
-	//const RpgVector3 startPos(500.0f, 20.0f, 0.0f);
 	RpgVector3 spawnPos = startPos;
 	int modelIndex = 0;
 
@@ -297,6 +296,7 @@ static void TestLevel_Animations(RpgWorld* world) noexcept
 				animComp.PlayRate = 1.5f;
 				animComp.bLoopAnim = true;
 			}
+			gameObject.SpawnAtTransform(transform);
 
 			spawnPos.Z += OFFSET;
 			modelIndex = (modelIndex + 1) % 2;

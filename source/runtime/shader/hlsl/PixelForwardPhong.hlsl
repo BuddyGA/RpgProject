@@ -86,7 +86,7 @@ float3 Rpg_PhongLightContributionColor(float3 surfaceNormal, float3 toViewDirect
     
     const float specularFactor = pow(saturate(dot(surfaceNormal, halfReflectDirection)), shininess);
     lightContributionColor += baseLightColor * specularColor * specularFactor * lightAttenuation;
-#endif // 
+#endif // RPG_FORWARD_PHONG_SPECULAR
     
     
     return lightContributionColor;

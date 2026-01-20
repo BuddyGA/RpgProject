@@ -160,18 +160,16 @@ void RpgWorldResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept
 
 #ifndef RPG_BUILD_SHIPPING
 	const size_t stagingSizeBytes = worldDataSizeBytes + transformDataSizeBytes + DebugLineVertexSizeBytes + DebugLineIndexSizeBytes;
-
 #else
 	const size_t stagingSizeBytes = worldDataSizeBytes + transformDataSizeBytes;
-
 #endif // !RPG_BUILD_SHIPPING
 
 
-	RpgD3D12::ResizeBuffer(MeshStagingBuffer, stagingSizeBytes, true);
-	RPG_D3D12_SetDebugNameAllocation(MeshStagingBuffer, "STG_WorldResource");
+	RpgD3D12::ResizeBuffer(StagingBuffer, stagingSizeBytes, true);
+	RPG_D3D12_SetDebugNameAllocation(StagingBuffer, "STG_WorldResource");
 
-	ID3D12Resource* stagingResource = MeshStagingBuffer->GetResource();
-	uint8_t* stagingMap = RpgD3D12::MapBuffer<uint8_t>(MeshStagingBuffer.Get());
+	ID3D12Resource* stagingResource = StagingBuffer->GetResource();
+	uint8_t* stagingMap = RpgD3D12::MapBuffer<uint8_t>(StagingBuffer.Get());
 	size_t stagingOffset = 0;
 
 
@@ -221,14 +219,14 @@ void RpgWorldResource::CommandCopy(ID3D12GraphicsCommandList* cmdList) noexcept
 
 
 	RPG_Check(stagingSizeBytes == stagingOffset);
-	RpgD3D12::UnmapBuffer(MeshStagingBuffer.Get());
+	RpgD3D12::UnmapBuffer(StagingBuffer.Get());
 }
 
 
 void RpgWorldResource::CommandBindShaderResources(ID3D12GraphicsCommandList* cmdList) const noexcept
 {
 	cmdList->SetGraphicsRootConstantBufferView(RpgRenderPipeline::GRPI_WORLD_DATA, WorldConstantBuffer->GetResource()->GetGPUVirtualAddress());
-
+	
 	if (TransformStructBuffer)
 	{
 		cmdList->SetGraphicsRootShaderResourceView(RpgRenderPipeline::GRPI_TRANSFORM_DATA, TransformStructBuffer->GetResource()->GetGPUVirtualAddress());

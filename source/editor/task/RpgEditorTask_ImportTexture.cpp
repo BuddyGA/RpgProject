@@ -153,8 +153,10 @@ namespace RpgCompressonator
 			const RpgFilePath sourceFilePath = RpgString::Format("%s__temp/%s", *RpgFileSystem::GetProjectDirPath(), *embedded.Name);
 			{
 				HANDLE fileHandle = RpgPlatformFile::FileOpen(*sourceFilePath, RpgPlatformFile::OPEN_MODE_WRITE_OVERWRITE);
+				const bool bWritten = RpgPlatformFile::FileWrite(fileHandle, embedded.Data, sizeBytes);
+				RpgPlatformFile::FileClose(fileHandle);
 
-				if (RpgPlatformFile::FileWrite(fileHandle, embedded.Data, sizeBytes))
+				if (bWritten)
 				{
 					ImportFromFile(out_Texture, sourceFilePath, format, bGenerateMipMaps);
 					RpgPlatformFile::FileDelete(*sourceFilePath);
@@ -163,8 +165,6 @@ namespace RpgCompressonator
 				{
 					RPG_LogError(RpgLogEditor, "Fail to import texture from embedded data (%s). Write file failed!", *embedded.Name);
 				}
-
-				RpgPlatformFile::FileClose(fileHandle);
 			}
 
 			return;

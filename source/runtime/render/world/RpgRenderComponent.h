@@ -35,8 +35,8 @@ public:
 		RenderTargetDimension = RpgPointInt(1600, 900);
 		ProjectionMode = RpgRenderProjectionMode::PERSPECTIVE;
 		PerspectiveFoVDegree = 75.0f;
-		NearClipZ = 10.0f;
-		FarClipZ = 10000.0f;
+		NearClipZ = 0.1f;
+		FarClipZ = 1000.0f;
 		bActivated = false;
 		bFrustumCulling = false;
 		Viewport = nullptr;
@@ -150,7 +150,7 @@ public:
 	{
 		Type = RpgRenderLight::TYPE_NONE;
 		ColorIntensity = RpgColorLinear(1.0f, 1.0f, 1.0f, 1.0f);
-		AttenuationRadius = 800.0f;
+		AttenuationRadius = 8.0f;
 		AttenuationFallOffExp = 8.0f;
 		SpotInnerConeDegree = 20.0f;
 		SpotOuterConeDegree = 40.0f;

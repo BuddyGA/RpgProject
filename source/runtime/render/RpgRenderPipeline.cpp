@@ -312,8 +312,8 @@ void RpgRenderPipeline::Initialize() noexcept
 
             RpgRenderTask_CompilePSO task;
             task.Reset();
-            task.RootSignature = RootSignatureGraphics.Get();
             task.Name = "ShadowMapDirectional";
+            task.RootSignature = RootSignatureGraphics.Get();
             task.PipelineState = state;
             task.Execute();
 
@@ -333,14 +333,14 @@ void RpgRenderPipeline::Initialize() noexcept
             state.RenderTargetCount = 0;
             state.bDepthTest = true;
             state.bDepthWrite = true;
-            state.DepthBias = 1000;
-            state.DepthBiasSlope = 2.0f;
-            //state.DepthBiasClamp = 4.0f;
+            state.DepthBias = 0;
+            state.DepthBiasSlope = 0.0f;
+            state.DepthBiasClamp = 0.0f;
 
             RpgRenderTask_CompilePSO task;
             task.Reset();
-            task.RootSignature = RootSignatureGraphics.Get();
             task.Name = "ShadowMapCube";
+            task.RootSignature = RootSignatureGraphics.Get();
             task.PipelineState = state;
             task.Execute();
 

@@ -398,7 +398,7 @@ ComPtr<D3D12MA::Allocation> RpgD3D12::CreateBuffer(size_t sizeBytes, bool bCpuAc
     allocDesc.CustomPool = bCpuAccess ? MemoryPoolBufferCPU.Get() : MemoryPoolBufferGPU.Get();
 
     ComPtr<D3D12MA::Allocation> allocation;
-    RPG_D3D12_Validate(MemoryAllocator->CreateResource(&allocDesc, &bufferDesc, bCpuAccess ? D3D12_RESOURCE_STATE_COPY_SOURCE : D3D12_RESOURCE_STATE_COPY_DEST, nullptr, &allocation, IID_NULL, nullptr));
+    RPG_D3D12_Validate(MemoryAllocator->CreateResource(&allocDesc, &bufferDesc, bCpuAccess ? D3D12_RESOURCE_STATE_COPY_SOURCE : D3D12_RESOURCE_STATE_COMMON, nullptr, &allocation, IID_NULL, nullptr));
 
     return allocation;
 }
